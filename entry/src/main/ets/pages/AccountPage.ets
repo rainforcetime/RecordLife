@@ -4,6 +4,16 @@ import { BusinessError } from '@kit.BasicServicesKit'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { common } from '@kit.AbilityKit'
 import { preferences } from '@kit.ArkData'
+import { promptAction, PromptAction } from '@kit.ArkUI'
+import { ConfigManager } from '../config/ConfigManager'
+import { AppInfo } from '../config/UserConfig'
+import { SettingItem } from '../components/SettingItem'
+import { SettingItemWithToggle } from '../components/SettingItemWithToggle'
+import { SettingItemWithSelector } from '../components/SettingItemWithSelector'
+import { SettingItemWithAction } from '../components/SettingItemWithAction'
+import { SettingItemWithInfo } from '../components/SettingItemWithInfo'
+import { EditProfileDialog } from '../components/EditProfileDialog'
+import { AboutAppDialog } from '../components/AboutAppDialog'
 
 const AVATAR_PREFERENCES_KEY = 'user_avatar_path'
 
@@ -16,25 +26,140 @@ export struct AccountPage {
   @State userGender: string = '男'
   @State isEditing: boolean = false
   private context: common.UIAbilityContext | null = null
+  private configManager: ConfigManager | null = null
+  private promptAction: PromptAction = this.getUIContext().getPromptAction()
 
   // 设置项状态
-  @State notificationEnabled: boolean = true
   @State autoBackupEnabled: boolean = false
   @State currentTheme: string = '跟随系统'
-  @State currentLanguage: string = '简体中文'
-  @State timeFormat: string = '24小时制'
 
   // 数据统计
   @State usageDays: number = 128
   @State dataVersion: string = 'v2.1.0'
   @State lastActiveTime: string = '2026-05-20 14:30'
 
+  // 应用信息
+  @State appInfo: AppInfo = {
+    appName: '记录生活',
+    appVersion: '2.1.0',
+    buildNumber: '20260521',
+    developer: 'RecordLife Team',
+    website: 'https://github.com/recordlife',
+    description: '记录生活中的每一个精彩瞬间'
+  }
+
+  // 编辑资料弹窗控制器
+  private editProfileDialog: CustomDialogController = new CustomDialogController({
+    builder: EditProfileDialog({
+      userName: this.userName,
+      userBirthday: this.userBirthday,
+      userGender: this.userGender,
+      onSave: (name: string, birthday: string, gender: string) => {
+        this.onSaveProfile(name, birthday, gender)
+      }
+    }),
+    autoCancel: true,
+    alignment: DialogAlignment.Center,
+    customStyle: true
+  })
+
+  // 关于应用弹窗控制器
+  private aboutAppDialog: CustomDialogController = new CustomDialogController({
+    builder: AboutAppDialog({
+      appInfo: this.appInfo
+    }),
+    autoCancel: true,
+    alignment: DialogAlignment.Center,
+    customStyle: true
+  })
+
   // 页面初始化
   async aboutToAppear() {
     // 获取应用上下文
     this.context = this.getUIContext().getHostContext() as common.UIAbilityContext
+    // 初始化配置管理器
+    this.configManager = await ConfigManager.getInstance()
+    // 加载用户配置
+    await this.loadUserProfile()
     // 加载保存的头像
     await this.loadSavedAvatar()
+  }
+
+  // 加载用户配置
+  private async loadUserProfile() {
+    if (!this.configManager) {
+      return
+    }
+
+    try {
+      const config = this.configManager.getConfig()
+      const profile = config.profile
+
+      // 加载用户名
+      if (profile.name && profile.name.length > 0) {
+        this.userName = profile.name
+      }
+
+      // 加载出生日期
+      if (profile.birthDate && profile.birthDate.length > 0) {
+        this.userBirthday = profile.birthDate
+      }
+
+      // 加载性别
+      if (profile.gender && profile.gender.length > 0) {
+        this.userGender = this.convertGenderToDisplay(profile.gender)
+      }
+
+      // 加载应用信息
+      if (config.appInfo) {
+        this.appInfo = config.appInfo
+        this.dataVersion = `v${config.appInfo.appVersion}`
+      }
+
+      console.info('用户配置加载成功')
+    } catch (error) {
+      console.error('加载用户配置失败: ' + JSON.stringify(error))
+    }
+  }
+
+  // 安全显示 Toast 提示
+  private showToastSafely(message: string, duration: number = 2000) {
+    try {
+      this.promptAction.showToast({
+        message: message,
+        duration: duration
+      })
+    } catch (error) {
+      console.error('显示 Toast 失败: ' + JSON.stringify(error))
+    }
+  }
+
+  // 性别转换：存储格式转显示格式
+  private convertGenderToDisplay(gender: string): string {
+    switch (gender) {
+      case 'male':
+        return '男'
+      case 'female':
+        return '女'
+      case 'other':
+        return '其他'
+      default:
+        return '男'
+    }
+  }
+
+  // 性别转换：显示格式转存储格式
+  private convertGenderToStorage(gender: string): string {
+    switch (gender) {
+      case '男':
+        return 'male'
+      case '女':
+        return 'female'
+      case '其他':
+        return 'other'
+      default:
+        return ''
+    }
   }
 
   // 加载保存的头像
@@ -43,12 +168,12 @@ export struct AccountPage {
       if (!this.context) {
         return
       }
-      
+
       // 获取首选项实例
       let dataPreferences = await preferences.getPreferences(this.context, 'user_settings')
       // 读取保存的头像路径（可能是URI格式）
       let savedAvatarPath = await dataPreferences.get(AVATAR_PREFERENCES_KEY, '') as string
-      
+
       if (savedAvatarPath && savedAvatarPath.length > 0) {
         // 如果是URI格式（file://开头），直接使用
         if (savedAvatarPath.startsWith('file://')) {
@@ -174,18 +299,6 @@ export struct AccountPage {
   @Builder
   SettingsSection() {
     Column() {
-      // 通知设置（开关）
-      SettingItemWithToggle({
-        label: '通知设置',
-        summary: '接收应用通知',
-        isEnabled: this.notificationEnabled,
-        onToggle: (value: boolean) => {
-          this.notificationEnabled = value
-        }
-      })
-
-      Divider().margin({ left: 15 })
-
       // 主题设置（选择器）
       SettingItemWithSelector({
         label: '主题设置',
@@ -193,30 +306,6 @@ export struct AccountPage {
         options: ['跟随系统', '浅色模式', '深色模式'],
         onSelect: (value: string) => {
           this.currentTheme = value
-        }
-      })
-
-      Divider().margin({ left: 15 })
-
-      // 语言设置（选择器）
-      SettingItemWithSelector({
-        label: '语言设置',
-        currentValue: this.currentLanguage,
-        options: ['简体中文', 'English', '日本語'],
-        onSelect: (value: string) => {
-          this.currentLanguage = value
-        }
-      })
-
-      Divider().margin({ left: 15 })
-
-      // 时间格式设置（选择器）
-      SettingItemWithSelector({
-        label: '时间格式',
-        currentValue: this.timeFormat,
-        options: ['24小时制', '12小时制'],
-        onSelect: (value: string) => {
-          this.timeFormat = value
         }
       })
 
@@ -248,7 +337,10 @@ export struct AccountPage {
       // 关于应用（信息展示）
       SettingItemWithInfo({
         label: '关于应用',
-        info: '版本 2.1.0'
+        info: `版本 ${this.appInfo.appVersion}`
+      })
+      .onClick(() => {
+        this.onAboutApp()
       })
     }
     .width('100%')
@@ -368,14 +460,14 @@ export struct AccountPage {
       photoSelectOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE
       // 设置最多选择1张图片
       photoSelectOptions.maxSelectNumber = 1
-      
+
       // 创建图片选择器
       let photoPicker = new photoAccessHelper.PhotoViewPicker()
-      
+
       // 调用select方法拉起图库选择界面
       photoPicker.select(photoSelectOptions).then(async (photoSelectResult: photoAccessHelper.PhotoSelectResult) => {
         console.info('PhotoViewPicker.select successfully, photoSelectResult: ' + JSON.stringify(photoSelectResult))
-        
+
         // 获取选中的图片URI数组
         if (photoSelectResult.photoUris && photoSelectResult.photoUris.length > 0) {
           let selectedUri = photoSelectResult.photoUris[0]
@@ -402,28 +494,28 @@ export struct AccountPage {
     try {
       // 打开源图片文件
       sourceFile = fileIo.openSync(sourceUri, fileIo.OpenMode.READ_ONLY)
-      
+
       // 生成新的文件名（使用时间戳避免重复）
       let timestamp = Date.now()
       let fileName = `avatar_${timestamp}.jpg`
       // 沙箱目录路径
       let sandboxPath = `${this.context.filesDir}/${fileName}`
-      
+
       // 使用同步方法复制文件到沙箱目录
       fileIo.copyFileSync(sourceFile.fd, sandboxPath)
-      
+
       console.info('图片复制成功，沙箱路径: ' + sandboxPath)
-      
+
       // 将沙箱路径转换为URI（Image组件需要URI格式）
       let avatarUri = fileUri.getUriFromPath(sandboxPath)
       console.info('头像URI: ' + avatarUri)
-      
+
       // 更新头像显示
       this.userAvatar = avatarUri
-      
+
       // 保存头像路径到首选项（保存URI）
       await this.saveAvatarPath(avatarUri)
-      
+
     } catch (error) {
       console.error('复制图片失败: ' + JSON.stringify(error))
     } finally {
@@ -444,14 +536,14 @@ export struct AccountPage {
       if (!this.context) {
         return
       }
-      
+
       // 获取首选项实例
       let dataPreferences = await preferences.getPreferences(this.context, 'user_settings')
       // 保存头像路径
       await dataPreferences.put(AVATAR_PREFERENCES_KEY, avatarPath)
       // 持久化存储
       await dataPreferences.flush()
-      
+
       console.info('头像路径保存成功: ' + avatarPath)
     } catch (error) {
       console.error('保存头像路径失败: ' + JSON.stringify(error))
@@ -460,13 +552,53 @@ export struct AccountPage {
 
   // 编辑资料处理
   private onEditProfile() {
-    // TODO: 跳转到编辑资料页面
     console.log('编辑资料')
-    this.getUIContext().getRouter().pushUrl({
-      url: 'pages/EditProfilePage'
-    }).catch((err: Error) => {
-      console.error('跳转失败:', err.message)
-    })
+    // 显示编辑资料弹窗
+    this.editProfileDialog.open()
+  }
+
+  // 保存用户资料
+  private async onSaveProfile(name: string, birthday: string, gender: string) {
+    if (!this.configManager) {
+      console.error('配置管理器未初始化')
+      return
+    }
+
+    try {
+      // 转换性别格式
+      const genderStorage = this.convertGenderToStorage(gender)
+      const avatarPath = typeof this.userAvatar === 'string' ? this.userAvatar : ''
+
+      // 保存到配置管理器
+      const success = await this.configManager.updateProfile(name, birthday, genderStorage, avatarPath)
+
+      if (success) {
+        // 更新UI显示
+        this.userName = name
+        this.userBirthday = birthday
+        this.userGender = gender
+
+        console.info('用户资料保存成功')
+
+        // 显示成功提示
+        this.promptAction.showToast({
+          message: '保存成功',
+          duration: 2000
+        })
+      } else {
+        console.error('用户资料保存失败')
+        this.promptAction.showToast({
+          message: '保存失败',
+          duration: 2000
+        })
+      }
+    } catch (error) {
+      console.error('保存用户资料异常: ' + JSON.stringify(error))
+      this.promptAction.showToast({
+        message: '保存失败',
+        duration: 2000
+      })
+    }
   }
 
   // 清除缓存处理
@@ -534,175 +666,11 @@ export struct AccountPage {
       }
     })
   }
-}
 
-// 基础设置项组件（带箭头）
-@Component
-struct SettingItem {
-  label: string = ''
-  summary: string = ''
-
-  build() {
-    Row() {
-      Column() {
-        Text(this.label)
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-        if (this.summary) {
-          Text(this.summary)
-            .fontSize(12)
-            .fontColor('#999999')
-            .margin({ top: 3 })
-        }
-      }
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
-
-      Image($r('app.media.arrow_right'))
-        .width(20)
-        .height(20)
-    }
-    .padding(15)
-    .width('100%')
+  // 关于应用处理
+  private onAboutApp() {
+    console.log('关于应用')
+    this.aboutAppDialog.open()
   }
 }
 
-// 带开关的设置项组件
-@Component
-struct SettingItemWithToggle {
-  label: string = ''
-  summary: string = ''
-  @Prop isEnabled: boolean = false
-  onToggle: (value: boolean) => void = () => {}
-
-  build() {
-    Row() {
-      Column() {
-        Text(this.label)
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-        if (this.summary) {
-          Text(this.summary)
-            .fontSize(12)
-            .fontColor('#999999')
-            .margin({ top: 3 })
-        }
-      }
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
-
-      Toggle({ type: ToggleType.Switch, isOn: this.isEnabled })
-        .onChange((isOn: boolean) => {
-          this.onToggle(isOn)
-        })
-        .selectedColor('#007DFF')
-    }
-    .padding(15)
-    .width('100%')
-  }
-}
-
-// 带选择器的设置项组件
-@Component
-struct SettingItemWithSelector {
-  label: string = ''
-  currentValue: string = ''
-  options: string[] = []
-  onSelect: (value: string) => void = () => {}
-
-  build() {
-    Row() {
-      Text(this.label)
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
-        .layoutWeight(1)
-
-      Row() {
-        Text(this.currentValue)
-          .fontSize(14)
-          .fontColor('#666666')
-        Image($r('app.media.arrow_right'))
-          .width(20)
-          .height(20)
-          .margin({ left: 5 })
-      }
-      .onClick(() => {
-        // 显示选择器
-        this.showSelector()
-      })
-    }
-    .padding(15)
-    .width('100%')
-  }
-
-  private showSelector() {
-    // TODO: 实现选择器对话框
-    TextPickerDialog.show({
-      range: this.options,
-      selected: this.options.indexOf(this.currentValue),
-      onAccept: (value: TextPickerResult) => {
-        const index = value.index as number
-        this.onSelect(this.options[index])
-      }
-    })
-  }
-}
-
-// 带操作的设置项组件
-@Component
-struct SettingItemWithAction {
-  label: string = ''
-  summary: string = ''
-  isDestructive: boolean = false
-  onAction: () => void = () => {}
-
-  build() {
-    Row() {
-      Column() {
-        Text(this.label)
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.isDestructive ? '#FF0000' : '#000000')
-        if (this.summary) {
-          Text(this.summary)
-            .fontSize(12)
-            .fontColor('#999999')
-            .margin({ top: 3 })
-        }
-      }
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
-
-      Image($r('app.media.arrow_right'))
-        .width(20)
-        .height(20)
-    }
-    .padding(15)
-    .width('100%')
-    .onClick(() => {
-      this.onAction()
-    })
-  }
-}
-
-// 带信息的设置项组件
-@Component
-struct SettingItemWithInfo {
-  label: string = ''
-  info: string = ''
-
-  build() {
-    Row() {
-      Text(this.label)
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
-        .layoutWeight(1)
-
-      Text(this.info)
-        .fontSize(14)
-        .fontColor('#666666')
-    }
-    .padding(15)
-    .width('100%')
-  }
-}

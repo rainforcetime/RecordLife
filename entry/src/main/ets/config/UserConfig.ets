@@ -52,6 +52,16 @@ export interface ConfigMetadata {
   deviceId: string;
 }
 
+// 应用信息
+export interface AppInfo {
+  appName: string;
+  appVersion: string;
+  buildNumber: string;
+  developer: string;
+  website: string;
+  description: string;
+}
+
 // 完整的用户配置
 export interface UserConfig {
   version: string;
@@ -60,6 +70,7 @@ export interface UserConfig {
   backup: BackupConfig;
   statistics: DataStatistics;
   metadata: ConfigMetadata;
+  appInfo: AppInfo;
 }
 
 // 默认配置工厂函数
@@ -101,13 +112,23 @@ export function createDefaultConfig(): UserConfig {
     deviceId: ''
   };
   
+  const appInfo: AppInfo = {
+    appName: '记录生活',
+    appVersion: '2.1.0',
+    buildNumber: '20260521',
+    developer: 'RecordLife Team',
+    website: 'https://github.com/recordlife',
+    description: '记录生活中的每一个精彩瞬间'
+  };
+  
   const config: UserConfig = {
     version: '1.0.0',
     profile: profile,
     settings: settings,
     backup: backup,
     statistics: statistics,
-    metadata: metadata
+    metadata: metadata,
+    appInfo: appInfo
   };
   
   return config;
