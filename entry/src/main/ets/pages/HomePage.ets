@@ -1,0 +1,739 @@
+// 首页：展示用户存活时间
+import { ConfigManager } from '../config/ConfigManager';
+import { UserConfig } from '../config/UserConfig';
+
+interface TimeData {
+  years: number;
+  months: number;
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+interface DateDifference {
+  years: number;
+  months: number;
+  days: number;
+}
+
+// 可扩展的时间卡片组件
+@Component
+struct TimeCard {
+  @Prop value: number = 0;
+  @Prop label: string = '';
+  @Prop description: string = '';
+  @Prop cardColor: string = '#FFFFFF';
+  @Prop valueColor: string = '#333333';
+  @Prop labelColor: string = '#666666';
+  @Prop valueFontSize: number = 36;
+
+  build() {
+    Column() {
+      // 单位标签
+      Text(this.label)
+        .fontSize(14)
+        .fontColor(this.labelColor)
+        .margin({ bottom: 6 })
+
+      // 数值显示（防止换行）
+      Text(`${this.value}`)
+        .fontSize(this.valueFontSize)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(this.valueColor)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .margin({ bottom: 4 })
+
+      // 描述文字
+      Text(this.description)
+        .fontSize(11)
+        .fontColor('#999999')
+        .maxLines(1)
+    }
+    .width('100%')
+    .height(110)
+    .justifyContent(FlexAlign.Center)
+    .backgroundColor(this.cardColor)
+    .borderRadius(16)
+    .padding(12)
+    .shadow({
+      radius: 8,
+      color: '#15000000',
+      offsetX: 0,
+      offsetY: 2
+    })
+  }
+}
+
+// 出生日期设置组件
+@Component
+struct BirthDateSelector {
+  @Link birthDate: Date;
+  @Link targetAge: number;
+  @State showDatePicker: boolean = false;
+  @State showAgePicker: boolean = false;
+  private configManager: ConfigManager | null = null;
+
+  aboutToAppear() {
+    ConfigManager.getInstance().then(manager => {
+      this.configManager = manager;
+    });
+  }
+
+  // 格式化日期显示
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}年${month}月${day}日`;
+  }
+
+  build() {
+    Column() {
+      // 标题行：标题 + 日期 + 编辑按钮
+      Row() {
+        Text('🎂 出生日期')
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
+          .fontColor('#333333')
+
+        Blank()
+
+        // 日期显示
+        Text(this.formatDate(this.birthDate))
+          .fontSize(15)
+          .fontColor('#FF6B6B')
+          .margin({ right: 12 })
+
+        // 编辑按钮
+        Button({ type: ButtonType.Circle }) {
+          Text('✏️')
+            .fontSize(16)
+        }
+        .width(36)
+        .height(36)
+        .backgroundColor('#F5F5F5')
+        .onClick(() => {
+          this.showDatePicker = true;
+        })
+      }
+      .width('100%')
+      .height(56)
+      .padding({ left: 20, right: 20 })
+      .backgroundColor('#FFFFFF')
+      .borderRadius(16)
+      .shadow({
+        radius: 8,
+        color: '#1A000000',
+        offsetX: 0,
+        offsetY: 2
+      })
+
+      // 目标年龄设置行
+      Row() {
+        Text('🎯 目标年龄')
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
+          .fontColor('#333333')
+
+        Blank()
+
+        // 目标年龄显示
+        Text(`${this.targetAge} 岁`)
+          .fontSize(15)
+          .fontColor('#4CAF50')
+          .margin({ right: 12 })
+
+        // 编辑按钮
+        Button({ type: ButtonType.Circle }) {
+          Text('✏️')
+            .fontSize(16)
+        }
+        .width(36)
+        .height(36)
+        .backgroundColor('#F5F5F5')
+        .onClick(() => {
+          this.showAgePicker = true;
+        })
+      }
+      .width('100%')
+      .height(56)
+      .padding({ left: 20, right: 20 })
+      .backgroundColor('#FFFFFF')
+      .borderRadius(16)
+      .margin({ top: 12 })
+      .shadow({
+        radius: 8,
+        color: '#1A000000',
+        offsetX: 0,
+        offsetY: 2
+      })
+    }
+    .width('100%')
+    .bindSheet($$this.showDatePicker, this.DatePickerSheet(), {
+      height: 400,
+      backgroundColor: Color.White,
+      dragBar: true
+    })
+    .bindSheet($$this.showAgePicker, this.AgePickerSheet(), {
+      height: 350,
+      backgroundColor: Color.White,
+      dragBar: true
+    })
+  }
+
+  // 日期选择器弹窗
+  @Builder
+  DatePickerSheet() {
+    Column() {
+      Text('选择出生日期')
+        .fontSize(18)
+        .fontWeight(FontWeight.Bold)
+        .margin({ top: 20, bottom: 20 })
+
+      DatePicker({
+        selected: this.birthDate
+      })
+        .lunar(false)
+        .onDateChange((value: Date) => {
+          this.birthDate = value;
+          
+          // 保存到配置
+          if (this.configManager) {
+            const year = value.getFullYear();
+            const month = (value.getMonth() + 1).toString().padStart(2, '0');
+            const day = value.getDate().toString().padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            this.configManager.setBirthDate(dateStr);
+          }
+        })
+
+      Button('确定')
+        .width('80%')
+        .height(44)
+        .backgroundColor('#FF6B6B')
+        .fontColor(Color.White)
+        .margin({ top: 20 })
+        .onClick(() => {
+          this.showDatePicker = false;
+        })
+    }
+    .width('100%')
+    .padding(16)
+  }
+
+  // 年龄选择器弹窗
+  @Builder
+  AgePickerSheet() {
+    Column() {
+      Text('设置目标年龄')
+        .fontSize(18)
+        .fontWeight(FontWeight.Bold)
+        .margin({ top: 20, bottom: 20 })
+
+      Row() {
+        Button('-')
+          .width(50)
+          .height(50)
+          .fontSize(24)
+          .backgroundColor('#F5F5F5')
+          .fontColor('#333333')
+          .onClick(() => {
+            if (this.targetAge > 1) {
+              this.targetAge--;
+            }
+          })
+
+        Text(`${this.targetAge}`)
+          .fontSize(48)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#4CAF50')
+          .margin({ left: 30, right: 30 })
+
+        Button('+')
+          .width(50)
+          .height(50)
+          .fontSize(24)
+          .backgroundColor('#F5F5F5')
+          .fontColor('#333333')
+          .onClick(() => {
+            if (this.targetAge < 150) {
+              this.targetAge++;
+            }
+          })
+      }
+      .margin({ bottom: 20 })
+
+      Text('岁')
+        .fontSize(16)
+        .fontColor('#666666')
+
+      Button('确定')
+        .width('80%')
+        .height(44)
+        .backgroundColor('#4CAF50')
+        .fontColor(Color.White)
+        .margin({ top: 20 })
+        .onClick(() => {
+          this.showAgePicker = false;
+        })
+    }
+    .width('100%')
+    .padding(16)
+  }
+}
+
+// 首页组件
+@Component
+export struct HomePage {
+  @State timeData: TimeData = {
+    years: 0,
+    months: 0,
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  };
+  @State birthDate: Date = new Date('1990-01-01');
+  @State targetAge: number = 80; // 目标年龄，默认80岁
+  @State userConfig: UserConfig | null = null;
+  @State isAccumulatedMode: boolean = true; // true: 累计模式, false: 非累计模式
+  @State isRemainingMode: boolean = false; // true: 剩余模式, false: 已存活模式
+  
+  private configManager: ConfigManager | null = null;
+  private intervalId: number = -1;
+
+  async aboutToAppear() {
+    // 初始化配置管理器
+    this.configManager = await ConfigManager.getInstance();
+    this.userConfig = this.configManager.getConfig();
+    
+    // 加载出生日期
+    this.birthDate = this.configManager.getBirthDate();
+    
+    // 开始计算时间
+    this.calculateTime();
+    this.intervalId = setInterval(() => {
+      this.calculateTime();
+    }, 1000);
+  }
+
+  aboutToDisappear() {
+    if (this.intervalId !== -1) {
+      clearInterval(this.intervalId);
+    }
+  }
+
+  // 计算两个日期之间的精确年、月、日差
+  private getDateDifference(startDate: Date, endDate: Date): DateDifference {
+    let years = endDate.getFullYear() - startDate.getFullYear();
+    let months = endDate.getMonth() - startDate.getMonth();
+    let days = endDate.getDate() - startDate.getDate();
+
+    // 处理负数天数
+    if (days < 0) {
+      // 获取endDate上个月的天数
+      const lastDayOfPrevMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0).getDate();
+      days += lastDayOfPrevMonth;
+      months--;
+    }
+
+    // 处理负数月份
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    // 如果开始日期大于结束日期（不应该发生，但防御性处理）
+    if (years < 0) {
+      years = 0;
+      months = 0;
+      days = 0;
+    }
+
+    return { years, months, days };
+  }
+
+  // 计算数值的显示权重（基于数值位数）
+  private getValueWeight(value: number): number {
+    const digitCount = value.toString().length;
+    // 基硈权重1.0，每增加一位增加0.15权重
+    return 1.0 + (digitCount - 1) * 0.15;
+  }
+
+  // 计算存活时间
+  private calculateTime() {
+    const now = new Date();
+    
+    if (this.isRemainingMode) {
+      // 剩余模式：计算距离目标年龄的剩余时间
+      this.calculateRemainingTime(now);
+    } else {
+      // 已存活模式：计算已经存活的时间
+      this.calculateLivedTime(now);
+    }
+  }
+
+  // 计算已存活时间
+  private calculateLivedTime(now: Date) {
+    const diff = now.getTime() - this.birthDate.getTime();
+
+    if (diff < 0) {
+      // 出生日期在未来，显示0
+      this.timeData = {
+        years: 0,
+        months: 0,
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0
+      };
+      return;
+    }
+
+    // 计算总秒数、总分钟数、总小时数、总天数
+    const totalSeconds = Math.floor(diff / 1000);
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const totalHours = Math.floor(totalMinutes / 60);
+    const totalDays = Math.floor(totalHours / 24);
+
+    // 计算精确的年、月、日差
+    const dateDiff = this.getDateDifference(this.birthDate, now);
+    const years = dateDiff.years;
+    const months = dateDiff.months;
+    const days = dateDiff.days;
+    
+    // 计算总月数（年*12 + 月）
+    const totalMonths = years * 12 + months;
+
+    if (this.isAccumulatedMode) {
+      // 累计模式：所有时间单位都是累计值
+      this.timeData = {
+        years,
+        months: totalMonths, // 显示总月数
+        days: totalDays,     // 显示总天数
+        hours: totalHours,
+        minutes: totalMinutes,
+        seconds: totalSeconds
+      };
+    } else {
+      // 非累计模式：年月日显示精确差值，时分秒显示当前时间
+      this.timeData = {
+        years,
+        months: months, // 显示剩余月数
+        days: days,     // 显示剩余天数
+        hours: now.getHours(),        // 当前小时
+        minutes: now.getMinutes(),    // 当前分钟
+        seconds: now.getSeconds()     // 当前秒数
+      };
+    }
+  }
+
+  // 计算剩余时间
+  private calculateRemainingTime(now: Date) {
+    // 计算目标日期（出生日期 + 目标年龄）
+    const targetDate = new Date(this.birthDate);
+    targetDate.setFullYear(this.birthDate.getFullYear() + this.targetAge);
+
+    const diff = targetDate.getTime() - now.getTime();
+
+    if (diff < 0) {
+      // 已超过目标年龄，显示0
+      this.timeData = {
+        years: 0,
+        months: 0,
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0
+      };
+      return;
+    }
+
+    // 计算总秒数、总分钟数、总小时数、总天数
+    const totalSeconds = Math.floor(diff / 1000);
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const totalHours = Math.floor(totalMinutes / 60);
+    const totalDays = Math.floor(totalHours / 24);
+
+    // 计算精确的年、月、日差
+    const dateDiff = this.getDateDifference(now, targetDate);
+    const years = dateDiff.years;
+    const months = dateDiff.months;
+    const days = dateDiff.days;
+    
+    // 计算总月数（年*12 + 月）
+    const totalMonths = years * 12 + months;
+
+    if (this.isAccumulatedMode) {
+      // 累计模式：所有时间单位都是累计值
+      this.timeData = {
+        years,
+        months: totalMonths, // 显示总月数
+        days: totalDays,     // 显示总天数
+        hours: totalHours,
+        minutes: totalMinutes,
+        seconds: totalSeconds
+      };
+    } else {
+      // 非累计模式：年月日显示精确差值，时分秒显示剩余时间
+      // 计算当前时间到目标时间的时分秒
+      const todayEnd = new Date(now);
+      todayEnd.setHours(23, 59, 59, 999);
+      const secondsUntilEndOfDay = Math.floor((todayEnd.getTime() - now.getTime()) / 1000);
+      
+      this.timeData = {
+        years,
+        months: months, // 显示剩余月数
+        days: days,     // 显示剩余天数
+        hours: Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)),
+        minutes: Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000)),
+        seconds: Math.floor((diff % (60 * 1000)) / 1000)
+      };
+    }
+  }
+
+  build() {
+    Scroll() {
+      Column() {
+        // 标题区域
+        Column() {
+          Text('活着')
+            .fontSize(32)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#333333')
+            .letterSpacing(2)
+
+          Text('记录生命的每一刻')
+            .fontSize(14)
+            .fontColor('#999999')
+            .margin({ top: 6 })
+        }
+        .width('100%')
+        .alignItems(HorizontalAlign.Center)
+        .padding({ top: 32, bottom: 20 })
+
+        // 出生日期设置组件
+        BirthDateSelector({ birthDate: $birthDate, targetAge: $targetAge })
+
+        // 时间卡片组（弹性布局，自动换行）
+        Column() {
+          // 标题
+          Row() {
+            Text(this.isRemainingMode ? '⏳ 剩余时间' : '⏱️ 存活时间')
+              .fontSize(16)
+              .fontWeight(FontWeight.Medium)
+              .fontColor('#333333')
+            
+            Blank()
+            
+            // 主模式切换栏（已存活/剩余）
+            Row() {
+              Text('已存活')
+                .fontSize(12)
+                .fontColor(!this.isRemainingMode ? '#FFFFFF' : '#666666')
+                .fontWeight(!this.isRemainingMode ? FontWeight.Medium : FontWeight.Normal)
+                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                .backgroundColor(!this.isRemainingMode ? '#FF6B6B' : 'transparent')
+                .borderRadius(12)
+                .onClick(() => {
+                  if (this.isRemainingMode) {
+                    this.isRemainingMode = false;
+                    this.calculateTime();
+                  }
+                })
+              
+              Text('剩余')
+                .fontSize(12)
+                .fontColor(this.isRemainingMode ? '#FFFFFF' : '#666666')
+                .fontWeight(this.isRemainingMode ? FontWeight.Medium : FontWeight.Normal)
+                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                .backgroundColor(this.isRemainingMode ? '#4CAF50' : 'transparent')
+                .borderRadius(12)
+                .onClick(() => {
+                  if (!this.isRemainingMode) {
+                    this.isRemainingMode = true;
+                    this.calculateTime();
+                  }
+                })
+            }
+            .backgroundColor('#F5F5F5')
+            .borderRadius(16)
+            .padding(2)
+          }
+          .width('100%')
+          .margin({ bottom: 12 })
+
+          // 累计模式切换栏
+          Row() {
+            Text(this.isRemainingMode ? '剩余计算方式' : '存活计算方式')
+              .fontSize(14)
+              .fontColor('#666666')
+            
+            Blank()
+            
+            Row() {
+              Text('累计模式')
+                .fontSize(12)
+                .fontColor(this.isAccumulatedMode ? '#FFFFFF' : '#666666')
+                .fontWeight(this.isAccumulatedMode ? FontWeight.Medium : FontWeight.Normal)
+                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                .backgroundColor(this.isAccumulatedMode ? (this.isRemainingMode ? '#4CAF50' : '#FF6B6B') : 'transparent')
+                .borderRadius(12)
+                .onClick(() => {
+                  if (!this.isAccumulatedMode) {
+                    this.isAccumulatedMode = true;
+                    this.calculateTime();
+                  }
+                })
+              
+              Text('非累计模式')
+                .fontSize(12)
+                .fontColor(!this.isAccumulatedMode ? '#FFFFFF' : '#666666')
+                .fontWeight(!this.isAccumulatedMode ? FontWeight.Medium : FontWeight.Normal)
+                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                .backgroundColor(!this.isAccumulatedMode ? (this.isRemainingMode ? '#4CAF50' : '#FF6B6B') : 'transparent')
+                .borderRadius(12)
+                .onClick(() => {
+                  if (this.isAccumulatedMode) {
+                    this.isAccumulatedMode = false;
+                    this.calculateTime();
+                  }
+                })
+            }
+            .backgroundColor('#F5F5F5')
+            .borderRadius(16)
+            .padding(2)
+          }
+          .width('100%')
+          .margin({ bottom: 16 })
+
+          // 时间卡片布局
+          Column() {
+            // 第一行：年月日（根据数值长度自适应宽度）
+            Row() {
+              Column() {
+                TimeCard({
+                  value: this.timeData.years,
+                  label: '年',
+                  description: this.isRemainingMode ? '剩余年数' : '已经存活',
+                  cardColor: this.isRemainingMode ? '#E8F5E9' : '#FFE8E8',
+                  valueColor: this.isRemainingMode ? '#4CAF50' : '#FF6B6B',
+                  valueFontSize: 28
+                })
+              }
+              .layoutWeight(this.getValueWeight(this.timeData.years))
+              .margin({ right: 8 })
+
+              Column() {
+                TimeCard({
+                  value: this.timeData.months,
+                  label: '月',
+                  description: this.isAccumulatedMode ? 
+                    (this.isRemainingMode ? '剩余总月数' : '累计月数') : 
+                    (this.isRemainingMode ? '剩余月数' : '当前月数'),
+                  cardColor: '#FFF3E0',
+                  valueColor: '#FFA726',
+                  valueFontSize: 28
+                })
+              }
+              .layoutWeight(this.getValueWeight(this.timeData.months))
+              .margin({ right: 8 })
+
+              Column() {
+                TimeCard({
+                  value: this.timeData.days,
+                  label: '日',
+                  description: this.isAccumulatedMode ? 
+                    (this.isRemainingMode ? '剩余总天数' : '累计天数') : 
+                    (this.isRemainingMode ? '剩余天数' : '当前天数'),
+                  cardColor: '#E8F5E9',
+                  valueColor: '#66BB6A',
+                  valueFontSize: 28
+                })
+              }
+              .layoutWeight(this.getValueWeight(this.timeData.days))
+            }
+            .width('100%')
+            .margin({ bottom: 12 })
+
+            // 第二行：时
+            Row() {
+              Column() {
+                TimeCard({
+                  value: this.timeData.hours,
+                  label: '小时',
+                  description: this.isAccumulatedMode ? 
+                    (this.isRemainingMode ? '剩余总小时数' : '累计小时数') : 
+                    (this.isRemainingMode ? '剩余小时' : '当前小时'),
+                  cardColor: '#E3F2FD',
+                  valueColor: '#42A5F5'
+                })
+              }
+              .layoutWeight(1)
+            }
+            .width('100%')
+            .margin({ bottom: 12 })
+
+            // 第三行：分
+            Row() {
+              Column() {
+                TimeCard({
+                  value: this.timeData.minutes,
+                  label: '分钟',
+                  description: this.isAccumulatedMode ? 
+                    (this.isRemainingMode ? '剩余总分钟数' : '累计分钟数') : 
+                    (this.isRemainingMode ? '剩余分钟' : '当前分钟'),
+                  cardColor: '#F3E5F5',
+                  valueColor: '#AB47BC'
+                })
+              }
+              .layoutWeight(1)
+            }
+            .width('100%')
+            .margin({ bottom: 12 })
+
+            // 第四行：秒
+            Row() {
+              Column() {
+                TimeCard({
+                  value: this.timeData.seconds,
+                  label: '秒',
+                  description: this.isAccumulatedMode ? 
+                    (this.isRemainingMode ? '剩余总秒数' : '累计秒数') : 
+                    (this.isRemainingMode ? '剩余秒数' : '当前秒数'),
+                  cardColor: '#FFFDE7',
+                  valueColor: '#FFEE58'
+                })
+              }
+              .layoutWeight(1)
+            }
+            .width('100%')
+          }
+          .width('100%')
+        }
+        .width('100%')
+        .padding(20)
+        .margin({ top: 16 })
+        .backgroundColor('#FFFFFF')
+        .borderRadius(16)
+        .shadow({
+          radius: 12,
+          color: '#1A000000',
+          offsetX: 0,
+          offsetY: 4
+        })
+
+      }
+      .width('100%')
+      .backgroundColor('#F8F9FA')
+      .padding({ left: 16, right: 16, bottom: 16 })
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#F8F9FA')
+    .scrollBar(BarState.Off)
+    .edgeEffect(EdgeEffect.Spring)
+  }
+}
