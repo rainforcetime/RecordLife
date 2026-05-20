@@ -7,6 +7,7 @@
 import preferences from '@ohos.data.preferences';
 import common from '@ohos.app.ability.common';
 import { UserConfig, UserProfile, AppSettings, BackupConfig, DataStatistics, ConfigMetadata, createDefaultConfig, validateConfig } from './UserConfig';
+import { TimeUtils } from './TimeUtils';
 
 // 导出数据接口
 interface ExportData {
@@ -174,12 +175,11 @@ export class ConfigManager {
     return await this.saveConfig();
   }
 
-  // 获取出生日期（返回UTC日期）
+  // 获取出生日期（返回UTC+8时区日期）
   getBirthDate(): Date {
     const config = this.getConfig();
-    // 将 YYYY-MM-DD 格式转换为 UTC 日期
-    // 添加 'T00:00:00Z' 确保解析为 UTC 时间
-    return new Date(config.profile.birthDate + 'T00:00:00Z');
+    // 使用TimeUtils解析日期（UTC+8时区）
+    return TimeUtils.parseDate(config.profile.birthDate);
   }
 
   // 导出配置 (用于备份)
@@ -236,13 +236,13 @@ export class ConfigManager {
     return await this.saveConfig();
   }
 
-  // 更新统计信息
+  // 更新统计信息（使用UTC+8时区）
   async updateStatistics(): Promise<void> {
     if (!this.config) {
       return;
     }
 
-    const now = new Date();
+    const now = TimeUtils.now();
     const lastActive = new Date(this.config.statistics.lastActiveTime);
     const daysDiff = Math.floor((now.getTime() - lastActive.getTime()) / (1000 * 60 * 60 * 24));
 

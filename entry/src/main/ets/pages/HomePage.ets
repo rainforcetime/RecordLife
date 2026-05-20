@@ -1,6 +1,7 @@
 // 首页：展示用户存活时间
 import { ConfigManager } from '../config/ConfigManager';
 import { UserConfig } from '../config/UserConfig';
+import { TimeUtils } from '../config/TimeUtils';
 
 interface TimeData {
   years: number;
@@ -66,13 +67,11 @@ struct TimeCard {
   }
 }
 
-// 出生日期设置组件
+// 出生日期选择组件
 @Component
-struct BirthDateSelector {
+struct BirthDateRow {
   @Link birthDate: Date;
-  @Link targetAge: number;
   @State showDatePicker: boolean = false;
-  @State showAgePicker: boolean = false;
   private configManager: ConfigManager | null = null;
 
   aboutToAppear() {
@@ -81,103 +80,51 @@ struct BirthDateSelector {
     });
   }
 
-  // 格式化日期显示
+  // 格式化日期显示（使用UTC+8时区）
   private formatDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${year}年${month}月${day}日`;
+    return TimeUtils.formatDateCN(date);
   }
 
   build() {
-    Column() {
-      // 标题行：标题 + 日期 + 编辑按钮
-      Row() {
-        Text('🎂 出生日期')
+    Row() {
+      Text('🎂 出生日期')
+        .fontSize(16)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('#333333')
+
+      Blank()
+
+      // 日期显示
+      Text(this.formatDate(this.birthDate))
+        .fontSize(15)
+        .fontColor('#FF6B6B')
+        .margin({ right: 12 })
+
+      // 编辑按钮
+      Button({ type: ButtonType.Circle }) {
+        Text('✏️')
           .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-          .fontColor('#333333')
-
-        Blank()
-
-        // 日期显示
-        Text(this.formatDate(this.birthDate))
-          .fontSize(15)
-          .fontColor('#FF6B6B')
-          .margin({ right: 12 })
-
-        // 编辑按钮
-        Button({ type: ButtonType.Circle }) {
-          Text('✏️')
-            .fontSize(16)
-        }
-        .width(36)
-        .height(36)
-        .backgroundColor('#F5F5F5')
-        .onClick(() => {
-          this.showDatePicker = true;
-        })
       }
-      .width('100%')
-      .height(56)
-      .padding({ left: 20, right: 20 })
-      .backgroundColor('#FFFFFF')
-      .borderRadius(16)
-      .shadow({
-        radius: 8,
-        color: '#1A000000',
-        offsetX: 0,
-        offsetY: 2
-      })
-
-      // 目标年龄设置行
-      Row() {
-        Text('🎯 目标年龄')
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-          .fontColor('#333333')
-
-        Blank()
-
-        // 目标年龄显示
-        Text(`${this.targetAge} 岁`)
-          .fontSize(15)
-          .fontColor('#4CAF50')
-          .margin({ right: 12 })
-
-        // 编辑按钮
-        Button({ type: ButtonType.Circle }) {
-          Text('✏️')
-            .fontSize(16)
-        }
-        .width(36)
-        .height(36)
-        .backgroundColor('#F5F5F5')
-        .onClick(() => {
-          this.showAgePicker = true;
-        })
-      }
-      .width('100%')
-      .height(56)
-      .padding({ left: 20, right: 20 })
-      .backgroundColor('#FFFFFF')
-      .borderRadius(16)
-      .margin({ top: 12 })
-      .shadow({
-        radius: 8,
-        color: '#1A000000',
-        offsetX: 0,
-        offsetY: 2
+      .width(36)
+      .height(36)
+      .backgroundColor('#F5F5F5')
+      .onClick(() => {
+        this.showDatePicker = true;
       })
     }
     .width('100%')
+    .height(56)
+    .padding({ left: 20, right: 20 })
+    .backgroundColor('#FFFFFF')
+    .borderRadius(16)
+    .shadow({
+      radius: 8,
+      color: '#1A000000',
+      offsetX: 0,
+      offsetY: 2
+    })
     .bindSheet($$this.showDatePicker, this.DatePickerSheet(), {
       height: 400,
-      backgroundColor: Color.White,
-      dragBar: true
-    })
-    .bindSheet($$this.showAgePicker, this.AgePickerSheet(), {
-      height: 350,
       backgroundColor: Color.White,
       dragBar: true
     })
@@ -199,12 +146,9 @@ struct BirthDateSelector {
         .onDateChange((value: Date) => {
           this.birthDate = value;
           
-          // 保存到配置
+          // 保存到配置（使用UTC+8时区）
           if (this.configManager) {
-            const year = value.getFullYear();
-            const month = (value.getMonth() + 1).toString().padStart(2, '0');
-            const day = value.getDate().toString().padStart(2, '0');
-            const dateStr = `${year}-${month}-${day}`;
+            const dateStr = TimeUtils.formatDate(value);
             this.configManager.setBirthDate(dateStr);
           }
         })
@@ -221,6 +165,59 @@ struct BirthDateSelector {
     }
     .width('100%')
     .padding(16)
+  }
+}
+
+// 目标年龄选择组件
+@Component
+struct TargetAgeRow {
+  @Link targetAge: number;
+  @State showAgePicker: boolean = false;
+
+  build() {
+    Row() {
+      Text('🎯 目标年龄')
+        .fontSize(16)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('#333333')
+
+      Blank()
+
+      // 目标年龄显示
+      Text(`${this.targetAge} 岁`)
+        .fontSize(15)
+        .fontColor('#4CAF50')
+        .margin({ right: 12 })
+
+      // 编辑按钮
+      Button({ type: ButtonType.Circle }) {
+        Text('✏️')
+          .fontSize(16)
+      }
+      .width(36)
+      .height(36)
+      .backgroundColor('#F5F5F5')
+      .onClick(() => {
+        this.showAgePicker = true;
+      })
+    }
+    .width('100%')
+    .height(56)
+    .padding({ left: 20, right: 20 })
+    .backgroundColor('#FFFFFF')
+    .borderRadius(16)
+    .margin({ top: 12 })
+    .shadow({
+      radius: 8,
+      color: '#1A000000',
+      offsetX: 0,
+      offsetY: 2
+    })
+    .bindSheet($$this.showAgePicker, this.AgePickerSheet(), {
+      height: 350,
+      backgroundColor: Color.White,
+      dragBar: true
+    })
   }
 
   // 年龄选择器弹窗
@@ -284,6 +281,24 @@ struct BirthDateSelector {
   }
 }
 
+// 出生日期设置组件
+@Component
+struct BirthDateSelector {
+  @Link birthDate: Date;
+  @Link targetAge: number;
+
+  build() {
+    Column() {
+      // 出生日期行
+      BirthDateRow({ birthDate: $birthDate })
+      
+      // 目标年龄行
+      TargetAgeRow({ targetAge: $targetAge })
+    }
+    .width('100%')
+  }
+}
+
 // 首页组件
 @Component
 export struct HomePage {
@@ -295,7 +310,7 @@ export struct HomePage {
     minutes: 0,
     seconds: 0
   };
-  @State birthDate: Date = new Date('1990-01-01');
+  @State birthDate: Date = new Date('1990-01-01T00:00:00Z');
   @State targetAge: number = 80; // 目标年龄，默认80岁
   @State userConfig: UserConfig | null = null;
   @State isAccumulatedMode: boolean = true; // true: 累计模式, false: 非累计模式
@@ -325,34 +340,9 @@ export struct HomePage {
     }
   }
 
-  // 计算两个日期之间的精确年、月、日差
+  // 计算两个日期之间的精确年、月、日差（使用UTC+8时区）
   private getDateDifference(startDate: Date, endDate: Date): DateDifference {
-    let years = endDate.getFullYear() - startDate.getFullYear();
-    let months = endDate.getMonth() - startDate.getMonth();
-    let days = endDate.getDate() - startDate.getDate();
-
-    // 处理负数天数
-    if (days < 0) {
-      // 获取endDate上个月的天数
-      const lastDayOfPrevMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0).getDate();
-      days += lastDayOfPrevMonth;
-      months--;
-    }
-
-    // 处理负数月份
-    if (months < 0) {
-      years--;
-      months += 12;
-    }
-
-    // 如果开始日期大于结束日期（不应该发生，但防御性处理）
-    if (years < 0) {
-      years = 0;
-      months = 0;
-      days = 0;
-    }
-
-    return { years, months, days };
+    return TimeUtils.getDateDifference(startDate, endDate);
   }
 
   // 计算数值的显示权重（基于数值位数）
@@ -362,9 +352,9 @@ export struct HomePage {
     return 1.0 + (digitCount - 1) * 0.15;
   }
 
-  // 计算存活时间
+  // 计算存活时间（使用UTC+8时区）
   private calculateTime() {
-    const now = new Date();
+    const now = TimeUtils.now();
     
     if (this.isRemainingMode) {
       // 剩余模式：计算距离目标年龄的剩余时间
@@ -418,23 +408,23 @@ export struct HomePage {
         seconds: totalSeconds
       };
     } else {
-      // 非累计模式：年月日显示精确差值，时分秒显示当前时间
+      // 非累计模式：年月日显示精确差值，时分秒显示当前时间（UTC+8时区）
       this.timeData = {
         years,
         months: months, // 显示剩余月数
         days: days,     // 显示剩余天数
-        hours: now.getHours(),        // 当前小时
-        minutes: now.getMinutes(),    // 当前分钟
-        seconds: now.getSeconds()     // 当前秒数
+        hours: TimeUtils.getHours(now),        // UTC+8时区当前小时
+        minutes: TimeUtils.getMinutes(now),    // UTC+8时区当前分钟
+        seconds: TimeUtils.getSeconds(now)     // UTC+8时区当前秒数
       };
     }
   }
 
-  // 计算剩余时间
+  // 计算剩余时间（使用UTC+8时区）
   private calculateRemainingTime(now: Date) {
-    // 计算目标日期（出生日期 + 目标年龄）
+    // 计算目标日期（出生日期 + 目标年龄），使用UTC+8时区
     const targetDate = new Date(this.birthDate);
-    targetDate.setFullYear(this.birthDate.getFullYear() + this.targetAge);
+    TimeUtils.setFullYear(targetDate, TimeUtils.getFullYear(this.birthDate) + this.targetAge);
 
     const diff = targetDate.getTime() - now.getTime();
 
@@ -479,10 +469,6 @@ export struct HomePage {
     } else {
       // 非累计模式：年月日显示精确差值，时分秒显示剩余时间
       // 计算当前时间到目标时间的时分秒
-      const todayEnd = new Date(now);
-      todayEnd.setHours(23, 59, 59, 999);
-      const secondsUntilEndOfDay = Math.floor((todayEnd.getTime() - now.getTime()) / 1000);
-      
       this.timeData = {
         years,
         months: months, // 显示剩余月数

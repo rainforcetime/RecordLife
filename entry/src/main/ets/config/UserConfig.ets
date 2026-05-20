@@ -3,6 +3,8 @@
  * 扩展性良好的配置结构，支持后续备份功能
  */
 
+import { TimeUtils } from './TimeUtils';
+
 // 云备份配置
 export interface CloudBackupConfig {
   enabled: boolean;
@@ -119,10 +121,10 @@ export function validateConfig(config: UserConfig): boolean {
     return false;
   }
 
-  // 验证出生日期是否合理
-  const birthDate = new Date(config.profile.birthDate);
-  const now = new Date();
-  if (birthDate > now || birthDate.getFullYear() < 1900) {
+  // 验证出生日期是否合理（使用UTC+8时区）
+  const birthDate = TimeUtils.parseDate(config.profile.birthDate);
+  const now = TimeUtils.now();
+  if (birthDate.getTime() > now.getTime() || TimeUtils.getFullYear(birthDate) < 1900) {
     return false;
   }
 
