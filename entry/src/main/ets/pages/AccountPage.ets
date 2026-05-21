@@ -347,16 +347,8 @@ export struct AccountPage {
           .color(this.themeColors.divider)
           .margin({ top: 10, bottom: 10 })
 
-        // 数据统计区域
+        // 数据统计小文字（底部）
         this.DataStatisticsSection()
-
-        // 分隔线
-        Divider()
-          .color(this.themeColors.divider)
-          .margin({ top: 10, bottom: 10 })
-
-        // 其他功能区域
-        this.OtherFunctionsSection()
       }
       .width('100%')
     }
@@ -478,6 +470,19 @@ export struct AccountPage {
       .onClick(() => {
         this.onAboutApp()
       })
+
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
+
+      // 更多设置
+      SettingItem({
+        label: '更多',
+        summary: '导入配置、导出配置、重置应用'
+      })
+      .onClick(() => {
+        this.onMoreSettings()
+      })
     }
     .width('100%')
     .backgroundColor(this.themeColors.cardBackground)
@@ -485,111 +490,33 @@ export struct AccountPage {
     .margin({ left: 15, right: 15 })
   }
 
-  // 数据统计区域组件
+  // 数据统计区域组件（小文字显示）
   @Builder
   DataStatisticsSection() {
-    Column() {
-      Text('数据统计')
-        .fontSize(18)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.themeColors.textPrimary)
-        .margin({ top: 10, bottom: 10 })
-        .width('100%')
-        .padding({ left: 15 })
-
-      Row() {
-        // 使用天数
-        Column() {
-          Text(this.usageDays.toString())
-            .fontSize(24)
-            .fontColor(this.themeColors.primary)
-            .fontWeight(FontWeight.Bold)
-          Text('使用天数')
-            .fontSize(12)
-            .fontColor(this.themeColors.textSecondary)
-            .margin({ top: 5 })
-        }
-        .layoutWeight(1)
-
-        // 数据版本
-        Column() {
-          Text(this.dataVersion)
-            .fontSize(24)
-            .fontColor(this.themeColors.primary)
-            .fontWeight(FontWeight.Bold)
-          Text('数据版本')
-            .fontSize(12)
-            .fontColor(this.themeColors.textSecondary)
-            .margin({ top: 5 })
-        }
-        .layoutWeight(1)
-
-        // 最后活跃时间
-        Column() {
-          Text('今天')
-            .fontSize(24)
-            .fontColor(this.themeColors.primary)
-            .fontWeight(FontWeight.Bold)
-          Text('最后活跃')
-            .fontSize(12)
-            .fontColor(this.themeColors.textSecondary)
-            .margin({ top: 5 })
-        }
-        .layoutWeight(1)
-      }
-      .width('100%')
-      .padding({ left: 15, right: 15, bottom: 15 })
+    Row() {
+      Text(`已使用 ${this.usageDays} 天`)
+        .fontSize(12)
+        .fontColor(this.themeColors.textSecondary)
+      
+      Text(' · ')
+        .fontSize(12)
+        .fontColor(this.themeColors.textSecondary)
+      
+      Text(`数据版本 ${this.dataVersion}`)
+        .fontSize(12)
+        .fontColor(this.themeColors.textSecondary)
+      
+      Text(' · ')
+        .fontSize(12)
+        .fontColor(this.themeColors.textSecondary)
+      
+      Text(`最后活跃 ${this.lastActiveTime}`)
+        .fontSize(12)
+        .fontColor(this.themeColors.textSecondary)
     }
     .width('100%')
-    .backgroundColor(this.themeColors.cardBackground)
-    .borderRadius(10)
-    .margin({ left: 15, right: 15 })
-  }
-
-  // 其他功能区域组件
-  @Builder
-  OtherFunctionsSection() {
-    Column() {
-      // 导出配置
-      SettingItemWithAction({
-        label: '导出配置',
-        summary: '导出应用配置文件',
-        onAction: () => {
-          this.onExportConfig()
-        }
-      })
-
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-
-      // 导入配置
-      SettingItemWithAction({
-        label: '导入配置',
-        summary: '从文件导入配置',
-        onAction: () => {
-          this.onImportConfig()
-        }
-      })
-
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-
-      // 重置应用
-      SettingItemWithAction({
-        label: '重置应用',
-        summary: '恢复默认设置',
-        isDestructive: true,
-        onAction: () => {
-          this.onResetApp()
-        }
-      })
-    }
-    .width('100%')
-    .backgroundColor(this.themeColors.cardBackground)
-    .borderRadius(10)
-    .margin({ left: 15, right: 15 })
+    .justifyContent(FlexAlign.Center)
+    .margin({ top: 20, bottom: 15 })
   }
 
   // 头像更换处理
@@ -742,57 +669,19 @@ export struct AccountPage {
     }
   }
 
-  // 导出配置处理
-  private onExportConfig() {
-    console.log('导出配置')
-    // TODO: 实现配置导出逻辑
-    this.getUIContext().showAlertDialog({
-      title: '导出配置',
-      message: '配置已导出到: /Documents/RecordLife/config.json',
-      confirm: {
-        value: '确定',
-        action: () => {}
-      }
-    })
-  }
-
-  // 导入配置处理
-  private onImportConfig() {
-    console.log('导入配置')
-    // TODO: 实现配置导入逻辑
-    this.getUIContext().showAlertDialog({
-      title: '导入配置',
-      message: '请选择配置文件',
-      confirm: {
-        value: '确定',
-        action: () => {}
-      }
-    })
-  }
-
-  // 重置应用处理
-  private onResetApp() {
-    this.getUIContext().showAlertDialog({
-      title: '重置应用',
-      message: '确定要重置应用吗？此操作不可恢复。',
-      primaryButton: {
-        value: '取消',
-        action: () => {}
-      },
-      secondaryButton: {
-        value: '确定',
-        action: () => {
-          console.log('重置应用')
-          // TODO: 实现应用重置逻辑
-        }
-      }
-    })
-  }
-
   // 关于应用处理
   private onAboutApp() {
     console.log('关于应用')
     this.aboutAppDialog.open()
+  }
+
+  // 更多设置处理
+  private onMoreSettings() {
+    console.log('更多设置')
+    // 跳转到更多设置页面
+    this.getUIContext().getRouter().pushUrl({
+      url: 'pages/MorePage'
+    })
   }
 }
 
