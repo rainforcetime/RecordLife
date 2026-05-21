@@ -124,7 +124,7 @@ export class AccountViewModel {
       appVersion: '2.1.0',
       buildNumber: '20260521',
       developer: 'RecordLife Team',
-      website: 'https://github.com/recordlife',
+      website: 'https://github.com/rainforcetime/record-life',
       description: '记录生活中的每一个精彩瞬间'
     }
 
