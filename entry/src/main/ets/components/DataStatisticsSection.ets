@@ -6,6 +6,7 @@ export interface DataStatisticsInfo {
   usageDays: number
   dataVersion: string
   lastActiveTime: string
+  storageSize: string
 }
 
 @Component
@@ -17,7 +18,8 @@ export struct DataStatisticsSection {
   @Prop statisticsInfo: DataStatisticsInfo = {
     usageDays: 0,
     dataVersion: 'v1.0.0',
-    lastActiveTime: ''
+    lastActiveTime: '',
+    storageSize: '计算中...'
   }
 
   build() {
@@ -59,15 +61,15 @@ export struct DataStatisticsSection {
         this.StatisticCard(
           $r('sys.symbol.clock'),
           '最后活跃',
-          this.statisticsInfo.lastActiveTime,
+          this.statisticsInfo.lastActiveTime || '未记录',
           this.themeColors.info
         )
 
-        // 占位卡片（保持对称）
+        // 存储空间卡片
         this.StatisticCard(
           $r('sys.symbol.externaldrive'),
           '存储空间',
-          '计算中...',
+          this.statisticsInfo.storageSize,
           this.themeColors.warning
         )
       }

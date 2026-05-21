@@ -32,9 +32,10 @@ export struct AccountPage {
   
   // 数据统计
   @State statisticsInfo: DataStatisticsInfo = {
-    usageDays: 128,
-    dataVersion: 'v2.1.0',
-    lastActiveTime: '2026-05-20 14:30'
+    usageDays: 0,
+    dataVersion: 'v1.0.0',
+    lastActiveTime: '',
+    storageSize: '计算中...'
   }
   
   // 应用信息
@@ -43,7 +44,7 @@ export struct AccountPage {
     appVersion: '2.1.0',
     buildNumber: '20260521',
     developer: 'RecordLife Team',
-    website: 'https://github.com/recordlife',
+    website: 'https://gitee.com/recordlife',
     description: '记录生活中的每一个精彩瞬间'
   }
   
@@ -97,6 +98,9 @@ export struct AccountPage {
       
       // 加载保存的头像
       await this.loadSavedAvatar()
+      
+      // 加载数据统计信息
+      await this.loadDataStatistics()
     } catch (error) {
       console.error('AccountPage 初始化失败: ' + JSON.stringify(error))
     }
@@ -120,6 +124,15 @@ export struct AccountPage {
   private async loadAppInfo() {
     this.appInfo = await this.viewModel.loadAppInfo()
     this.statisticsInfo.dataVersion = `v${this.appInfo.appVersion}`
+  }
+
+  // 加载数据统计信息
+  private async loadDataStatistics() {
+    const statistics = await this.viewModel.loadDataStatistics()
+    this.statisticsInfo.usageDays = statistics.usageDays
+    this.statisticsInfo.dataVersion = statistics.dataVersion
+    this.statisticsInfo.lastActiveTime = statistics.lastActiveTime
+    this.statisticsInfo.storageSize = statistics.storageSize
   }
   
   // 加载保存的头像
