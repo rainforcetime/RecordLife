@@ -32,8 +32,9 @@ export struct SettingItemWithSelector {
   }
 
   private showSelector() {
-    // TODO: 实现选择器对话框
-    TextPickerDialog.show({
+    // 使用UIContext.showTextPickerDialog替代已废弃的TextPickerDialog.show
+    const uiContext = this.getUIContext()
+    uiContext.showTextPickerDialog({
       range: this.options,
       selected: this.options.indexOf(this.currentValue),
       onAccept: (value: TextPickerResult) => {
