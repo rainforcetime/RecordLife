@@ -2,7 +2,7 @@
 @Component
 export struct SettingItemWithSelector {
   label: string = ''
-  currentValue: string = ''
+  @Prop currentValue: string = ''
   options: string[] = []
   onSelect: (value: string) => void = () => {}
 
