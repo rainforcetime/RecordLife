@@ -43,7 +43,11 @@ export default class EntryAbility extends UIAbility {
     } catch (err) {
       hilog.error(DOMAIN, 'testTag', 'Failed to init theme. Cause: %{public}s', JSON.stringify(err));
       // 失败时使用默认跟随系统模式
-      this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
+      try {
+        this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
+      } catch (e) {
+        hilog.error(DOMAIN, 'testTag', 'Failed to set default color mode. Cause: %{public}s', JSON.stringify(e));
+      }
       
       // 初始化默认主题
       const themeManager = ThemeManager.getInstance();

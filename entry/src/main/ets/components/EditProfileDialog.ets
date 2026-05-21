@@ -72,11 +72,11 @@ export struct EditProfileDialog {
           selected: this.parseDate(this.editBirthday)
         })
           .lunar(false)
-          .onChange((value: DatePickerResult) => {
+          .onDateChange((value: Date) => {
             // 格式化日期为 YYYY-MM-DD
-            const year = value.year
-            const month = ((value.month ?? 0) + 1).toString().padStart(2, '0')
-            const day = (value.day ?? 1).toString().padStart(2, '0')
+            const year = value.getFullYear()
+            const month = (value.getMonth() + 1).toString().padStart(2, '0')
+            const day = value.getDate().toString().padStart(2, '0')
             this.editBirthday = `${year}-${month}-${day}`
           })
       }
