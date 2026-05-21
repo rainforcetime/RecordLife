@@ -1,8 +1,12 @@
 // 基础设置项组件（带箭头）
+import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
+
 @Component
 export struct SettingItem {
   label: string = ''
   summary: string = ''
+  // 直接从 AppStorage 监听主题变化
+  @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
 
   build() {
     Row() {
@@ -10,10 +14,11 @@ export struct SettingItem {
         Text(this.label)
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
+          .fontColor(this.themeColors.textPrimary)
         if (this.summary) {
           Text(this.summary)
             .fontSize(12)
-            .fontColor('#999999')
+            .fontColor(this.themeColors.textSecondary)
             .margin({ top: 3 })
         }
       }
@@ -23,6 +28,7 @@ export struct SettingItem {
       Image($r('app.media.arrow_right'))
         .width(20)
         .height(20)
+        .fillColor(this.themeColors.iconColor)
     }
     .padding(15)
     .width('100%')

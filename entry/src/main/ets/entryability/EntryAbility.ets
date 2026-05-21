@@ -36,9 +36,6 @@ export default class EntryAbility extends UIAbility {
       const colorMode = this.themeToColorMode(theme);
       this.context.getApplicationContext().setColorMode(colorMode);
       
-      // 保存当前主题到 AppStorage，供页面监听
-      AppStorage.setOrCreate('currentTheme', theme);
-      
       hilog.info(DOMAIN, 'testTag', 'Theme initialized: %{public}s', theme);
     } catch (err) {
       hilog.error(DOMAIN, 'testTag', 'Failed to init theme. Cause: %{public}s', JSON.stringify(err));
@@ -69,11 +66,8 @@ export default class EntryAbility extends UIAbility {
     hilog.info(DOMAIN, 'testTag', 'Configuration updated: %{public}s', JSON.stringify(newConfig));
     
     // 如果当前是跟随系统模式，更新 AppStorage 中的主题状态
-    const currentTheme = AppStorage.get('currentTheme') as string;
+    const currentTheme = AppStorage.get('appTheme') as string;
     if (currentTheme === 'auto') {
-      // 通知页面系统主题已变化
-      AppStorage.setOrCreate('systemColorMode', newConfig.colorMode);
-      
       // 通知主题管理器系统主题已变化
       const themeManager = await ThemeManager.getInstance();
       themeManager.onSystemColorModeChange(newConfig.colorMode);

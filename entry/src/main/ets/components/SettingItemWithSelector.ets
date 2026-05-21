@@ -1,9 +1,13 @@
 // 带选择器的设置项组件
+import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
+
 @Component
 export struct SettingItemWithSelector {
   label: string = ''
   @Prop currentValue: string = ''
   options: string[] = []
+  // 直接从 AppStorage 监听主题变化
+  @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
   onSelect: (value: string) => void = () => {}
 
   build() {
@@ -11,15 +15,17 @@ export struct SettingItemWithSelector {
       Text(this.label)
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
+        .fontColor(this.themeColors.textPrimary)
         .layoutWeight(1)
 
       Row() {
         Text(this.currentValue)
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor(this.themeColors.textSecondary)
         Image($r('app.media.arrow_right'))
           .width(20)
           .height(20)
+          .fillColor(this.themeColors.iconColor)
           .margin({ left: 5 })
       }
       .onClick(() => {
