@@ -300,20 +300,13 @@ export class ConfigManager {
     return await this.saveConfig();
   }
 
-  // 更新统计信息（使用UTC+8时区）
-  async updateStatistics(): Promise<void> {
+  // 更新最后活跃时间（使用天数从 metadata.createdAt 实时计算，无需累加）
+  async updateLastActiveTime(): Promise<void> {
     if (!this.config) {
       return;
     }
 
-    const now = TimeUtils.now();
-    const lastActive = new Date(this.config.statistics.lastActiveTime);
-    const daysDiff = Math.floor((now.getTime() - lastActive.getTime()) / (1000 * 60 * 60 * 24));
-
-    if (daysDiff > 0) {
-      this.config.statistics.usageDays += daysDiff;
-      this.config.statistics.lastActiveTime = now.toISOString();
-      await this.saveConfig();
-    }
+    this.config.statistics.lastActiveTime = TimeUtils.now().toISOString();
+    await this.saveConfig();
   }
 }

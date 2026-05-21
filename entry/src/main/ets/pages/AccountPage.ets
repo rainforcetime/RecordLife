@@ -8,10 +8,17 @@ import { SettingItemWithInfo } from '../components/SettingItemWithInfo'
 import { EditProfileDialog } from '../components/EditProfileDialog'
 import { AboutAppDialog } from '../components/AboutAppDialog'
 import { UserInfoSection, UserInfo } from '../components/UserInfoSection'
-import { DataStatisticsSection, DataStatisticsInfo } from '../components/DataStatisticsSection'
 import { AccountViewModel, UserProfile, ThemeSettings, DataStatistics } from '../viewmodel/AccountViewModel'
 import { AccountUtils } from '../common/utils/AccountUtils'
 import { AppInfo } from '../config/UserConfig'
+
+// 数据统计信息模型
+interface DataStatisticsInfo {
+  usageDays: number
+  dataVersion: string
+  lastActiveTime: string
+  storageSize: string
+}
 
 @Component
 export struct AccountPage {
@@ -233,11 +240,20 @@ export struct AccountPage {
         // 设置项列表
         this.SettingsSection()
         
-        // 数据统计卡片
-        DataStatisticsSection({
-          themeColors: this.themeColors,
-          statisticsInfo: this.statisticsInfo
-        })
+        // 已使用天数提示
+        Row() {
+          SymbolGlyph($r('sys.symbol.calendar'))
+            .fontSize(14)
+            .fontColor([this.themeColors.textSecondary])
+            .margin({ right: 4 })
+          
+          Text(`已使用 ${this.statisticsInfo.usageDays} 天`)
+            .fontSize(12)
+            .fontColor(this.themeColors.textSecondary)
+        }
+        .width('100%')
+        .justifyContent(FlexAlign.Center)
+        .margin({ top: 2, bottom: 2 })
         
         // 底部留白
         Column()
@@ -281,6 +297,17 @@ export struct AccountPage {
         .margin({ left: 15 })
         .height(0.5)
       
+      // 存储空间（信息展示）
+      SettingItemWithInfo({
+        label: '存储空间',
+        info: this.statisticsInfo.storageSize
+      })
+      
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
+        .height(0.5)
+      
       // 关于应用（信息展示）
       SettingItemWithInfo({
         label: '关于应用',
@@ -307,8 +334,8 @@ export struct AccountPage {
     .width('100%')
     .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(16)
-    .margin({ left: 16, right: 16, bottom: 16 })
-    .padding(16)
+    .margin({ left: 16, right: 16, bottom: 6 })
+    .padding(12)
     .shadow({
       radius: 12,
       color: this.themeColors.shadow,

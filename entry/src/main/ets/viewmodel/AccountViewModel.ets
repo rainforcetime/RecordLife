@@ -179,10 +179,15 @@ export class AccountViewModel {
 
       const config = this.configManager.getConfig();
       
-      // 计算使用天数（从配置创建时间开始）
+      // 计算使用天数（使用日期边界计算，符合用户直觉）
+      // 例如：1月1日23:00创建，1月2日01:00查看，应显示1天
       const createdAt = new Date(config.metadata.createdAt);
       const now = TimeUtils.now();
-      const daysDiff = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+      const startDate = TimeUtils.formatDate(createdAt);  // "YYYY-MM-DD" UTC+8
+      const endDate = TimeUtils.formatDate(now);          // "YYYY-MM-DD" UTC+8
+      const startDateTime = TimeUtils.parseDate(startDate);
+      const endDateTime = TimeUtils.parseDate(endDate);
+      const daysDiff = Math.floor((endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60 * 24));
       
       // 格式化最后活跃时间
       const lastActiveDate = new Date(config.statistics.lastActiveTime);
