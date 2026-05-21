@@ -2,11 +2,13 @@
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
-import { common } from '@kit.AbilityKit'
+import { common, ConfigurationConstant } from '@kit.AbilityKit'
 import { preferences } from '@kit.ArkData'
 import { promptAction, PromptAction } from '@kit.ArkUI'
 import { ConfigManager } from '../config/ConfigManager'
 import { AppInfo } from '../config/UserConfig'
+import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
+import { ThemeManager } from '../config/ThemeManager'
 import { SettingItem } from '../components/SettingItem'
 import { SettingItemWithToggle } from '../components/SettingItemWithToggle'
 import { SettingItemWithSelector } from '../components/SettingItemWithSelector'
@@ -19,6 +21,9 @@ const AVATAR_PREFERENCES_KEY = 'user_avatar_path'
 
 @Component
 export struct AccountPage {
+  // 主题颜色配置（响应式）
+  @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
+  
   // 用户信息状态
   @State userAvatar: string | Resource = $r('app.media.user_avatar')
   @State userName: string = '张三'
@@ -28,6 +33,7 @@ export struct AccountPage {
   private context: common.UIAbilityContext | null = null
   private configManager: ConfigManager | null = null
   private promptAction: PromptAction = this.getUIContext().getPromptAction()
+  private themeManager: ThemeManager = ThemeManager.getInstance()
 
   // 设置项状态
   @State autoBackupEnabled: boolean = false
@@ -75,14 +81,23 @@ export struct AccountPage {
 
   // 页面初始化
   async aboutToAppear() {
-    // 获取应用上下文
-    this.context = this.getUIContext().getHostContext() as common.UIAbilityContext
-    // 初始化配置管理器
-    this.configManager = await ConfigManager.getInstance()
-    // 加载用户配置
-    await this.loadUserProfile()
-    // 加载保存的头像
-    await this.loadSavedAvatar()
+    try {
+      // 获取应用上下文
+      this.context = this.getUIContext().getHostContext() as common.UIAbilityContext
+      console.info('AccountPage: context 已获取 - ' + (this.context ? '成功' : '失败'))
+      
+      // 初始化配置管理器
+      this.configManager = await ConfigManager.getInstance()
+      console.info('AccountPage: configManager 已初始化 - ' + (this.configManager ? '成功' : '失败'))
+      
+      // 加载用户配置
+      await this.loadUserProfile()
+      
+      // 加载保存的头像
+      await this.loadSavedAvatar()
+    } catch (error) {
+      console.error('AccountPage 初始化失败: ' + JSON.stringify(error))
+    }
   }
 
   // 加载用户配置
@@ -116,9 +131,122 @@ export struct AccountPage {
         this.dataVersion = `v${config.appInfo.appVersion}`
       }
 
+      // 加载主题设置
+      const theme = config.settings.theme
+      this.currentTheme = this.themeToDisplay(theme)
+
       console.info('用户配置加载成功')
     } catch (error) {
       console.error('加载用户配置失败: ' + JSON.stringify(error))
+    }
+  }
+
+  // 主题格式转换：存储格式转显示格式
+  private themeToDisplay(theme: string): string {
+    switch (theme) {
+      case 'light':
+        return '浅色模式'
+      case 'dark':
+        return '深色模式'
+      case 'auto':
+      default:
+        return '跟随系统'
+    }
+  }
+
+  // 主题格式转换：显示格式转存储格式
+  private displayToTheme(display: string): string {
+    switch (display) {
+      case '浅色模式':
+        return 'light'
+      case '深色模式':
+        return 'dark'
+      case '跟随系统':
+      default:
+        return 'auto'
+    }
+  }
+
+  // 主题切换处理
+  private async onThemeChange(value: string) {
+    console.info('开始切换主题: ' + value)
+    console.info('configManager: ' + (this.configManager ? '已初始化' : '未初始化'))
+    console.info('context: ' + (this.context ? '已初始化' : '未初始化'))
+    
+    if (!this.configManager) {
+      this.showToastSafely('配置管理器未初始化')
+      console.error('配置管理器未初始化')
+      return
+    }
+    
+    if (!this.context) {
+      this.showToastSafely('上下文未初始化')
+      console.error('上下文未初始化')
+      return
+    }
+
+    try {
+      // 更新UI显示
+      this.currentTheme = value
+
+      // 转换为存储格式
+      const theme = this.displayToTheme(value)
+      console.info('转换后的主题: ' + theme)
+
+      // 保存到配置管理器
+      const success = await this.configManager.setTheme(theme)
+      console.info('保存主题结果: ' + success)
+
+      if (success) {
+        // 应用主题到系统
+        await this.applyTheme(theme)
+
+        // 更新 AppStorage
+        AppStorage.setOrCreate('currentTheme', theme)
+
+        // 更新主题管理器（触发颜色更新）
+        this.themeManager.updateTheme(theme as 'light' | 'dark' | 'auto')
+
+        // 显示成功提示
+        this.showToastSafely('主题设置已保存')
+
+        console.info('主题设置成功: ' + theme)
+      } else {
+        this.showToastSafely('主题保存失败，请重试')
+        console.error('主题保存失败')
+      }
+    } catch (error) {
+      console.error('主题切换异常: ' + JSON.stringify(error))
+      this.showToastSafely('主题设置失败: ' + (error as Error).message)
+    }
+  }
+
+  // 应用主题到系统
+  private async applyTheme(theme: string): Promise<void> {
+    if (!this.context) {
+      return
+    }
+
+    try {
+      const applicationContext = this.context.getApplicationContext()
+      
+      // 根据主题设置颜色模式
+      switch (theme) {
+        case 'light':
+          applicationContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT)
+          break
+        case 'dark':
+          applicationContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_DARK)
+          break
+        case 'auto':
+        default:
+          applicationContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET)
+          break
+      }
+
+      console.info('主题已应用: ' + theme)
+    } catch (error) {
+      console.error('应用主题失败: ' + JSON.stringify(error))
     }
   }
 
@@ -194,37 +322,49 @@ export struct AccountPage {
   }
 
   build() {
-    Column() {
-      // 页面标题
-      Text('账号设置')
-        .fontSize(25)
-        .fontWeight(FontWeight.Bold)
-        .margin({ top: 20, bottom: 20 })
+    Scroll() {
+      Column() {
+        // 页面标题
+        Text('账号设置')
+          .fontSize(25)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(this.themeColors.textPrimary)
+          .margin({ top: 20, bottom: 20 })
 
-      // 用户信息区域
-      this.UserInfoSection()
+        // 用户信息区域
+        this.UserInfoSection()
 
-      // 分隔线
-      Divider().margin({ top: 10, bottom: 10 })
+        // 分隔线
+        Divider()
+          .color(this.themeColors.divider)
+          .margin({ top: 10, bottom: 10 })
 
-      // 设置项列表
-      this.SettingsSection()
+        // 设置项列表
+        this.SettingsSection()
 
-      // 分隔线
-      Divider().margin({ top: 10, bottom: 10 })
+        // 分隔线
+        Divider()
+          .color(this.themeColors.divider)
+          .margin({ top: 10, bottom: 10 })
 
-      // 数据统计区域
-      this.DataStatisticsSection()
+        // 数据统计区域
+        this.DataStatisticsSection()
 
-      // 分隔线
-      Divider().margin({ top: 10, bottom: 10 })
+        // 分隔线
+        Divider()
+          .color(this.themeColors.divider)
+          .margin({ top: 10, bottom: 10 })
 
-      // 其他功能区域
-      this.OtherFunctionsSection()
+        // 其他功能区域
+        this.OtherFunctionsSection()
+      }
+      .width('100%')
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F5F5F5')
+    .backgroundColor(this.themeColors.background)
+    .scrollBar(BarState.Off)
+    .edgeEffect(EdgeEffect.Spring)
   }
 
   // 用户信息区域组件
@@ -238,6 +378,7 @@ export struct AccountPage {
           .width(80)
           .height(80)
           .borderRadius(40)
+          .border({ width: 2, color: this.themeColors.avatarBorder })
           .margin({ top: 15, bottom: 10 })
           .onClick(() => {
             // 点击更换头像
@@ -249,6 +390,7 @@ export struct AccountPage {
           .width(80)
           .height(80)
           .borderRadius(40)
+          .border({ width: 2, color: this.themeColors.avatarBorder })
           .margin({ top: 15, bottom: 10 })
           .onClick(() => {
             // 点击更换头像
@@ -260,26 +402,27 @@ export struct AccountPage {
       Text(this.userName)
         .fontSize(20)
         .fontWeight(FontWeight.Medium)
+        .fontColor(this.themeColors.textPrimary)
         .margin({ bottom: 5 })
 
       // 出生日期和性别
       Row() {
         Text(`出生日期: ${this.userBirthday}`)
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor(this.themeColors.textSecondary)
         Text('  |  ')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor(this.themeColors.textSecondary)
         Text(`性别: ${this.userGender}`)
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor(this.themeColors.textSecondary)
       }
       .margin({ bottom: 15 })
 
       // 编辑资料按钮
       Button('编辑资料')
         .fontSize(16)
-        .backgroundColor('#007DFF')
+        .backgroundColor(this.themeColors.primary)
         .fontColor(Color.White)
         .borderRadius(20)
         .width(120)
@@ -289,7 +432,7 @@ export struct AccountPage {
         })
     }
     .width('100%')
-    .backgroundColor(Color.White)
+    .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(10)
     .margin({ left: 15, right: 15 })
     .padding(15)
@@ -305,11 +448,13 @@ export struct AccountPage {
         currentValue: this.currentTheme,
         options: ['跟随系统', '浅色模式', '深色模式'],
         onSelect: (value: string) => {
-          this.currentTheme = value
+          this.onThemeChange(value)
         }
       })
 
-      Divider().margin({ left: 15 })
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
 
       // 自动备份设置（开关）
       SettingItemWithToggle({
@@ -321,18 +466,9 @@ export struct AccountPage {
         }
       })
 
-      Divider().margin({ left: 15 })
-
-      // 清除缓存（操作）
-      SettingItemWithAction({
-        label: '清除缓存',
-        summary: '当前缓存: 45.2 MB',
-        onAction: () => {
-          this.onClearCache()
-        }
-      })
-
-      Divider().margin({ left: 15 })
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
 
       // 关于应用（信息展示）
       SettingItemWithInfo({
@@ -344,7 +480,7 @@ export struct AccountPage {
       })
     }
     .width('100%')
-    .backgroundColor(Color.White)
+    .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(10)
     .margin({ left: 15, right: 15 })
   }
@@ -356,6 +492,7 @@ export struct AccountPage {
       Text('数据统计')
         .fontSize(18)
         .fontWeight(FontWeight.Medium)
+        .fontColor(this.themeColors.textPrimary)
         .margin({ top: 10, bottom: 10 })
         .width('100%')
         .padding({ left: 15 })
@@ -365,11 +502,11 @@ export struct AccountPage {
         Column() {
           Text(this.usageDays.toString())
             .fontSize(24)
-            .fontColor('#007DFF')
+            .fontColor(this.themeColors.primary)
             .fontWeight(FontWeight.Bold)
           Text('使用天数')
             .fontSize(12)
-            .fontColor('#666666')
+            .fontColor(this.themeColors.textSecondary)
             .margin({ top: 5 })
         }
         .layoutWeight(1)
@@ -378,11 +515,11 @@ export struct AccountPage {
         Column() {
           Text(this.dataVersion)
             .fontSize(24)
-            .fontColor('#007DFF')
+            .fontColor(this.themeColors.primary)
             .fontWeight(FontWeight.Bold)
           Text('数据版本')
             .fontSize(12)
-            .fontColor('#666666')
+            .fontColor(this.themeColors.textSecondary)
             .margin({ top: 5 })
         }
         .layoutWeight(1)
@@ -391,11 +528,11 @@ export struct AccountPage {
         Column() {
           Text('今天')
             .fontSize(24)
-            .fontColor('#007DFF')
+            .fontColor(this.themeColors.primary)
             .fontWeight(FontWeight.Bold)
           Text('最后活跃')
             .fontSize(12)
-            .fontColor('#666666')
+            .fontColor(this.themeColors.textSecondary)
             .margin({ top: 5 })
         }
         .layoutWeight(1)
@@ -404,7 +541,7 @@ export struct AccountPage {
       .padding({ left: 15, right: 15, bottom: 15 })
     }
     .width('100%')
-    .backgroundColor(Color.White)
+    .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(10)
     .margin({ left: 15, right: 15 })
   }
@@ -422,7 +559,9 @@ export struct AccountPage {
         }
       })
 
-      Divider().margin({ left: 15 })
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
 
       // 导入配置
       SettingItemWithAction({
@@ -433,7 +572,9 @@ export struct AccountPage {
         }
       })
 
-      Divider().margin({ left: 15 })
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
 
       // 重置应用
       SettingItemWithAction({
@@ -446,7 +587,7 @@ export struct AccountPage {
       })
     }
     .width('100%')
-    .backgroundColor(Color.White)
+    .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(10)
     .margin({ left: 15, right: 15 })
   }
@@ -599,25 +740,6 @@ export struct AccountPage {
         duration: 2000
       })
     }
-  }
-
-  // 清除缓存处理
-  private onClearCache() {
-    this.getUIContext().showAlertDialog({
-      title: '清除缓存',
-      message: '确定要清除缓存吗？',
-      primaryButton: {
-        value: '取消',
-        action: () => {}
-      },
-      secondaryButton: {
-        value: '确定',
-        action: () => {
-          console.log('清除缓存')
-          // TODO: 实现缓存清除逻辑
-        }
-      }
-    })
   }
 
   // 导出配置处理

@@ -1,20 +1,83 @@
-import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
+import { AbilityConstant, ConfigurationConstant, UIAbility, Want, Configuration } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
+import { ConfigManager } from '../config/ConfigManager';
+import { ThemeManager } from '../config/ThemeManager';
 
 const DOMAIN = 0x0000;
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    // 将 context 存储到 AppStorage，供 ConfigManager 使用
+    // 必须在 initTheme 之前设置，确保 ConfigManager 能获取到 context
+    AppStorage.setOrCreate('uiContext', this.context);
+    
+    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
+    
     try {
-      this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
+      // 初始化主题设置
+      this.initTheme();
     } catch (err) {
       hilog.error(DOMAIN, 'testTag', 'Failed to set colorMode. Cause: %{public}s', JSON.stringify(err));
     }
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
+  }
+
+  // 初始化主题设置
+  private async initTheme(): Promise<void> {
+    try {
+      const configManager = await ConfigManager.getInstance();
+      const theme = configManager.getTheme();
+      
+      // 根据保存的主题设置应用颜色模式
+      const colorMode = this.themeToColorMode(theme);
+      this.context.getApplicationContext().setColorMode(colorMode);
+      
+      // 保存当前主题到 AppStorage，供页面监听
+      AppStorage.setOrCreate('currentTheme', theme);
+      
+      // 初始化主题管理器
+      const themeManager = ThemeManager.getInstance();
+      themeManager.init(theme as 'light' | 'dark' | 'auto');
+      
+      hilog.info(DOMAIN, 'testTag', 'Theme initialized: %{public}s', theme);
+    } catch (err) {
+      hilog.error(DOMAIN, 'testTag', 'Failed to init theme. Cause: %{public}s', JSON.stringify(err));
+      // 失败时使用默认跟随系统模式
+      this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
+      
+      // 初始化默认主题
+      const themeManager = ThemeManager.getInstance();
+      themeManager.init('light');
+    }
+  }
+
+  // 主题字符串转换为 ColorMode
+  private themeToColorMode(theme: string): ConfigurationConstant.ColorMode {
+    switch (theme) {
+      case 'light':
+        return ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT;
+      case 'dark':
+        return ConfigurationConstant.ColorMode.COLOR_MODE_DARK;
+      case 'auto':
+      default:
+        return ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET;
+    }
+  }
+
+  // 监听系统配置变化（包括深浅色模式）
+  onConfigurationUpdate(newConfig: Configuration): void {
+    hilog.info(DOMAIN, 'testTag', 'Configuration updated: %{public}s', JSON.stringify(newConfig));
     
-    // 将 context 存储到 AppStorage，供 ConfigManager 使用
-    AppStorage.setOrCreate('uiContext', this.context);
+    // 如果当前是跟随系统模式，更新 AppStorage 中的主题状态
+    const currentTheme = AppStorage.get('currentTheme') as string;
+    if (currentTheme === 'auto') {
+      // 通知页面系统主题已变化
+      AppStorage.setOrCreate('systemColorMode', newConfig.colorMode);
+      
+      // 通知主题管理器系统主题已变化
+      const themeManager = ThemeManager.getInstance();
+      themeManager.onSystemColorModeChange(newConfig.colorMode);
+    }
   }
 
   onDestroy(): void {

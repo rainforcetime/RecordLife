@@ -35,25 +35,46 @@ export class ConfigManager {
     if (!ConfigManager.instance) {
       ConfigManager.instance = new ConfigManager();
       await ConfigManager.instance.init();
+    } else if (!ConfigManager.instance.preferences) {
+      // 如果 instance 存在但 preferences 未初始化，重新初始化
+      console.info('ConfigManager.getInstance: preferences 未初始化，重新初始化');
+      await ConfigManager.instance.init();
     }
     return ConfigManager.instance;
   }
 
   // 初始化配置管理器
   private async init(): Promise<void> {
+    console.info('ConfigManager.init 开始')
+    
     try {
       // 获取 Preferences 实例
       // 使用 UIContext 获取上下文（替代已废弃的 getContext）
-      const uiContext = AppStorage.get('uiContext') as common.UIAbilityContext;
+      let uiContext = AppStorage.get('uiContext') as common.UIAbilityContext;
+      console.info('ConfigManager.init: uiContext - ' + (uiContext ? '存在' : '不存在'))
+      
+      // 如果 uiContext 不存在，尝试从 AppStorage 获取 context
       if (!uiContext) {
-        console.error('UIContext not found in AppStorage');
-        this.config = createDefaultConfig();
+        uiContext = AppStorage.get('context') as common.UIAbilityContext;
+        console.info('ConfigManager.init: 从 AppStorage 获取 context - ' + (uiContext ? '成功' : '失败'))
+      }
+      
+      if (!uiContext) {
+        console.warn('ConfigManager.init: uiContext 不存在，延迟初始化 preferences');
+        // 创建默认配置，但不返回，等待下次初始化
+        if (!this.config) {
+          this.config = createDefaultConfig();
+        }
         return;
       }
+      
+      console.info('ConfigManager.init: 开始获取 Preferences')
       this.preferences = await preferences.getPreferences(uiContext, this.STORE_NAME);
+      console.info('ConfigManager.init: Preferences 获取成功 - ' + (this.preferences ? '是' : '否'))
       
       // 加载配置
       await this.loadConfig();
+      console.info('ConfigManager.init: 配置加载完成')
     } catch (error) {
       console.error('ConfigManager init failed:', error);
       // 使用默认配置
@@ -93,7 +114,12 @@ export class ConfigManager {
 
   // 保存配置到存储
   async saveConfig(): Promise<boolean> {
+    console.info('saveConfig 开始')
+    console.info('this.preferences: ' + (this.preferences ? '存在' : '不存在'))
+    console.info('this.config: ' + (this.config ? '存在' : '不存在'))
+    
     if (!this.preferences || !this.config) {
+      console.error('saveConfig: preferences 或 config 不存在')
       return false;
     }
 
@@ -102,8 +128,13 @@ export class ConfigManager {
       this.config.metadata.updatedAt = new Date().toISOString();
       
       const configStr = JSON.stringify(this.config);
+      console.info('saveConfig: 配置字符串长度: ' + configStr.length)
+      
       await this.preferences.put(this.CONFIG_KEY, configStr);
+      console.info('saveConfig: put 成功')
+      
       await this.preferences.flush();
+      console.info('saveConfig: flush 成功')
       
       return true;
     } catch (error) {
@@ -148,6 +179,39 @@ export class ConfigManager {
     this.config.settings.timeFormat = timeFormat;
     
     return await this.saveConfig();
+  }
+
+  // 获取当前主题设置
+  getTheme(): string {
+    const config = this.getConfig();
+    return config.settings.theme;
+  }
+
+  // 设置主题并保存
+  async setTheme(theme: string): Promise<boolean> {
+    console.info('ConfigManager.setTheme 开始, theme: ' + theme)
+    console.info('this.config: ' + (this.config ? '存在' : '不存在'))
+    console.info('this.preferences: ' + (this.preferences ? '存在' : '不存在'))
+    
+    if (!this.config) {
+      console.error('ConfigManager.setTheme: config 不存在')
+      return false;
+    }
+
+    if (!this.preferences) {
+      console.error('ConfigManager.setTheme: preferences 不存在')
+      return false;
+    }
+
+    try {
+      this.config.settings.theme = theme;
+      const result = await this.saveConfig();
+      console.info('ConfigManager.setTheme saveConfig 结果: ' + result)
+      return result;
+    } catch (error) {
+      console.error('ConfigManager.setTheme 异常: ' + JSON.stringify(error))
+      return false;
+    }
   }
 
   // 更新备份配置
