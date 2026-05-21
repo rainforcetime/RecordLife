@@ -1,4 +1,6 @@
 // 编辑资料弹窗组件
+import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
+
 @CustomDialog
 export struct EditProfileDialog {
   // 编辑字段状态
@@ -20,6 +22,9 @@ export struct EditProfileDialog {
   @Prop userName: string = ''
   @Prop userBirthday: string = ''
   @Prop userGender: string = ''
+  
+  // 主题颜色配置
+  @Prop themeColors: ThemeColors = ThemeConfig.getColors(false)
 
   aboutToAppear() {
     // 初始化编辑字段
@@ -38,20 +43,23 @@ export struct EditProfileDialog {
       Text('编辑资料')
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
+        .fontColor(this.themeColors.textPrimary)
         .margin({ top: 20, bottom: 20 })
 
       // 用户名输入
       Column() {
         Text('用户名')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor(this.themeColors.textSecondary)
           .width('100%')
           .margin({ bottom: 8 })
 
         TextInput({ text: this.editName, placeholder: '请输入用户名' })
           .fontSize(16)
           .height(45)
-          .backgroundColor('#F5F5F5')
+          .backgroundColor(this.themeColors.background)
+          .fontColor(this.themeColors.textPrimary)
+          .placeholderColor(this.themeColors.textTertiary)
           .borderRadius(8)
           .onChange((value: string) => {
             this.editName = value
@@ -64,7 +72,7 @@ export struct EditProfileDialog {
       Column() {
         Text('出生日期')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor(this.themeColors.textSecondary)
           .width('100%')
           .margin({ bottom: 8 })
 
@@ -87,7 +95,7 @@ export struct EditProfileDialog {
       Column() {
         Text('性别')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor(this.themeColors.textSecondary)
           .width('100%')
           .margin({ bottom: 8 })
 
@@ -107,6 +115,7 @@ export struct EditProfileDialog {
 
               Text(option)
                 .fontSize(16)
+                .fontColor(this.themeColors.textPrimary)
                 .margin({ left: 8 })
             }
             .margin({ right: 20 })
@@ -121,8 +130,8 @@ export struct EditProfileDialog {
       Row() {
         Button('取消')
           .fontSize(16)
-          .backgroundColor('#E0E0E0')
-          .fontColor('#333333')
+          .backgroundColor(this.themeColors.border)
+          .fontColor(this.themeColors.textPrimary)
           .borderRadius(20)
           .width(100)
           .height(40)
@@ -134,7 +143,7 @@ export struct EditProfileDialog {
 
         Button('保存')
           .fontSize(16)
-          .backgroundColor('#007DFF')
+          .backgroundColor(this.themeColors.primary)
           .fontColor(Color.White)
           .borderRadius(20)
           .width(100)
@@ -157,7 +166,7 @@ export struct EditProfileDialog {
       .margin({ bottom: 20 })
     }
     .width(320)
-    .backgroundColor(Color.White)
+    .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(15)
     .padding({ left: 20, right: 20 })
   }

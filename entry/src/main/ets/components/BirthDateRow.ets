@@ -1,11 +1,16 @@
 // 出生日期选择组件
 import { ConfigManager } from '../config/ConfigManager';
 import { TimeUtils } from '../common/utils/TimeUtils';
+import { ThemeColors, ThemeConfig } from '../config/ThemeConfig';
 
 @Component
 export struct BirthDateRow {
   @Link birthDate: Date;
   @State showDatePicker: boolean = false;
+  
+  // 主题颜色配置
+  @Prop themeColors: ThemeColors = ThemeConfig.getColors(false)
+  
   private configManager: ConfigManager | null = null;
 
   aboutToAppear() {
@@ -24,7 +29,7 @@ export struct BirthDateRow {
       Text('🎂 出生日期')
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#333333')
+        .fontColor(this.themeColors.textPrimary)
 
       Blank()
 
@@ -41,7 +46,7 @@ export struct BirthDateRow {
       }
       .width(36)
       .height(36)
-      .backgroundColor('#F5F5F5')
+      .backgroundColor(this.themeColors.background)
       .onClick(() => {
         this.showDatePicker = true;
       })
@@ -49,17 +54,17 @@ export struct BirthDateRow {
     .width('100%')
     .height(56)
     .padding({ left: 20, right: 20 })
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(16)
     .shadow({
       radius: 8,
-      color: '#1A000000',
+      color: this.themeColors.shadow,
       offsetX: 0,
       offsetY: 2
     })
     .bindSheet($$this.showDatePicker, this.DatePickerSheet(), {
       height: 400,
-      backgroundColor: Color.White,
+      backgroundColor: this.themeColors.cardBackground,
       dragBar: true
     })
   }
@@ -71,6 +76,7 @@ export struct BirthDateRow {
       Text('选择出生日期')
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
+        .fontColor(this.themeColors.textPrimary)
         .margin({ top: 20, bottom: 20 })
 
       DatePicker({

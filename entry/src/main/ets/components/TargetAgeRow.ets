@@ -1,15 +1,20 @@
 // 目标年龄选择组件
+import { ThemeColors, ThemeConfig } from '../config/ThemeConfig';
+
 @Component
 export struct TargetAgeRow {
   @Link targetAge: number;
   @State showAgePicker: boolean = false;
+  
+  // 主题颜色配置
+  @Prop themeColors: ThemeColors = ThemeConfig.getColors(false)
 
   build() {
     Row() {
       Text('🎯 目标年龄')
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#333333')
+        .fontColor(this.themeColors.textPrimary)
 
       Blank()
 
@@ -26,7 +31,7 @@ export struct TargetAgeRow {
       }
       .width(36)
       .height(36)
-      .backgroundColor('#F5F5F5')
+      .backgroundColor(this.themeColors.background)
       .onClick(() => {
         this.showAgePicker = true;
       })
@@ -34,18 +39,18 @@ export struct TargetAgeRow {
     .width('100%')
     .height(56)
     .padding({ left: 20, right: 20 })
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(16)
     .margin({ top: 12 })
     .shadow({
       radius: 8,
-      color: '#1A000000',
+      color: this.themeColors.shadow,
       offsetX: 0,
       offsetY: 2
     })
     .bindSheet($$this.showAgePicker, this.AgePickerSheet(), {
       height: 350,
-      backgroundColor: Color.White,
+      backgroundColor: this.themeColors.cardBackground,
       dragBar: true
     })
   }
@@ -57,6 +62,7 @@ export struct TargetAgeRow {
       Text('设置目标年龄')
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
+        .fontColor(this.themeColors.textPrimary)
         .margin({ top: 20, bottom: 20 })
 
       Row() {
@@ -64,8 +70,8 @@ export struct TargetAgeRow {
           .width(50)
           .height(50)
           .fontSize(24)
-          .backgroundColor('#F5F5F5')
-          .fontColor('#333333')
+          .backgroundColor(this.themeColors.background)
+          .fontColor(this.themeColors.textPrimary)
           .onClick(() => {
             if (this.targetAge > 1) {
               this.targetAge--;
@@ -82,8 +88,8 @@ export struct TargetAgeRow {
           .width(50)
           .height(50)
           .fontSize(24)
-          .backgroundColor('#F5F5F5')
-          .fontColor('#333333')
+          .backgroundColor(this.themeColors.background)
+          .fontColor(this.themeColors.textPrimary)
           .onClick(() => {
             if (this.targetAge < 150) {
               this.targetAge++;
@@ -94,7 +100,7 @@ export struct TargetAgeRow {
 
       Text('岁')
         .fontSize(16)
-        .fontColor('#666666')
+        .fontColor(this.themeColors.textSecondary)
 
       Button('确定')
         .width('80%')

@@ -140,10 +140,10 @@ export struct UserInfoSection {
           }
         })
     }
-    .width('100%')
+    .width('90%')
     .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(16)
-    .margin({ left: 16, right: 16, bottom: 16 })
+    .margin({ bottom: 16 })
     .padding({ left: 20, right: 20, top: 10, bottom: 20 })
     .shadow({
       radius: 12,

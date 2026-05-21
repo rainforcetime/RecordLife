@@ -66,6 +66,7 @@ export struct AccountPage {
       userName: this.userInfo.userName,
       userBirthday: this.userInfo.userBirthday,
       userGender: this.userInfo.userGender,
+      themeColors: this.themeColors,
       onSave: (name: string, birthday: string, gender: string) => {
         this.onSaveProfile(name, birthday, gender)
       }
@@ -135,11 +136,19 @@ export struct AccountPage {
 
   // 加载数据统计信息
   private async loadDataStatistics() {
+    console.info('[AccountPage] 开始加载数据统计')
     const statistics = await this.viewModel.loadDataStatistics()
-    this.statisticsInfo.usageDays = statistics.usageDays
-    this.statisticsInfo.dataVersion = statistics.dataVersion
-    this.statisticsInfo.lastActiveTime = statistics.lastActiveTime
-    this.statisticsInfo.storageSize = statistics.storageSize
+    console.info('[AccountPage] 获取到统计数据: ' + JSON.stringify(statistics))
+    
+    // 必须重新赋值整个对象才能触发UI更新
+    this.statisticsInfo = {
+      usageDays: statistics.usageDays,
+      dataVersion: statistics.dataVersion,
+      lastActiveTime: statistics.lastActiveTime,
+      storageSize: statistics.storageSize
+    }
+    
+    console.info('[AccountPage] statisticsInfo已更新: ' + JSON.stringify(this.statisticsInfo))
   }
   
   // 加载保存的头像
@@ -222,8 +231,7 @@ export struct AccountPage {
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
           .margin({ top: 24, bottom: 20 })
-          .width('100%')
-          .padding({ left: 20 })
+          .width('90%')
         
         // 用户信息区域
         UserInfoSection({
@@ -251,7 +259,7 @@ export struct AccountPage {
             .fontSize(12)
             .fontColor(this.themeColors.textSecondary)
         }
-        .width('100%')
+        .width('90%')
         .justifyContent(FlexAlign.Center)
         .margin({ top: 2, bottom: 2 })
         
@@ -260,6 +268,7 @@ export struct AccountPage {
           .height(20)
       }
       .width('100%')
+      .alignItems(HorizontalAlign.Center)
     }
     .width('100%')
     .height('100%')
@@ -331,10 +340,10 @@ export struct AccountPage {
         this.onMoreSettings()
       })
     }
-    .width('100%')
+    .width('90%')
     .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(16)
-    .margin({ left: 16, right: 16, bottom: 6 })
+    .margin({ bottom: 6 })
     .padding(12)
     .shadow({
       radius: 12,

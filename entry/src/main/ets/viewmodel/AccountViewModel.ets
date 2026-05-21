@@ -151,6 +151,8 @@ export class AccountViewModel {
 
   // 加载数据统计信息
   async loadDataStatistics(): Promise<DataStatistics> {
+    console.info('[StorageDebug] loadDataStatistics 开始执行')
+    
     const defaultStatistics: DataStatistics = {
       usageDays: 0,
       dataVersion: 'v0.0.1',
@@ -169,6 +171,7 @@ export class AccountViewModel {
       }
 
       if (!this.configManager) {
+        console.warn('[StorageDebug] configManager 未初始化')
         return {
           usageDays: 0,
           dataVersion: `v${appVersion}`,
@@ -194,16 +197,21 @@ export class AccountViewModel {
       const lastActiveTime = this.formatDateTime(lastActiveDate);
       
       // 获取应用存储空间大小
+      console.info('[StorageDebug] 准备调用 getAppStorageSize()')
       const storageSize = await this.getAppStorageSize();
+      console.info('[StorageDebug] getAppStorageSize() 返回: ' + storageSize)
       
-      return {
+      const result: DataStatistics = {
         usageDays: daysDiff >= 0 ? daysDiff : 0,
         dataVersion: `v${appVersion}`,
         lastActiveTime: lastActiveTime,
         storageSize: storageSize
       };
+      
+      console.info('[StorageDebug] loadDataStatistics 完成: ' + JSON.stringify(result))
+      return result;
     } catch (error) {
-      console.error('加载数据统计失败: ' + JSON.stringify(error));
+      console.error('[StorageDebug] 加载数据统计失败: ' + JSON.stringify(error));
       return defaultStatistics;
     }
   }
@@ -220,14 +228,36 @@ export class AccountViewModel {
 
   // 获取应用存储空间大小
   private async getAppStorageSize(): Promise<string> {
+    console.info('[StorageDebug] 开始获取应用存储空间')
+    
     try {
+      console.info('[StorageDebug] 调用 storageStatistics.getCurrentBundleStats()')
       const bundleStats = await storageStatistics.getCurrentBundleStats()
+      
+      console.info('[StorageDebug] 获取成功，详细信息:')
+      console.info('[StorageDebug] - appSize: ' + bundleStats.appSize + ' bytes')
+      console.info('[StorageDebug] - cacheSize: ' + bundleStats.cacheSize + ' bytes')
+      console.info('[StorageDebug] - dataSize: ' + bundleStats.dataSize + ' bytes')
+      
       // 计算总大小：appSize + cacheSize + dataSize
       const totalSize = bundleStats.appSize + bundleStats.cacheSize + bundleStats.dataSize
-      return this.formatStorageSize(totalSize)
+      console.info('[StorageDebug] - totalSize: ' + totalSize + ' bytes')
+      
+      const formattedSize = this.formatStorageSize(totalSize)
+      console.info('[StorageDebug] 格式化结果: ' + formattedSize)
+      
+      return formattedSize
     } catch (error) {
-      console.error('获取应用存储空间失败: ' + JSON.stringify(error))
-      return '计算中...'
+      console.error('[StorageDebug] 获取应用存储空间失败')
+      console.error('[StorageDebug] 错误类型: ' + typeof error)
+      console.error('[StorageDebug] 错误详情: ' + JSON.stringify(error))
+      
+      if (error instanceof Error) {
+        console.error('[StorageDebug] 错误消息: ' + error.message)
+        console.error('[StorageDebug] 错误堆栈: ' + error.stack)
+      }
+      
+      return '计算失败'
     }
   }
 

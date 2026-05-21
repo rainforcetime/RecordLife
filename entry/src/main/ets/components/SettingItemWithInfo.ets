@@ -2,7 +2,7 @@
 @Component
 export struct SettingItemWithInfo {
   label: string = ''
-  info: string = ''
+  @Prop info: string = ''  // 使用@Prop装饰器，支持父组件数据更新
 
   build() {
     Row() {

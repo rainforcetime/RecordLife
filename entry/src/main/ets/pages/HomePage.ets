@@ -5,10 +5,14 @@ import { TimeUtils } from '../common/utils/TimeUtils';
 import { TimeData, DateDifference } from '../common/types';
 import { TimeCard } from '../components/TimeCard';
 import { BirthDateSelector } from '../components/BirthDateSelector';
+import { ThemeColors, ThemeConfig } from '../config/ThemeConfig';
 
 // 首页组件
 @Component
 export struct HomePage {
+  // 主题颜色配置（响应式）
+  @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
+  
   @State timeData: TimeData = {
     years: 0,
     months: 0,
@@ -195,12 +199,12 @@ export struct HomePage {
           Text('活着')
             .fontSize(32)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#333333')
+            .fontColor(this.themeColors.textPrimary)
             .letterSpacing(2)
 
           Text('记录生命的每一刻')
             .fontSize(14)
-            .fontColor('#999999')
+            .fontColor(this.themeColors.textSecondary)
             .margin({ top: 6 })
         }
         .width('100%')
@@ -208,7 +212,7 @@ export struct HomePage {
         .padding({ top: 32, bottom: 20 })
 
         // 出生日期设置组件
-        BirthDateSelector({ birthDate: $birthDate, targetAge: $targetAge })
+        BirthDateSelector({ birthDate: $birthDate, targetAge: $targetAge, themeColors: this.themeColors })
 
         // 时间卡片组（弹性布局，自动换行）
         Column() {
@@ -217,7 +221,7 @@ export struct HomePage {
             Text(this.isRemainingMode ? '⏳ 剩余时间' : '⏱️ 存活时间')
               .fontSize(16)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#333333')
+              .fontColor(this.themeColors.textPrimary)
             
             Blank()
             
@@ -225,7 +229,7 @@ export struct HomePage {
             Row() {
               Text('已存活')
                 .fontSize(12)
-                .fontColor(!this.isRemainingMode ? '#FFFFFF' : '#666666')
+                .fontColor(!this.isRemainingMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(!this.isRemainingMode ? FontWeight.Medium : FontWeight.Normal)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .backgroundColor(!this.isRemainingMode ? '#FF6B6B' : 'transparent')
@@ -239,7 +243,7 @@ export struct HomePage {
               
               Text('剩余')
                 .fontSize(12)
-                .fontColor(this.isRemainingMode ? '#FFFFFF' : '#666666')
+                .fontColor(this.isRemainingMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(this.isRemainingMode ? FontWeight.Medium : FontWeight.Normal)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .backgroundColor(this.isRemainingMode ? '#4CAF50' : 'transparent')
@@ -251,7 +255,7 @@ export struct HomePage {
                   }
                 })
             }
-            .backgroundColor('#F5F5F5')
+            .backgroundColor(this.themeColors.background)
             .borderRadius(16)
             .padding(2)
           }
@@ -262,14 +266,14 @@ export struct HomePage {
           Row() {
             Text(this.isRemainingMode ? '剩余计算方式' : '存活计算方式')
               .fontSize(14)
-              .fontColor('#666666')
+              .fontColor(this.themeColors.textSecondary)
             
             Blank()
             
             Row() {
               Text('累计模式')
                 .fontSize(12)
-                .fontColor(this.isAccumulatedMode ? '#FFFFFF' : '#666666')
+                .fontColor(this.isAccumulatedMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(this.isAccumulatedMode ? FontWeight.Medium : FontWeight.Normal)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .backgroundColor(this.isAccumulatedMode ? (this.isRemainingMode ? '#4CAF50' : '#FF6B6B') : 'transparent')
@@ -283,7 +287,7 @@ export struct HomePage {
               
               Text('非累计模式')
                 .fontSize(12)
-                .fontColor(!this.isAccumulatedMode ? '#FFFFFF' : '#666666')
+                .fontColor(!this.isAccumulatedMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(!this.isAccumulatedMode ? FontWeight.Medium : FontWeight.Normal)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .backgroundColor(!this.isAccumulatedMode ? (this.isRemainingMode ? '#4CAF50' : '#FF6B6B') : 'transparent')
@@ -295,7 +299,7 @@ export struct HomePage {
                   }
                 })
             }
-            .backgroundColor('#F5F5F5')
+            .backgroundColor(this.themeColors.background)
             .borderRadius(16)
             .padding(2)
           }
@@ -409,23 +413,23 @@ export struct HomePage {
         .width('100%')
         .padding(20)
         .margin({ top: 16 })
-        .backgroundColor('#FFFFFF')
+        .backgroundColor(this.themeColors.cardBackground)
         .borderRadius(16)
         .shadow({
           radius: 12,
-          color: '#1A000000',
+          color: this.themeColors.shadow,
           offsetX: 0,
           offsetY: 4
         })
 
       }
       .width('100%')
-      .backgroundColor('#F8F9FA')
+      .backgroundColor(this.themeColors.background)
       .padding({ left: 16, right: 16, bottom: 16 })
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F8F9FA')
+    .backgroundColor(this.themeColors.background)
     .scrollBar(BarState.Off)
     .edgeEffect(EdgeEffect.Spring)
   }
