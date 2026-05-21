@@ -1,16 +1,37 @@
 // 关于应用对话框组件
 import { AppInfo } from '../config/UserConfig'
+import { AppInfoManager } from '../config/AppInfoConfig'
 
 @CustomDialog
 export struct AboutAppDialog {
   controller: CustomDialogController
   @Prop appInfo: AppInfo = {
-    appName: '记录生活',
-    appVersion: '2.1.0',
+    appName: '活着',
+    appVersion: '0.0.1',
     buildNumber: '20260521',
-    developer: 'RecordLife Team',
+    developer: 'rainforcetime',
     website: 'https://github.com/rainforcetime/record-life',
-    description: '记录生活中的每一个精彩瞬间'
+    description: '记录生活，珍惜每一刻'
+  }
+  
+  // 应用信息管理器
+  private appInfoManager: AppInfoManager | null = null
+  
+  async aboutToAppear() {
+    try {
+      this.appInfoManager = await AppInfoManager.getInstance()
+      const config = this.appInfoManager.getAppInfo()
+      this.appInfo = {
+        appName: config.appName,
+        appVersion: config.appVersion,
+        buildNumber: config.buildNumber,
+        developer: config.developer,
+        website: config.website,
+        description: config.description
+      }
+    } catch (error) {
+      console.error('加载应用信息失败: ' + JSON.stringify(error))
+    }
   }
 
   build() {

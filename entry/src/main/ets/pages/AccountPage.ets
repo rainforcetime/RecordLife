@@ -40,12 +40,12 @@ export struct AccountPage {
   
   // 应用信息
   @State appInfo: AppInfo = {
-    appName: '记录生活',
-    appVersion: '2.1.0',
+    appName: '活着',
+    appVersion: '0.0.1',
     buildNumber: '20260521',
-    developer: 'RecordLife Team',
+    developer: 'rainforcetime',
     website: 'https://github.com/rainforcetime/record-life',
-    description: '记录生活中的每一个精彩瞬间'
+    description: '记录生活，珍惜每一刻'
   }
   
   // 业务逻辑

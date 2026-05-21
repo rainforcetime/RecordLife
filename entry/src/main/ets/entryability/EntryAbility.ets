@@ -25,6 +25,10 @@ export default class EntryAbility extends UIAbility {
   // 初始化主题设置
   private async initTheme(): Promise<void> {
     try {
+      // 初始化主题管理器（会自动从ConfigManager读取主题并初始化AppStorage）
+      const themeManager = await ThemeManager.getInstance();
+      
+      // 从ConfigManager获取主题设置
       const configManager = await ConfigManager.getInstance();
       const theme = configManager.getTheme();
       
@@ -35,10 +39,6 @@ export default class EntryAbility extends UIAbility {
       // 保存当前主题到 AppStorage，供页面监听
       AppStorage.setOrCreate('currentTheme', theme);
       
-      // 初始化主题管理器
-      const themeManager = ThemeManager.getInstance();
-      themeManager.init(theme as 'light' | 'dark' | 'auto');
-      
       hilog.info(DOMAIN, 'testTag', 'Theme initialized: %{public}s', theme);
     } catch (err) {
       hilog.error(DOMAIN, 'testTag', 'Failed to init theme. Cause: %{public}s', JSON.stringify(err));
@@ -48,10 +48,6 @@ export default class EntryAbility extends UIAbility {
       } catch (e) {
         hilog.error(DOMAIN, 'testTag', 'Failed to set default color mode. Cause: %{public}s', JSON.stringify(e));
       }
-      
-      // 初始化默认主题
-      const themeManager = ThemeManager.getInstance();
-      themeManager.init('light');
     }
   }
 
@@ -69,7 +65,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   // 监听系统配置变化（包括深浅色模式）
-  onConfigurationUpdate(newConfig: Configuration): void {
+  async onConfigurationUpdate(newConfig: Configuration): Promise<void> {
     hilog.info(DOMAIN, 'testTag', 'Configuration updated: %{public}s', JSON.stringify(newConfig));
     
     // 如果当前是跟随系统模式，更新 AppStorage 中的主题状态
@@ -79,7 +75,7 @@ export default class EntryAbility extends UIAbility {
       AppStorage.setOrCreate('systemColorMode', newConfig.colorMode);
       
       // 通知主题管理器系统主题已变化
-      const themeManager = ThemeManager.getInstance();
+      const themeManager = await ThemeManager.getInstance();
       themeManager.onSystemColorModeChange(newConfig.colorMode);
     }
   }

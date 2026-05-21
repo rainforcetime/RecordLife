@@ -1,7 +1,7 @@
 // 首页：展示用户存活时间
 import { ConfigManager } from '../config/ConfigManager';
 import { UserConfig } from '../config/UserConfig';
-import { TimeUtils } from '../config/TimeUtils';
+import { TimeUtils } from '../common/utils/TimeUtils';
 import { TimeData, DateDifference } from '../common/types';
 import { TimeCard } from '../components/TimeCard';
 import { BirthDateSelector } from '../components/BirthDateSelector';

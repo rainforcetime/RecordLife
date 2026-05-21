@@ -6,8 +6,8 @@
 
 import preferences from '@ohos.data.preferences';
 import common from '@ohos.app.ability.common';
-import { UserConfig, UserProfile, AppSettings, BackupConfig, DataStatistics, ConfigMetadata, createDefaultConfig, validateConfig } from './UserConfig';
-import { TimeUtils } from './TimeUtils';
+import { UserConfig, UserProfile, AppSettings, BackupConfig, DataStatistics, ConfigMetadata, createDefaultConfig, createDefaultConfigSync, validateConfig } from './UserConfig';
+import { TimeUtils } from '../common/utils/TimeUtils';
 
 // 导出数据接口
 interface ExportData {
@@ -63,7 +63,7 @@ export class ConfigManager {
         console.warn('ConfigManager.init: uiContext 不存在，延迟初始化 preferences');
         // 创建默认配置，但不返回，等待下次初始化
         if (!this.config) {
-          this.config = createDefaultConfig();
+          this.config = await createDefaultConfig();
         }
         return;
       }
@@ -78,14 +78,14 @@ export class ConfigManager {
     } catch (error) {
       console.error('ConfigManager init failed:', error);
       // 使用默认配置
-      this.config = createDefaultConfig();
+      this.config = await createDefaultConfig();
     }
   }
 
   // 从存储加载配置
   private async loadConfig(): Promise<void> {
     if (!this.preferences) {
-      this.config = createDefaultConfig();
+      this.config = await createDefaultConfig();
       return;
     }
 
@@ -99,16 +99,16 @@ export class ConfigManager {
           this.config = parsedConfig;
         } else {
           console.warn('Invalid config, using default');
-          this.config = createDefaultConfig();
+          this.config = await createDefaultConfig();
         }
       } else {
         // 首次使用，创建默认配置
-        this.config = createDefaultConfig();
+        this.config = await createDefaultConfig();
         await this.saveConfig();
       }
     } catch (error) {
       console.error('Load config failed:', error);
-      this.config = createDefaultConfig();
+      this.config = await createDefaultConfig();
     }
   }
 
@@ -146,7 +146,7 @@ export class ConfigManager {
   // 获取完整配置
   getConfig(): UserConfig {
     if (!this.config) {
-      this.config = createDefaultConfig();
+      this.config = createDefaultConfigSync();
     }
     return this.config;
   }
@@ -275,7 +275,7 @@ export class ConfigManager {
 
       // 复制配置
       if (!this.config) {
-        this.config = createDefaultConfig();
+        this.config = await createDefaultConfig();
       }
       
       this.config.version = importedConfig.version;
@@ -296,7 +296,7 @@ export class ConfigManager {
 
   // 重置为默认配置
   async resetToDefault(): Promise<boolean> {
-    this.config = createDefaultConfig();
+    this.config = await createDefaultConfig();
     return await this.saveConfig();
   }
 

@@ -3,6 +3,10 @@
     {
       "name": "app_name",
       "value": "活着"
+    },
+    {
+      "name": "app_description",
+      "value": "记录生活，珍惜每一刻"
     }
   ]
 }

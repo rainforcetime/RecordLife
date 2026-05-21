@@ -3,7 +3,7 @@
  * 扩展性良好的配置结构，支持后续备份功能
  */
 
-import { TimeUtils } from './TimeUtils';
+import { TimeUtils } from '../common/utils/TimeUtils';
 
 // 云备份配置
 export interface CloudBackupConfig {
@@ -52,7 +52,7 @@ export interface ConfigMetadata {
   deviceId: string;
 }
 
-// 应用信息
+// 应用信息（运行时只读，由AppInfoManager管理）
 export interface AppInfo {
   appName: string;
   appVersion: string;
@@ -62,7 +62,7 @@ export interface AppInfo {
   description: string;
 }
 
-// 完整的用户配置
+// 完整的用户配置（不再包含appInfo，由AppInfoManager单独管理）
 export interface UserConfig {
   version: string;
   profile: UserProfile;
@@ -70,11 +70,10 @@ export interface UserConfig {
   backup: BackupConfig;
   statistics: DataStatistics;
   metadata: ConfigMetadata;
-  appInfo: AppInfo;
 }
 
-// 默认配置工厂函数
-export function createDefaultConfig(): UserConfig {
+// 默认配置工厂函数（异步版本）
+export async function createDefaultConfig(): Promise<UserConfig> {
   const now = new Date().toISOString();
   
   const profile: UserProfile = {
@@ -112,13 +111,55 @@ export function createDefaultConfig(): UserConfig {
     deviceId: ''
   };
   
-  const appInfo: AppInfo = {
-    appName: '记录生活',
-    appVersion: '2.1.0',
-    buildNumber: '20260521',
-    developer: 'RecordLife Team',
-    website: 'https://github.com/rainforcetime/record-life',
-    description: '记录生活中的每一个精彩瞬间'
+  const config: UserConfig = {
+    version: '1.0.0',
+    profile: profile,
+    settings: settings,
+    backup: backup,
+    statistics: statistics,
+    metadata: metadata
+  };
+  
+  return config;
+}
+
+// 默认配置工厂函数（同步版本，用于紧急情况）
+export function createDefaultConfigSync(): UserConfig {
+  const now = new Date().toISOString();
+  
+  const profile: UserProfile = {
+    name: '',
+    birthDate: '1990-01-01',
+    gender: '',
+    avatar: ''
+  };
+  
+  const settings: AppSettings = {
+    theme: 'light',
+    language: 'zh-CN',
+    showTimeDetails: true,
+    enableNotifications: false,
+    timeFormat: 'standard'
+  };
+  
+  const backup: BackupConfig = {
+    autoBackup: false,
+    backupFrequency: 7,
+    lastBackupTime: '',
+    backupPath: '',
+    cloudBackup: null
+  };
+  
+  const statistics: DataStatistics = {
+    usageDays: 0,
+    lastActiveTime: now,
+    dataVersion: 1
+  };
+  
+  const metadata: ConfigMetadata = {
+    createdAt: now,
+    updatedAt: now,
+    deviceId: ''
   };
   
   const config: UserConfig = {
@@ -127,8 +168,7 @@ export function createDefaultConfig(): UserConfig {
     settings: settings,
     backup: backup,
     statistics: statistics,
-    metadata: metadata,
-    appInfo: appInfo
+    metadata: metadata
   };
   
   return config;

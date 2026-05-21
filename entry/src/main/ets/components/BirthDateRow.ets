@@ -1,6 +1,6 @@
 // 出生日期选择组件
 import { ConfigManager } from '../config/ConfigManager';
-import { TimeUtils } from '../config/TimeUtils';
+import { TimeUtils } from '../common/utils/TimeUtils';
 
 @Component
 export struct BirthDateRow {

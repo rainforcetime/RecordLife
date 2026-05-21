@@ -2,11 +2,11 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "module description"
+      "value": "RecordLife主模块，提供生活记录功能"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "活着应用主入口，记录生活的点点滴滴"
     },
     {
       "name": "EntryAbility_label",

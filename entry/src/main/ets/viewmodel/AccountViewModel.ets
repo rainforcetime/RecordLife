@@ -3,14 +3,12 @@ import { photoAccessHelper } from '@kit.MediaLibraryKit'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { fileIo, fileUri, storageStatistics } from '@kit.CoreFileKit'
 import { common, ConfigurationConstant } from '@kit.AbilityKit'
-import { preferences } from '@kit.ArkData'
 import { ConfigManager } from '../config/ConfigManager'
 import { AppInfo } from '../config/UserConfig'
+import { AppInfoManager } from '../config/AppInfoConfig'
 import { ThemeManager } from '../config/ThemeManager'
 import { AccountUtils } from '../common/utils/AccountUtils'
-import { TimeUtils } from '../config/TimeUtils'
-
-const AVATAR_PREFERENCES_KEY = 'user_avatar_path'
+import { TimeUtils } from '../common/utils/TimeUtils'
 
 // 用户资料数据模型
 export interface UserProfile {
@@ -44,7 +42,7 @@ export interface AvatarInfo {
 export class AccountViewModel {
   private context: common.UIAbilityContext | null = null
   private configManager: ConfigManager | null = null
-  private themeManager: ThemeManager = ThemeManager.getInstance()
+  private themeManager: ThemeManager | null = null
 
   // 初始化配置管理器
   async initialize(context: common.UIAbilityContext): Promise<void> {
@@ -54,6 +52,9 @@ export class AccountViewModel {
       
       this.configManager = await ConfigManager.getInstance()
       console.info('AccountViewModel: configManager 已初始化 - ' + (this.configManager ? '成功' : '失败'))
+      
+      this.themeManager = await ThemeManager.getInstance()
+      console.info('AccountViewModel: themeManager 已初始化 - ' + (this.themeManager ? '成功' : '失败'))
     } catch (error) {
       console.error('AccountViewModel 初始化失败: ' + JSON.stringify(error))
     }
@@ -117,30 +118,34 @@ export class AccountViewModel {
     }
   }
 
-  // 加载应用信息
+  // 加载应用信息（从AppInfoManager获取）
   async loadAppInfo(): Promise<AppInfo> {
+    // 默认应用信息（作为备用）
     const defaultAppInfo: AppInfo = {
-      appName: '记录生活',
-      appVersion: '2.1.0',
+      appName: '活着',
+      appVersion: '0.0.1',
       buildNumber: '20260521',
-      developer: 'RecordLife Team',
+      developer: 'rainforcetime',
       website: 'https://github.com/rainforcetime/record-life',
-      description: '记录生活中的每一个精彩瞬间'
-    }
-
-    if (!this.configManager) {
-      return defaultAppInfo
-    }
+      description: '记录生活，珍惜每一刻'
+    };
 
     try {
-      const config = this.configManager.getConfig()
-      if (config.appInfo) {
-        return config.appInfo
-      }
-      return defaultAppInfo
+      // 从AppInfoManager获取应用信息（从bundleManager读取）
+      const appInfoManager = await AppInfoManager.getInstance();
+      const config = appInfoManager.getAppInfo();
+      
+      return {
+        appName: config.appName,
+        appVersion: config.appVersion,
+        buildNumber: config.buildNumber,
+        developer: config.developer,
+        website: config.website,
+        description: config.description
+      };
     } catch (error) {
-      console.error('加载应用信息失败: ' + JSON.stringify(error))
-      return defaultAppInfo
+      console.error('从AppInfoManager加载应用信息失败: ' + JSON.stringify(error));
+      return defaultAppInfo;
     }
   }
 
@@ -148,39 +153,53 @@ export class AccountViewModel {
   async loadDataStatistics(): Promise<DataStatistics> {
     const defaultStatistics: DataStatistics = {
       usageDays: 0,
-      dataVersion: 'v1.0.0',
+      dataVersion: 'v0.0.1',
       lastActiveTime: '',
       storageSize: '计算中...'
     }
 
-    if (!this.configManager) {
-      return defaultStatistics
-    }
-
     try {
-      const config = this.configManager.getConfig()
+      // 优先从AppInfoManager获取最新版本信息
+      let appVersion = '0.0.1';
+      try {
+        const appInfoManager = await AppInfoManager.getInstance();
+        appVersion = appInfoManager.getAppVersion();
+      } catch (error) {
+        console.error('从AppInfoManager获取版本失败: ' + JSON.stringify(error));
+      }
+
+      if (!this.configManager) {
+        return {
+          usageDays: 0,
+          dataVersion: `v${appVersion}`,
+          lastActiveTime: '',
+          storageSize: '计算中...'
+        };
+      }
+
+      const config = this.configManager.getConfig();
       
       // 计算使用天数（从配置创建时间开始）
-      const createdAt = new Date(config.metadata.createdAt)
-      const now = TimeUtils.now()
-      const daysDiff = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
+      const createdAt = new Date(config.metadata.createdAt);
+      const now = TimeUtils.now();
+      const daysDiff = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
       
       // 格式化最后活跃时间
-      const lastActiveDate = new Date(config.statistics.lastActiveTime)
-      const lastActiveTime = this.formatDateTime(lastActiveDate)
+      const lastActiveDate = new Date(config.statistics.lastActiveTime);
+      const lastActiveTime = this.formatDateTime(lastActiveDate);
       
       // 获取应用存储空间大小
-      const storageSize = await this.getAppStorageSize()
+      const storageSize = await this.getAppStorageSize();
       
       return {
         usageDays: daysDiff >= 0 ? daysDiff : 0,
-        dataVersion: `v${config.appInfo.appVersion}`,
+        dataVersion: `v${appVersion}`,
         lastActiveTime: lastActiveTime,
         storageSize: storageSize
-      }
+      };
     } catch (error) {
-      console.error('加载数据统计失败: ' + JSON.stringify(error))
-      return defaultStatistics
+      console.error('加载数据统计失败: ' + JSON.stringify(error));
+      return defaultStatistics;
     }
   }
 
@@ -220,17 +239,16 @@ export class AccountViewModel {
     }
   }
 
-  // 加载保存的头像
+  // 加载保存的头像（从ConfigManager统一读取）
   async loadSavedAvatar(): Promise<AvatarInfo> {
     try {
-      if (!this.context) {
+      if (!this.configManager) {
         return { avatar: '', hasCustomAvatar: false }
       }
 
-      // 获取首选项实例
-      let dataPreferences = await preferences.getPreferences(this.context, 'user_settings')
-      // 读取保存的头像路径（可能是URI格式）
-      let savedAvatarPath = await dataPreferences.get(AVATAR_PREFERENCES_KEY, '') as string
+      // 从ConfigManager获取头像路径
+      const config = this.configManager.getConfig()
+      const savedAvatarPath = config.profile.avatar
 
       if (savedAvatarPath && savedAvatarPath.length > 0) {
         // 如果是URI格式（file://开头），直接使用
@@ -259,8 +277,8 @@ export class AccountViewModel {
   async onThemeChange(value: string): Promise<boolean> {
     console.info('开始切换主题: ' + value)
     
-    if (!this.configManager) {
-      console.error('配置管理器未初始化')
+    if (!this.themeManager) {
+      console.error('主题管理器未初始化')
       return false
     }
     
@@ -274,24 +292,21 @@ export class AccountViewModel {
       const theme = AccountUtils.displayToTheme(value)
       console.info('转换后的主题: ' + theme)
 
-      // 保存到配置管理器
-      const success = await this.configManager.setTheme(theme)
-      console.info('保存主题结果: ' + success)
+      // 通过ThemeManager更新主题（会自动保存到ConfigManager并更新AppStorage）
+      const success = await this.themeManager.updateTheme(theme as 'light' | 'dark' | 'auto')
+      console.info('更新主题结果: ' + success)
 
       if (success) {
         // 应用主题到系统
         await this.applyTheme(theme)
 
-        // 更新 AppStorage
+        // 更新 AppStorage（供页面监听）
         AppStorage.setOrCreate('currentTheme', theme)
-
-        // 更新主题管理器（触发颜色更新）
-        this.themeManager.updateTheme(theme as 'light' | 'dark' | 'auto')
 
         console.info('主题设置成功: ' + theme)
         return true
       } else {
-        console.error('主题保存失败')
+        console.error('主题更新失败')
         return false
       }
     } catch (error) {
@@ -406,21 +421,30 @@ export class AccountViewModel {
     }
   }
 
-  // 保存头像路径到首选项
+  // 保存头像路径到ConfigManager（统一存储）
   private async saveAvatarPath(avatarPath: string): Promise<void> {
     try {
-      if (!this.context) {
+      if (!this.configManager) {
+        console.error('配置管理器未初始化，无法保存头像')
         return
       }
 
-      // 获取首选项实例
-      let dataPreferences = await preferences.getPreferences(this.context, 'user_settings')
-      // 保存头像路径
-      await dataPreferences.put(AVATAR_PREFERENCES_KEY, avatarPath)
-      // 持久化存储
-      await dataPreferences.flush()
+      // 获取当前配置
+      const config = this.configManager.getConfig()
+      
+      // 更新头像路径并保存
+      const success = await this.configManager.updateProfile(
+        config.profile.name,
+        config.profile.birthDate,
+        config.profile.gender,
+        avatarPath
+      )
 
-      console.info('头像路径保存成功: ' + avatarPath)
+      if (success) {
+        console.info('头像路径保存成功: ' + avatarPath)
+      } else {
+        console.error('头像路径保存失败')
+      }
     } catch (error) {
       console.error('保存头像路径失败: ' + JSON.stringify(error))
     }
