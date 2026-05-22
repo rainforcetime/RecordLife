@@ -171,12 +171,12 @@ export struct AddRecordSection {
       if (pickerResult && pickerResult.resultUri && pickerResult.resultCode === 0) {
         console.info('[AddRecordSection] 拍照成功: ' + pickerResult.resultUri)
         
-        // 保存图片到沙箱目录
+        // 保存图片到沙箱目录（返回 URI 格式）
         if (this.viewModel) {
-          const savedPath = await this.viewModel.saveImageToSandbox(pickerResult.resultUri)
-          if (savedPath) {
-            this.imagePath = savedPath
-            this.imageUri = this.viewModel.getImageUri(savedPath)
+          const savedUri = await this.viewModel.saveImageToSandbox(pickerResult.resultUri)
+          if (savedUri) {
+            this.imagePath = savedUri  // 存储 URI
+            this.imageUri = savedUri   // 显示 URI（统一格式，无需转换）
           }
         }
       }

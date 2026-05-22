@@ -331,10 +331,10 @@ struct NowPage {
     this.editingRecord = record
     this.editContent = record.content
     
-    // 如果有图片，初始化图片路径和 URI
-    if (record.imagePath && this.viewModel) {
-      this.editImagePath = record.imagePath
-      this.editImageUri = this.viewModel.getImageUri(record.imagePath)
+    // 如果有图片，初始化图片路径和 URI（统一为 URI 格式）
+    if (record.imagePath) {
+      this.editImagePath = record.imagePath  // 已经是 URI 格式
+      this.editImageUri = record.imagePath   // 直接使用，无需转换
     } else {
       this.editImagePath = ''
       this.editImageUri = ''
@@ -399,12 +399,12 @@ struct NowPage {
       if (pickerResult && pickerResult.resultUri && pickerResult.resultCode === 0) {
         console.info('[NowPage] 重新拍摄成功: ' + pickerResult.resultUri)
         
-        // 保存图片到沙箱目录
+        // 保存图片到沙箱目录（返回 URI 格式）
         if (this.viewModel) {
-          const savedPath = await this.viewModel.saveImageToSandbox(pickerResult.resultUri)
-          if (savedPath) {
-            this.editImagePath = savedPath
-            this.editImageUri = this.viewModel.getImageUri(savedPath)
+          const savedUri = await this.viewModel.saveImageToSandbox(pickerResult.resultUri)
+          if (savedUri) {
+            this.editImagePath = savedUri  // 存储 URI
+            this.editImageUri = savedUri   // 显示 URI（统一格式，无需转换）
           }
         }
       }
