@@ -2,7 +2,7 @@
 import { common } from '@kit.AbilityKit'
 import preferences from '@ohos.data.preferences'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
-import { LifeRecord, TimelineYear, TimelineMonth, TimelineDay, TimelineData, RecordType } from '../common/types'
+import { LifeRecord, TimelineYear, TimelineMonth, TimelineDay, TimelineData } from '../common/types'
 import { TimeUtils } from '../common/utils/TimeUtils'
 
 // 生活记录数据管理类
@@ -106,25 +106,21 @@ export class NowViewModel {
       {
         id: this.generateId(),
         timestamp: now,
-        type: 'text',
         content: '欢迎使用 RecordLife！这是一个记录生活点滴的应用。点击下方按钮开始记录你的每一天吧！🎉'
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs,
-        type: 'text',
         content: '这是昨天的记录示例。你可以记录文字，也可以添加图片。'
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 3,
-        type: 'text',
         content: '三天前的记录，时间线会按年月日自动组织。'
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 35,
-        type: 'text',
         content: '一个月前的记录，可以看到时间线的层级结构。'
       }
     ]
@@ -165,13 +161,12 @@ export class NowViewModel {
   }
   
   // 添加记录
-  async addRecord(type: RecordType, content: string, description?: string): Promise<LifeRecord | null> {
+  async addRecord(content: string, imagePath?: string): Promise<LifeRecord | null> {
     const record: LifeRecord = {
       id: this.generateId(),
       timestamp: Date.now(),
-      type: type,
       content: content,
-      description: description
+      imagePath: imagePath
     }
     
     this.records.unshift(record) // 添加到开头
@@ -187,16 +182,39 @@ export class NowViewModel {
   }
   
   // 更新记录
-  async updateRecord(id: string, content: string, description?: string): Promise<boolean> {
+  async updateRecord(id: string, content: string, imagePath?: string): Promise<boolean> {
     const index = this.records.findIndex(r => r.id === id)
     if (index === -1) {
       console.error('[NowViewModel] 未找到记录: ' + id)
       return false
     }
     
-    this.records[index].content = content
-    if (description !== undefined) {
-      this.records[index].description = description
+    const record = this.records[index]
+    
+    // 更新文字内容
+    record.content = content
+    
+    // 处理图片路径更新
+    if (imagePath !== undefined) {
+      // 如果新路径是空字符串，表示移除图片
+      if (imagePath.length === 0) {
+        // 删除原来的图片文件
+        if (record.imagePath) {
+          try {
+            if (this.context && fileIo.accessSync(record.imagePath)) {
+              fileIo.unlinkSync(record.imagePath)
+              console.info('[NowViewModel] 图片文件已删除: ' + record.imagePath)
+            }
+          } catch (error) {
+            console.error('[NowViewModel] 删除图片文件失败: ' + JSON.stringify(error))
+          }
+        }
+        // 移除 imagePath 字段（设置为 undefined）
+        record.imagePath = undefined
+      } else {
+        // 更新为新的图片路径
+        record.imagePath = imagePath
+      }
     }
     
     return await this.saveRecords()
@@ -212,12 +230,12 @@ export class NowViewModel {
     
     const record = this.records[index]
     
-    // 如果是图片记录，删除图片文件
-    if (record.type === 'image' && record.content) {
+    // 如果有图片，删除图片文件
+    if (record.imagePath) {
       try {
-        if (this.context && fileIo.accessSync(record.content)) {
-          fileIo.unlinkSync(record.content)
-          console.info('[NowViewModel] 图片文件已删除: ' + record.content)
+        if (this.context && fileIo.accessSync(record.imagePath)) {
+          fileIo.unlinkSync(record.imagePath)
+          console.info('[NowViewModel] 图片文件已删除: ' + record.imagePath)
         }
       } catch (error) {
         console.error('[NowViewModel] 删除图片文件失败: ' + JSON.stringify(error))

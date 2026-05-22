@@ -101,15 +101,15 @@ export class BackupManager {
       
       let imageCount = 0
       for (const record of records) {
-        if (record.type === 'image' && record.content) {
+        if (record.imagePath) {
           // 检查图片文件是否存在
-          if (fileIo.accessSync(record.content)) {
+          if (fileIo.accessSync(record.imagePath)) {
             // 获取文件名
-            const fileName = record.content.split('/').pop() || `image_${record.id}.jpg`
+            const fileName = record.imagePath.split('/').pop() || `image_${record.id}.jpg`
             const destPath = `${recordsDir}/${fileName}`
             
             // 复制文件
-            fileIo.copyFileSync(record.content, destPath)
+            fileIo.copyFileSync(record.imagePath, destPath)
             imageCount++
           }
         }

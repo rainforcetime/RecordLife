@@ -17,16 +17,12 @@ export interface DateDifference {
 
 // ==================== NowPage 类型定义 ====================
 
-// 生活记录类型
-export type RecordType = 'image' | 'text';
-
-// 生活记录条目
+// 生活记录条目（统一类型，图片为可选项）
 export interface LifeRecord {
   id: string;                    // 唯一标识
   timestamp: number;             // 时间戳（毫秒）
-  type: RecordType;              // 类型
-  content: string;               // 文字内容或图片路径
-  description?: string;          // 图片描述（可选）
+  content: string;               // 文字内容（可为空）
+  imagePath?: string;            // 图片路径（可选）
 }
 
 // 时间线日期节点

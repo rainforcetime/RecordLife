@@ -11,7 +11,7 @@ export interface RecordCardCallbacks {
 
 @Component
 export struct RecordCard {
-  @Prop record: LifeRecord = { id: '', timestamp: 0, type: 'text', content: '' }
+  @Prop record: LifeRecord = { id: '', timestamp: 0, content: '' }
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
   
   // 回调函数
@@ -21,41 +21,15 @@ export struct RecordCard {
   // ViewModel
   private viewModel: NowViewModel | null = null
   
-  // 是否显示操作菜单
-  @State private showMenu: boolean = false
-  
   async aboutToAppear() {
     this.viewModel = await NowViewModel.getInstance()
   }
   
   build() {
     Column() {
-      if (this.record.type === 'image') {
-        // 图片卡片
-        this.ImageCardContent()
-      } else {
-        // 文字卡片
-        this.TextCardContent()
-      }
-    }
-    .backgroundColor(this.themeColors.cardBackground)
-    .borderRadius(12)
-    .padding({ left: 12, right: 12, top: 12, bottom: 12 })
-    .shadow({
-      radius: 8,
-      color: this.themeColors.shadow,
-      offsetX: 0,
-      offsetY: 2
-    })
-  }
-  
-  // 图片卡片内容
-  @Builder
-  ImageCardContent() {
-    Column() {
-      // 图片
-      if (this.viewModel) {
-        Image(this.viewModel.getImageUri(this.record.content))
+      // 图片（如果有）
+      if (this.record.imagePath && this.viewModel) {
+        Image(this.viewModel.getImageUri(this.record.imagePath))
           .width(120)
           .height('auto')
           .objectFit(ImageFit.Contain)
@@ -75,46 +49,27 @@ export struct RecordCard {
         this.ActionButtons()
       }
       .width('100%')
-      .margin({ top: 8 })
+      .margin({ top: this.record.imagePath ? 8 : 0 })
       
-      // 描述（如果有）
-      if (this.record.description && this.record.description.length > 0) {
-        Text(this.record.description)
+      // 文字内容（如果有）
+      if (this.record.content && this.record.content.length > 0) {
+        Text(this.record.content)
           .fontSize(14)
           .fontColor(this.themeColors.textPrimary)
           .margin({ top: 8 })
           .width('100%')
+          .lineHeight(20)
       }
     }
-    .width('90%')
-    .alignItems(HorizontalAlign.Start)
-  }
-  
-  // 文字卡片内容
-  @Builder
-  TextCardContent() {
-    Column() {
-      // 时间戳
-      Row() {
-        Text('📅 ' + this.formatDateTime(this.record.timestamp))
-          .fontSize(12)
-          .fontColor(this.themeColors.textSecondary)
-        
-        Blank()
-        
-        // 操作按钮
-        this.ActionButtons()
-      }
-      .width('100%')
-      
-      // 文字内容
-      Text(this.record.content)
-        .fontSize(14)
-        .fontColor(this.themeColors.textPrimary)
-        .margin({ top: 8 })
-        .width('100%')
-        .lineHeight(20)
-    }
+    .backgroundColor(this.themeColors.cardBackground)
+    .borderRadius(12)
+    .padding({ left: 12, right: 12, top: 12, bottom: 12 })
+    .shadow({
+      radius: 8,
+      color: this.themeColors.shadow,
+      offsetX: 0,
+      offsetY: 2
+    })
     .width('90%')
     .alignItems(HorizontalAlign.Start)
   }

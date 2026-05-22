@@ -24,7 +24,6 @@ struct NowPage {
   @State private editingRecord: LifeRecord | null = null
   @State private showEditDialog: boolean = false
   @State private editContent: string = ''
-  @State private editDescription: string = ''
   
   // 编辑图片时的临时变量
   @State private editImagePath: string = ''
@@ -185,12 +184,21 @@ struct NowPage {
         .width('100%')
         .margin({ bottom: 16 })
       
-      // 根据记录类型显示不同的编辑界面
-      if (this.editingRecord && this.editingRecord.type === 'image') {
-        // 图片记录编辑
-        Column() {
-          // 图片预览
-          if (this.editImageUri) {
+      // 文字内容输入
+      TextArea({ placeholder: '输入内容...', text: $$this.editContent })
+        .width('100%')
+        .height(100)
+        .backgroundColor(this.themeColors.background)
+        .borderRadius(12)
+        .border({ width: 1, color: this.themeColors.border })
+        .fontColor(this.themeColors.textPrimary)
+        .padding(12)
+      
+      // 图片区域（可选）
+      Column() {
+        if (this.editImageUri) {
+          // 已有图片
+          Column() {
             Image(this.editImageUri)
               .width('100%')
               .height('auto')
@@ -199,56 +207,56 @@ struct NowPage {
               .constraintSize({ maxHeight: 200 })
               .margin({ bottom: 12 })
             
-            // 重新拍摄按钮
-            Button('重新拍摄')
-              .width('100%')
-              .height(40)
-              .backgroundColor(this.themeColors.background)
-              .fontColor(this.themeColors.primary)
-              .borderRadius(8)
-              .onClick(() => {
-                this.onRetakePhoto()
-              })
-          } else {
-            // 加载中提示
-            Column() {
-              Text('📷')
-                .fontSize(48)
-              Text('加载图片中...')
-                .fontSize(14)
-                .fontColor(this.themeColors.textSecondary)
-                .margin({ top: 8 })
+            Row() {
+              Button('重新拍摄')
+                .layoutWeight(1)
+                .height(40)
+                .backgroundColor(this.themeColors.background)
+                .fontColor(this.themeColors.primary)
+                .borderRadius(8)
+                .onClick(() => {
+                  this.onRetakePhoto()
+                })
+              
+              Button('移除图片')
+                .layoutWeight(1)
+                .height(40)
+                .backgroundColor(this.themeColors.background)
+                .fontColor(this.themeColors.error)
+                .borderRadius(8)
+                .margin({ left: 12 })
+                .onClick(() => {
+                  this.editImagePath = ''
+                  this.editImageUri = ''
+                })
             }
             .width('100%')
-            .height(150)
-            .justifyContent(FlexAlign.Center)
-            .backgroundColor(this.themeColors.background)
-            .borderRadius(12)
           }
-          
-          // 图片描述输入
-          TextArea({ placeholder: '为这张照片添加描述...', text: $$this.editDescription })
-            .width('100%')
-            .height(80)
-            .backgroundColor(this.themeColors.background)
-            .borderRadius(12)
-            .border({ width: 1, color: this.themeColors.border })
-            .fontColor(this.themeColors.textPrimary)
-            .padding(12)
-            .margin({ top: 12 })
-        }
-        .width('100%')
-      } else {
-        // 文字记录编辑
-        TextArea({ placeholder: '输入内容...', text: $$this.editContent })
+          .width('100%')
+        } else {
+          // 添加图片按钮
+          Button() {
+            Column() {
+              Text('📷')
+                .fontSize(24)
+              Text('添加图片')
+                .fontSize(12)
+                .fontColor(this.themeColors.textSecondary)
+                .margin({ top: 4 })
+            }
+          }
           .width('100%')
           .height(100)
           .backgroundColor(this.themeColors.background)
           .borderRadius(12)
-          .border({ width: 1, color: this.themeColors.border })
-          .fontColor(this.themeColors.textPrimary)
-          .padding(12)
+          .border({ width: 1, color: this.themeColors.border, style: BorderStyle.Dashed })
+          .onClick(() => {
+            this.onRetakePhoto()
+          })
+        }
       }
+      .width('100%')
+      .margin({ top: 16 })
       
       // 操作按钮
       Row() {
@@ -322,12 +330,11 @@ struct NowPage {
   private onEditRecord(record: LifeRecord) {
     this.editingRecord = record
     this.editContent = record.content
-    this.editDescription = record.description || ''
     
-    // 如果是图片记录，初始化图片路径和 URI
-    if (record.type === 'image' && this.viewModel) {
-      this.editImagePath = record.content
-      this.editImageUri = this.viewModel.getImageUri(record.content)
+    // 如果有图片，初始化图片路径和 URI
+    if (record.imagePath && this.viewModel) {
+      this.editImagePath = record.imagePath
+      this.editImageUri = this.viewModel.getImageUri(record.imagePath)
     } else {
       this.editImagePath = ''
       this.editImageUri = ''
@@ -342,16 +349,18 @@ struct NowPage {
       return
     }
     
+    // 至少需要文字或图片
+    if (this.editContent.trim().length === 0 && this.editImagePath.length === 0) {
+      promptAction.showToast({ message: '请输入内容或添加图片' })
+      return
+    }
+    
     try {
-      // 对于图片记录，如果有新的图片路径，使用新路径；否则使用原路径
-      const content = this.editingRecord.type === 'image' && this.editImagePath 
-        ? this.editImagePath 
-        : this.editContent.trim()
-      
+      // 直接传递 editImagePath，空字符串表示移除图片
       const success = await this.viewModel.updateRecord(
         this.editingRecord.id,
-        content,
-        this.editDescription.trim()
+        this.editContent.trim(),
+        this.editImagePath  // 空字符串表示移除图片
       )
       
       if (success) {

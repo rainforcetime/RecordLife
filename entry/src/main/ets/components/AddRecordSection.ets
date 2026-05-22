@@ -3,7 +3,7 @@ import { common } from '@kit.AbilityKit'
 import { cameraPicker as picker, camera } from '@kit.CameraKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { NowViewModel } from '../viewmodel/NowViewModel'
-import { RecordType, LifeRecord } from '../common/types'
+import { LifeRecord } from '../common/types'
 import { RefreshManager } from '../common/RefreshManager'
 import { promptAction } from '@kit.ArkUI'
 
@@ -11,18 +11,12 @@ import { promptAction } from '@kit.ArkUI'
 export struct AddRecordSection {
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
   
-  // 当前模式：'text' 或 'image'
-  @State private currentMode: RecordType = 'text'
-  
   // 文字内容
   @State private textContent: string = ''
   
   // 图片路径
   @State private imagePath: string = ''
   @State private imageUri: string = ''
-  
-  // 图片描述
-  @State private imageDescription: string = ''
   
   // 是否正在保存
   @State private isSaving: boolean = false
@@ -51,128 +45,83 @@ export struct AddRecordSection {
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
           .width('100%')
-          .margin({ bottom: '10%' })
+          .margin({ bottom: 16 })
         
-        // 模式选择
-        Row() {
-          // 文字模式按钮
-          Column() {
-            Text('📝')
-              .fontSize(28)
-            Text('文字')
-              .fontSize(12)
-              .fontColor(this.currentMode === 'text' ? this.themeColors.primary : this.themeColors.textSecondary)
-              .margin({ top: 4 })
-          }
-          .width(80)
-          .height(70)
-          .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .backgroundColor(this.currentMode === 'text' ? this.themeColors.primaryLight : this.themeColors.cardBackground)
+        // 文字输入区域
+        TextArea({ placeholder: '记录此刻的想法...', text: $$this.textContent })
+          .width('100%')
+          .height('40%')
+          .backgroundColor(this.themeColors.cardBackground)
           .borderRadius(12)
-          .border({
-            width: this.currentMode === 'text' ? 2 : 1,
-            color: this.currentMode === 'text' ? this.themeColors.primary : this.themeColors.border
-          })
-          .onClick(() => {
-            this.currentMode = 'text'
-          })
-          
-          // 图片模式按钮
-          Column() {
-            Text('📷')
-              .fontSize(28)
-            Text('拍照')
-              .fontSize(12)
-              .fontColor(this.currentMode === 'image' ? this.themeColors.primary : this.themeColors.textSecondary)
-              .margin({ top: 4 })
-          }
-          .width(80)
-          .height(70)
-          .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .backgroundColor(this.currentMode === 'image' ? this.themeColors.primaryLight : this.themeColors.cardBackground)
-          .borderRadius(12)
-          .border({
-            width: this.currentMode === 'image' ? 2 : 1,
-            color: this.currentMode === 'image' ? this.themeColors.primary : this.themeColors.border
-          })
-          .margin({ left: 16 })
-          .onClick(() => {
-            this.currentMode = 'image'
-            this.onTakePhoto()
-          })
-        }
-        .width('100%')
-        .justifyContent(FlexAlign.Center)
-        .margin({ bottom: 16 })
+          .border({ width: 1, color: this.themeColors.border })
+          .fontColor(this.themeColors.textPrimary)
+          .placeholderColor(this.themeColors.textTertiary)
+          .padding(12)
         
-        // 内容输入区域
-        if (this.currentMode === 'text') {
-          // 文字输入
-          TextArea({ placeholder: '记录此刻的想法...', text: $$this.textContent })
-            .width('100%')
-            .height('60%')
-            .backgroundColor(this.themeColors.cardBackground)
-            .borderRadius(12)
-            .border({ width: 1, color: this.themeColors.border })
-            .fontColor(this.themeColors.textPrimary)
-            .placeholderColor(this.themeColors.textTertiary)
-            .padding(12)
-        } else {
-          // 图片预览和描述输入
-          Column() {
-            // 图片预览
-            if (this.imageUri) {
+        // 图片区域（可选）
+        Column() {
+          // 图片预览或添加按钮
+          if (this.imageUri) {
+            // 已添加图片
+            Column() {
               Image(this.imageUri)
                 .width(120)
                 .height('auto')
                 .objectFit(ImageFit.Contain)
                 .borderRadius(8)
                 .constraintSize({ maxHeight: 150 })
-                .margin({ bottom: 12 })
+                .margin({ bottom: 8 })
               
-              // 重新拍摄按钮
-              Button('重新拍摄')
-                .fontSize(12)
-                .height(32)
-                .backgroundColor(this.themeColors.background)
-                .fontColor(this.themeColors.primary)
-                .borderRadius(8)
-                .onClick(() => {
-                  this.onTakePhoto()
-                })
-            } else {
-              // 拍照提示
+              Row() {
+                Button('重新拍摄')
+                  .fontSize(12)
+                  .height(32)
+                  .backgroundColor(this.themeColors.background)
+                  .fontColor(this.themeColors.primary)
+                  .borderRadius(8)
+                  .onClick(() => {
+                    this.onTakePhoto()
+                  })
+                
+                Button('移除图片')
+                  .fontSize(12)
+                  .height(32)
+                  .backgroundColor(this.themeColors.background)
+                  .fontColor(this.themeColors.error)
+                  .borderRadius(8)
+                  .margin({ left: 8 })
+                  .onClick(() => {
+                    this.imagePath = ''
+                    this.imageUri = ''
+                  })
+              }
+            }
+            .width('100%')
+            .alignItems(HorizontalAlign.Center)
+          } else {
+            // 添加图片按钮
+            Button() {
               Column() {
                 Text('📷')
-                  .fontSize(48)
-                Text('点击上方拍照按钮')
-                  .fontSize(14)
+                  .fontSize(24)
+                Text('添加图片')
+                  .fontSize(12)
                   .fontColor(this.themeColors.textSecondary)
-                  .margin({ top: 8 })
+                  .margin({ top: 4 })
               }
-              .width('100%')
-              .height(120)
-              .justifyContent(FlexAlign.Center)
-              .backgroundColor(this.themeColors.background)
-              .borderRadius(12)
             }
-            
-            // 图片描述输入
-            TextArea({ placeholder: '为这张照片添加描述...', text: $$this.imageDescription })
-              .width('100%')
-              .height('30%')
-              .backgroundColor(this.themeColors.cardBackground)
-              .borderRadius(12)
-              .border({ width: 1, color: this.themeColors.border })
-              .fontColor(this.themeColors.textPrimary)
-              .placeholderColor(this.themeColors.textTertiary)
-              .padding(12)
-              .margin({ top: 12 })
+            .width('100%')
+            .height(100)
+            .backgroundColor(this.themeColors.background)
+            .borderRadius(12)
+            .border({ width: 1, color: this.themeColors.border, style: BorderStyle.Dashed })
+            .onClick(() => {
+              this.onTakePhoto()
+            })
           }
-          .width('100%')
         }
+        .width('100%')
+        .margin({ top: 16 })
         
         // 保存按钮
         Button(this.isSaving ? '保存中...' : '保存记录')
@@ -199,13 +148,9 @@ export struct AddRecordSection {
     .align(Alignment.Top)
   }
   
-  // 判断是否可以保存
+  // 判断是否可以保存（至少有文字或图片）
   private canSave(): boolean {
-    if (this.currentMode === 'text') {
-      return this.textContent.trim().length > 0
-    } else {
-      return this.imagePath.length > 0
-    }
+    return this.textContent.trim().length > 0 || this.imagePath.length > 0
   }
   
   // 拍照
@@ -251,15 +196,11 @@ export struct AddRecordSection {
     this.isSaving = true
     
     try {
-      let record: LifeRecord | null = null
-      
-      if (this.currentMode === 'text') {
-        // 保存文字记录
-        record = await this.viewModel.addRecord('text', this.textContent.trim())
-      } else {
-        // 保存图片记录
-        record = await this.viewModel.addRecord('image', this.imagePath, this.imageDescription.trim())
-      }
+      // 统一保存记录
+      const record = await this.viewModel.addRecord(
+        this.textContent.trim(),
+        this.imagePath.length > 0 ? this.imagePath : undefined
+      )
       
       if (record) {
         promptAction.showToast({ message: '记录保存成功' })
@@ -268,7 +209,6 @@ export struct AddRecordSection {
         this.textContent = ''
         this.imagePath = ''
         this.imageUri = ''
-        this.imageDescription = ''
         
         // 触发全局刷新
         console.info('[AddRecordSection] 触发全局刷新')
