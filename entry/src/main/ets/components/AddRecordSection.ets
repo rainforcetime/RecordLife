@@ -4,7 +4,7 @@ import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { NowViewModel } from '../viewmodel/NowViewModel'
 import { LifeRecord } from '../common/types'
 import { RefreshManager } from '../common/RefreshManager'
-import { promptAction } from '@kit.ArkUI'
+import { PromptAction } from '@kit.ArkUI'
 import { ImagePickerUtils, ImagePickMode } from '../common/utils/ImagePickerUtils'
 
 @Component
@@ -24,11 +24,16 @@ export struct AddRecordSection {
   // ViewModel（直接获取单例实例）
   private viewModel: NowViewModel | null = null
   
+  // PromptAction（用于显示 Toast）
+  private promptAction: PromptAction | null = null
+  
   // 保存成功回调
   onSaveSuccess?: () => void
   
   // 组件初始化时获取 ViewModel
   aboutToAppear() {
+    // 获取 PromptAction
+    this.promptAction = this.getUIContext().getPromptAction()
     // 同步获取已初始化的 ViewModel 实例
     NowViewModel.getInstance().then((vm) => {
       this.viewModel = vm
@@ -202,19 +207,27 @@ export struct AddRecordSection {
             this.imageUri = savedUri   // 显示 URI（统一格式，无需转换）
           }
         }
-      } else if (result.errorMessage) {
-        ImagePickerUtils.showErrorToast(result.errorMessage)
+      } else if (result.errorMessage && this.promptAction) {
+        ImagePickerUtils.showErrorToast(this.promptAction, result.errorMessage)
       }
     } catch (error) {
       console.error('[AddRecordSection] 选择图片失败: ' + JSON.stringify(error))
-      ImagePickerUtils.showErrorToast('选择图片失败，请重试')
+      if (this.promptAction) {
+        ImagePickerUtils.showErrorToast(this.promptAction, '选择图片失败，请重试')
+      }
     }
   }
   
   // 保存记录
   private async onSave() {
-    if (!this.viewModel) {
-      promptAction.showToast({ message: '数据管理器未初始化' })
+    if (!this.viewModel || !this.promptAction) {
+      if (this.promptAction) {
+        try {
+          this.promptAction.showToast({ message: '数据管理器未初始化' })
+        } catch (error) {
+          console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
+        }
+      }
       return
     }
     
@@ -228,7 +241,11 @@ export struct AddRecordSection {
       )
       
       if (record) {
-        promptAction.showToast({ message: '记录保存成功' })
+        try {
+          this.promptAction.showToast({ message: '记录保存成功' })
+        } catch (error) {
+          console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
+        }
         
         // 清空输入
         this.textContent = ''
@@ -244,11 +261,19 @@ export struct AddRecordSection {
           this.onSaveSuccess()
         }
       } else {
-        promptAction.showToast({ message: '保存失败，请重试' })
+        try {
+          this.promptAction.showToast({ message: '保存失败，请重试' })
+        } catch (error) {
+          console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
+        }
       }
     } catch (error) {
       console.error('[AddRecordSection] 保存失败: ' + JSON.stringify(error))
-      promptAction.showToast({ message: '保存失败: ' + (error as Error).message })
+      try {
+        this.promptAction.showToast({ message: '保存失败: ' + (error as Error).message })
+      } catch (e) {
+        console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(e))
+      }
     } finally {
       this.isSaving = false
     }

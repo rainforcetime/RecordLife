@@ -1,7 +1,6 @@
 // 主入口文件：MainPage.ets
 import { HomePage } from './HomePage'
 import { NowPage } from './NowPage'
-import { ModulePage } from './ModulePage'
 import { AccountPage } from './AccountPage'
 
 @Entry
@@ -41,12 +40,8 @@ struct MainPage {
       }.tabBar(this.TabBarBuilder('现在', $r('sys.symbol.clock'), 1))
 
       TabContent() {
-        ModulePage()
-      }.tabBar(this.TabBarBuilder('模块', $r('sys.symbol.grid'), 2))
-
-      TabContent() {
         AccountPage()
-      }.tabBar(this.TabBarBuilder('我的', $r('sys.symbol.person'), 3))
+      }.tabBar(this.TabBarBuilder('我的', $r('sys.symbol.person'), 2))
     }
     .onChange((index: number) => {
       this.currentIndex = index

@@ -97,7 +97,11 @@ export class MorePageBackupHandler {
       }
     } catch (error) {
       console.error('[MorePageBackupHandler] 导出备份失败: ' + JSON.stringify(error))
-      promptAction.showToast({ message: '导出失败: ' + (error as Error).message })
+      try {
+        promptAction.showToast({ message: '导出失败: ' + (error as Error).message })
+      } catch (e) {
+        console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
+      }
     }
   }
   
@@ -158,7 +162,11 @@ export class MorePageBackupHandler {
       }
     } catch (error) {
       console.error('[MorePageBackupHandler] 导入备份失败: ' + JSON.stringify(error))
-      promptAction.showToast({ message: '导入失败: ' + (error as Error).message })
+      try {
+        promptAction.showToast({ message: '导入失败: ' + (error as Error).message })
+      } catch (e) {
+        console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
+      }
     }
   }
   
@@ -319,7 +327,11 @@ export class MorePageBackupHandler {
       
     } catch (error) {
       console.error('[MorePageBackupHandler] 导出所有数据失败: ' + JSON.stringify(error))
-      promptAction.showToast({ message: '导出失败: ' + (error as Error).message })
+      try {
+        promptAction.showToast({ message: '导出失败: ' + (error as Error).message })
+      } catch (e) {
+        console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
+      }
     }
   }
   
@@ -480,7 +492,11 @@ export class MorePageBackupHandler {
       
     } catch (error) {
       console.error('[MorePageBackupHandler] 导入所有数据失败: ' + JSON.stringify(error))
-      promptAction.showToast({ message: '导入失败: ' + (error as Error).message })
+      try {
+        promptAction.showToast({ message: '导入失败: ' + (error as Error).message })
+      } catch (e) {
+        console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
+      }
     }
   }
   

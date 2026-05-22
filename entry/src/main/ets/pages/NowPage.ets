@@ -6,7 +6,7 @@ import { TimelineSection } from '../components/TimelineSection'
 import { AddRecordSection } from '../components/AddRecordSection'
 import { EditRecordDialog } from '../components/EditRecordDialog'
 import { RefreshManager } from '../common/RefreshManager'
-import { promptAction } from '@kit.ArkUI'
+import { PromptAction } from '@kit.ArkUI'
 
 @Entry
 @Component
@@ -34,8 +34,14 @@ struct NowPage {
   // ViewModel（普通成员变量，不需要 @State）
   private viewModel: NowViewModel | null = null
   
+  // PromptAction（用于显示 Toast）
+  private promptAction: PromptAction | null = null
+  
   async aboutToAppear() {
     console.info('[NowPage] aboutToAppear')
+    
+    // 获取 PromptAction
+    this.promptAction = this.getUIContext().getPromptAction()
     
     // 初始化 ViewModel
     this.viewModel = await NowViewModel.getInstance()
@@ -252,13 +258,17 @@ struct NowPage {
   
   // 保存编辑
   private async onSaveEdit() {
-    if (!this.viewModel || !this.editingRecord) {
+    if (!this.viewModel || !this.editingRecord || !this.promptAction) {
       return
     }
     
     // 至少需要文字或图片
     if (this.editContent.trim().length === 0 && this.editImagePath.length === 0) {
-      promptAction.showToast({ message: '请输入内容或添加图片' })
+      try {
+        this.promptAction.showToast({ message: '请输入内容或添加图片' })
+      } catch (error) {
+        console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+      }
       return
     }
     
@@ -271,7 +281,11 @@ struct NowPage {
       )
       
       if (success) {
-        promptAction.showToast({ message: '修改成功' })
+        try {
+          this.promptAction.showToast({ message: '修改成功' })
+        } catch (error) {
+          console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+        }
         this.showEditDialog = false
         this.editingRecord = null as LifeRecord | null
         this.editImagePath = ''
@@ -280,11 +294,19 @@ struct NowPage {
         RefreshManager.getInstance().refresh()
         this.refreshTimeline()
       } else {
-        promptAction.showToast({ message: '修改失败' })
+        try {
+          this.promptAction.showToast({ message: '修改失败' })
+        } catch (error) {
+          console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+        }
       }
     } catch (error) {
       console.error('[NowPage] 保存编辑失败: ' + JSON.stringify(error))
-      promptAction.showToast({ message: '修改失败: ' + (error as Error).message })
+      try {
+        this.promptAction.showToast({ message: '修改失败: ' + (error as Error).message })
+      } catch (e) {
+        console.error('[NowPage] showToast failed: ' + JSON.stringify(e))
+      }
     }
   }
   
@@ -304,7 +326,7 @@ struct NowPage {
         value: '删除',
         fontColor: this.themeColors.error,
         action: async () => {
-          if (!this.viewModel) {
+          if (!this.viewModel || !this.promptAction) {
             return
           }
           
@@ -312,16 +334,28 @@ struct NowPage {
             const success = await this.viewModel.deleteRecord(record.id)
             
             if (success) {
-              promptAction.showToast({ message: '删除成功' })
+              try {
+                this.promptAction.showToast({ message: '删除成功' })
+              } catch (error) {
+                console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+              }
               // 触发全局刷新
               RefreshManager.getInstance().refresh()
               this.refreshTimeline()
             } else {
-              promptAction.showToast({ message: '删除失败' })
+              try {
+                this.promptAction.showToast({ message: '删除失败' })
+              } catch (error) {
+                console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+              }
             }
           } catch (error) {
             console.error('[NowPage] 删除失败: ' + JSON.stringify(error))
-            promptAction.showToast({ message: '删除失败: ' + (error as Error).message })
+            try {
+              this.promptAction.showToast({ message: '删除失败: ' + (error as Error).message })
+            } catch (e) {
+              console.error('[NowPage] showToast failed: ' + JSON.stringify(e))
+            }
           }
         }
       }

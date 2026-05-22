@@ -10,7 +10,7 @@ import { MorePageConfigHandler } from '../common/utils/MorePageConfigHandler'
 
 @Entry
 @Component
-export struct MorePage {
+struct MorePage {
   // 主题颜色配置（响应式）
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
   
@@ -189,7 +189,11 @@ export struct MorePage {
   // 导出配置处理
   private async onExportConfig() {
     if (!this.configManager || !this.context) {
-      promptAction.showToast({ message: '管理器未初始化' })
+      try {
+        this.promptAction.showToast({ message: '管理器未初始化' })
+      } catch (error) {
+        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+      }
       return
     }
     
@@ -199,7 +203,11 @@ export struct MorePage {
   // 导入配置处理
   private async onImportConfig() {
     if (!this.configManager || !this.context) {
-      promptAction.showToast({ message: '配置管理器未初始化' })
+      try {
+        this.promptAction.showToast({ message: '配置管理器未初始化' })
+      } catch (error) {
+        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+      }
       return
     }
     
@@ -209,7 +217,11 @@ export struct MorePage {
   // 导出备份处理
   private async onExportBackup() {
     if (!this.backupManager || !this.context) {
-      promptAction.showToast({ message: '管理器未初始化' })
+      try {
+        this.promptAction.showToast({ message: '管理器未初始化' })
+      } catch (error) {
+        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+      }
       return
     }
     
@@ -219,7 +231,11 @@ export struct MorePage {
   // 导入备份处理
   private async onImportBackup() {
     if (!this.backupManager || !this.context) {
-      promptAction.showToast({ message: '管理器未初始化' })
+      try {
+        this.promptAction.showToast({ message: '管理器未初始化' })
+      } catch (error) {
+        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+      }
       return
     }
     
@@ -229,7 +245,11 @@ export struct MorePage {
   // 导出所有处理
   private async onExportAll() {
     if (!this.configManager || !this.context) {
-      promptAction.showToast({ message: '管理器未初始化' })
+      try {
+        this.promptAction.showToast({ message: '管理器未初始化' })
+      } catch (error) {
+        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+      }
       return
     }
     
@@ -239,7 +259,11 @@ export struct MorePage {
   // 导入所有处理
   private async onImportAll() {
     if (!this.configManager || !this.context) {
-      promptAction.showToast({ message: '管理器未初始化' })
+      try {
+        this.promptAction.showToast({ message: '管理器未初始化' })
+      } catch (error) {
+        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+      }
       return
     }
     
@@ -249,7 +273,11 @@ export struct MorePage {
   // 重置应用处理
   private async onResetApp() {
     if (!this.configManager || !this.context) {
-      promptAction.showToast({ message: '管理器未初始化' })
+      try {
+        this.promptAction.showToast({ message: '管理器未初始化' })
+      } catch (error) {
+        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+      }
       return
     }
     

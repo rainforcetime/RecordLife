@@ -94,7 +94,7 @@ export struct AboutAppDialog {
 
         // 官网
         this.InfoItem('官方网站', this.appInfo.website, () => {
-          let context = getContext(this) as common.UIAbilityContext
+          let context = this.getUIContext().getHostContext() as common.UIAbilityContext
           context.openLink(this.appInfo.website, { appLinkingOnly: false })
             .catch((error: BusinessError) => {
               console.error('打开链接失败: ' + JSON.stringify(error))

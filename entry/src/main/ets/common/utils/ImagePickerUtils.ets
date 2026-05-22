@@ -2,7 +2,7 @@
 import { common } from '@kit.AbilityKit'
 import { cameraPicker as picker, camera } from '@kit.CameraKit'
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
-import { promptAction } from '@kit.ArkUI'
+import { PromptAction } from '@kit.ArkUI'
 
 // 图片选择结果
 export interface ImagePickResult {
@@ -130,9 +130,14 @@ export class ImagePickerUtils {
 
   /**
    * 显示错误提示
+   * @param promptAction PromptAction 对象（从组件的 this.getUIContext().getPromptAction() 获取）
    * @param message 错误消息
    */
-  static showErrorToast(message: string): void {
-    promptAction.showToast({ message: message })
+  static showErrorToast(promptAction: PromptAction, message: string): void {
+    try {
+      promptAction.showToast({ message: message })
+    } catch (error) {
+      console.error('[ImagePickerUtils] showToast failed: ' + JSON.stringify(error))
+    }
   }
 }

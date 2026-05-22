@@ -3,6 +3,7 @@ import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { LifeRecord } from '../common/types'
 import { ImagePickerUtils, ImagePickMode, ImagePickResult } from '../common/utils/ImagePickerUtils'
 import { common } from '@kit.AbilityKit'
+import { PromptAction } from '@kit.ArkUI'
 
 @Component
 export struct EditRecordDialog {
@@ -26,6 +27,13 @@ export struct EditRecordDialog {
   
   // 保存图片到沙箱的回调（由父组件提供）
   saveImageToSandbox: ((uri: string) => Promise<string | null>) | null = null
+  
+  // PromptAction（用于显示 Toast）
+  private promptAction: PromptAction | null = null
+  
+  aboutToAppear() {
+    this.promptAction = this.getUIContext().getPromptAction()
+  }
   
   build() {
     Column() {
@@ -207,12 +215,14 @@ export struct EditRecordDialog {
             this.editImageUri = savedUri
           }
         }
-      } else if (result.errorMessage) {
-        ImagePickerUtils.showErrorToast(result.errorMessage)
+      } else if (result.errorMessage && this.promptAction) {
+        ImagePickerUtils.showErrorToast(this.promptAction, result.errorMessage)
       }
     } catch (error) {
       console.error('[EditRecordDialog] 选择图片失败: ' + JSON.stringify(error))
-      ImagePickerUtils.showErrorToast('选择图片失败，请重试')
+      if (this.promptAction) {
+        ImagePickerUtils.showErrorToast(this.promptAction, '选择图片失败，请重试')
+      }
     }
   }
 }

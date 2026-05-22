@@ -71,7 +71,11 @@ export class MorePageConfigHandler {
       }
     } catch (error) {
       console.error('[MorePageConfigHandler] 导出配置失败: ' + JSON.stringify(error))
-      promptAction.showToast({ message: '导出失败: ' + (error as Error).message })
+      try {
+        promptAction.showToast({ message: '导出失败: ' + (error as Error).message })
+      } catch (toastError) {
+        console.error('[MorePageConfigHandler] showToast 失败: ' + JSON.stringify(toastError))
+      }
     }
   }
   
@@ -129,7 +133,11 @@ export class MorePageConfigHandler {
       }
     } catch (error) {
       console.error('[MorePageConfigHandler] 导入配置失败: ' + JSON.stringify(error))
-      promptAction.showToast({ message: '导入失败: ' + (error as Error).message })
+      try {
+        promptAction.showToast({ message: '导入失败: ' + (error as Error).message })
+      } catch (toastError) {
+        console.error('[MorePageConfigHandler] showToast 失败: ' + JSON.stringify(toastError))
+      }
     }
   }
   
