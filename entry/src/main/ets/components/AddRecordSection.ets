@@ -1,11 +1,11 @@
 // 新增记录区域组件：components/AddRecordSection.ets
 import { common } from '@kit.AbilityKit'
-import { cameraPicker as picker, camera } from '@kit.CameraKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { NowViewModel } from '../viewmodel/NowViewModel'
 import { LifeRecord } from '../common/types'
 import { RefreshManager } from '../common/RefreshManager'
 import { promptAction } from '@kit.ArkUI'
+import { ImagePickerUtils, ImagePickMode } from '../common/utils/ImagePickerUtils'
 
 @Component
 export struct AddRecordSection {
@@ -73,17 +73,28 @@ export struct AddRecordSection {
                 .margin({ bottom: 8 })
               
               Row() {
-                Button('重新拍摄')
+                Button('拍照')
                   .fontSize(12)
                   .height(32)
                   .backgroundColor(this.themeColors.background)
                   .fontColor(this.themeColors.primary)
                   .borderRadius(8)
                   .onClick(() => {
-                    this.onTakePhoto()
+                    this.onPickImage(ImagePickMode.CAMERA)
                   })
                 
-                Button('移除图片')
+                Button('从相册选择')
+                  .fontSize(12)
+                  .height(32)
+                  .backgroundColor(this.themeColors.background)
+                  .fontColor(this.themeColors.primary)
+                  .borderRadius(8)
+                  .margin({ left: 8 })
+                  .onClick(() => {
+                    this.onPickImage(ImagePickMode.GALLERY)
+                  })
+                
+                Button('移除')
                   .fontSize(12)
                   .height(32)
                   .backgroundColor(this.themeColors.background)
@@ -100,24 +111,47 @@ export struct AddRecordSection {
             .alignItems(HorizontalAlign.Center)
           } else {
             // 添加图片按钮
-            Button() {
-              Column() {
-                Text('📷')
-                  .fontSize(24)
-                Text('添加图片')
-                  .fontSize(12)
-                  .fontColor(this.themeColors.textSecondary)
-                  .margin({ top: 4 })
+            Row() {
+              Button() {
+                Column() {
+                  Text('📷')
+                    .fontSize(24)
+                  Text('拍照')
+                    .fontSize(12)
+                    .fontColor(this.themeColors.textSecondary)
+                    .margin({ top: 4 })
+                }
               }
+              .layoutWeight(1)
+              .height(100)
+              .backgroundColor(this.themeColors.background)
+              .borderRadius(12)
+              .border({ width: 1, color: this.themeColors.border, style: BorderStyle.Dashed })
+              .onClick(() => {
+                this.onPickImage(ImagePickMode.CAMERA)
+              })
+              
+              Button() {
+                Column() {
+                  Text('🖼️')
+                    .fontSize(24)
+                  Text('从相册选择')
+                    .fontSize(12)
+                    .fontColor(this.themeColors.textSecondary)
+                    .margin({ top: 4 })
+                }
+              }
+              .layoutWeight(1)
+              .height(100)
+              .backgroundColor(this.themeColors.background)
+              .borderRadius(12)
+              .border({ width: 1, color: this.themeColors.border, style: BorderStyle.Dashed })
+              .margin({ left: 12 })
+              .onClick(() => {
+                this.onPickImage(ImagePickMode.GALLERY)
+              })
             }
             .width('100%')
-            .height(100)
-            .backgroundColor(this.themeColors.background)
-            .borderRadius(12)
-            .border({ width: 1, color: this.themeColors.border, style: BorderStyle.Dashed })
-            .onClick(() => {
-              this.onTakePhoto()
-            })
           }
         }
         .width('100%')
@@ -153,36 +187,27 @@ export struct AddRecordSection {
     return this.textContent.trim().length > 0 || this.imagePath.length > 0
   }
   
-  // 拍照
-  private async onTakePhoto() {
+  // 选择图片（拍照或从相册选择）
+  private async onPickImage(mode: ImagePickMode) {
     try {
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext
+      const result = await ImagePickerUtils.pickImage(context, mode)
       
-      // 配置相机设置
-      const pickerProfile: picker.PickerProfile = {
-        cameraPosition: camera.CameraPosition.CAMERA_POSITION_BACK
-      }
-      
-      // 使用相机拍照
-      const pickerResult: picker.PickerResult = await picker.pick(context, 
-        [picker.PickerMediaType.PHOTO], 
-        pickerProfile)
-      
-      if (pickerResult && pickerResult.resultUri && pickerResult.resultCode === 0) {
-        console.info('[AddRecordSection] 拍照成功: ' + pickerResult.resultUri)
-        
+      if (result.success && result.uri) {
         // 保存图片到沙箱目录（返回 URI 格式）
         if (this.viewModel) {
-          const savedUri = await this.viewModel.saveImageToSandbox(pickerResult.resultUri)
+          const savedUri = await this.viewModel.saveImageToSandbox(result.uri)
           if (savedUri) {
             this.imagePath = savedUri  // 存储 URI
             this.imageUri = savedUri   // 显示 URI（统一格式，无需转换）
           }
         }
+      } else if (result.errorMessage) {
+        ImagePickerUtils.showErrorToast(result.errorMessage)
       }
     } catch (error) {
-      console.error('[AddRecordSection] 拍照失败: ' + JSON.stringify(error))
-      promptAction.showToast({ message: '拍照失败，请重试' })
+      console.error('[AddRecordSection] 选择图片失败: ' + JSON.stringify(error))
+      ImagePickerUtils.showErrorToast('选择图片失败，请重试')
     }
   }
   

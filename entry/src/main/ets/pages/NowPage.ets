@@ -4,10 +4,9 @@ import { TimelineData, LifeRecord } from '../common/types'
 import { NowViewModel } from '../viewmodel/NowViewModel'
 import { TimelineSection } from '../components/TimelineSection'
 import { AddRecordSection } from '../components/AddRecordSection'
+import { EditRecordDialog } from '../components/EditRecordDialog'
 import { RefreshManager } from '../common/RefreshManager'
 import { promptAction } from '@kit.ArkUI'
-import { common } from '@kit.AbilityKit'
-import { cameraPicker as picker, camera } from '@kit.CameraKit'
 
 @Entry
 @Component
@@ -176,119 +175,27 @@ struct NowPage {
   // 编辑对话框
   @Builder
   EditDialogBuilder() {
-    Column() {
-      Text('编辑记录')
-        .fontSize(18)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(this.themeColors.textPrimary)
-        .width('100%')
-        .margin({ bottom: 16 })
-      
-      // 文字内容输入
-      TextArea({ placeholder: '输入内容...', text: $$this.editContent })
-        .width('100%')
-        .height(100)
-        .backgroundColor(this.themeColors.background)
-        .borderRadius(12)
-        .border({ width: 1, color: this.themeColors.border })
-        .fontColor(this.themeColors.textPrimary)
-        .padding(12)
-      
-      // 图片区域（可选）
-      Column() {
-        if (this.editImageUri) {
-          // 已有图片
-          Column() {
-            Image(this.editImageUri)
-              .width('100%')
-              .height('auto')
-              .objectFit(ImageFit.Contain)
-              .borderRadius(8)
-              .constraintSize({ maxHeight: 200 })
-              .margin({ bottom: 12 })
-            
-            Row() {
-              Button('重新拍摄')
-                .layoutWeight(1)
-                .height(40)
-                .backgroundColor(this.themeColors.background)
-                .fontColor(this.themeColors.primary)
-                .borderRadius(8)
-                .onClick(() => {
-                  this.onRetakePhoto()
-                })
-              
-              Button('移除图片')
-                .layoutWeight(1)
-                .height(40)
-                .backgroundColor(this.themeColors.background)
-                .fontColor(this.themeColors.error)
-                .borderRadius(8)
-                .margin({ left: 12 })
-                .onClick(() => {
-                  this.editImagePath = ''
-                  this.editImageUri = ''
-                })
-            }
-            .width('100%')
-          }
-          .width('100%')
-        } else {
-          // 添加图片按钮
-          Button() {
-            Column() {
-              Text('📷')
-                .fontSize(24)
-              Text('添加图片')
-                .fontSize(12)
-                .fontColor(this.themeColors.textSecondary)
-                .margin({ top: 4 })
-            }
-          }
-          .width('100%')
-          .height(100)
-          .backgroundColor(this.themeColors.background)
-          .borderRadius(12)
-          .border({ width: 1, color: this.themeColors.border, style: BorderStyle.Dashed })
-          .onClick(() => {
-            this.onRetakePhoto()
-          })
+    EditRecordDialog({
+      record: this.editingRecord,
+      editContent: $editContent,
+      editImagePath: $editImagePath,
+      editImageUri: $editImageUri,
+      onSave: () => {
+        this.onSaveEdit()
+      },
+      onCancel: () => {
+        this.showEditDialog = false
+        this.editingRecord = null as LifeRecord | null
+        this.editImagePath = ''
+        this.editImageUri = ''
+      },
+      saveImageToSandbox: async (uri: string) => {
+        if (this.viewModel) {
+          return await this.viewModel.saveImageToSandbox(uri)
         }
+        return null
       }
-      .width('100%')
-      .margin({ top: 16 })
-      
-      // 操作按钮
-      Row() {
-        Button('取消')
-          .layoutWeight(1)
-          .height(44)
-          .backgroundColor(this.themeColors.background)
-          .fontColor(this.themeColors.textSecondary)
-          .borderRadius(12)
-          .onClick(() => {
-            this.showEditDialog = false
-            this.editingRecord = null as LifeRecord | null
-            this.editImagePath = ''
-            this.editImageUri = ''
-          })
-        
-        Button('保存')
-          .layoutWeight(1)
-          .height(44)
-          .backgroundColor(this.themeColors.primary)
-          .fontColor('#FFFFFF')
-          .borderRadius(12)
-          .margin({ left: 12 })
-          .onClick(() => {
-            this.onSaveEdit()
-          })
-      }
-      .width('100%')
-      .margin({ top: 16 })
-    }
-    .width('100%')
-    .padding(20)
+    })
   }
   
   // 刷新时间线
@@ -381,38 +288,6 @@ struct NowPage {
     }
   }
   
-  // 重新拍摄图片
-  private async onRetakePhoto() {
-    try {
-      const context = this.getUIContext().getHostContext() as common.UIAbilityContext
-      
-      // 配置相机设置
-      const pickerProfile: picker.PickerProfile = {
-        cameraPosition: camera.CameraPosition.CAMERA_POSITION_BACK
-      }
-      
-      // 使用相机拍照
-      const pickerResult: picker.PickerResult = await picker.pick(context, 
-        [picker.PickerMediaType.PHOTO], 
-        pickerProfile)
-      
-      if (pickerResult && pickerResult.resultUri && pickerResult.resultCode === 0) {
-        console.info('[NowPage] 重新拍摄成功: ' + pickerResult.resultUri)
-        
-        // 保存图片到沙箱目录（返回 URI 格式）
-        if (this.viewModel) {
-          const savedUri = await this.viewModel.saveImageToSandbox(pickerResult.resultUri)
-          if (savedUri) {
-            this.editImagePath = savedUri  // 存储 URI
-            this.editImageUri = savedUri   // 显示 URI（统一格式，无需转换）
-          }
-        }
-      }
-    } catch (error) {
-      console.error('[NowPage] 重新拍摄失败: ' + JSON.stringify(error))
-      promptAction.showToast({ message: '拍照失败，请重试' })
-    }
-  }
   
   // 删除记录
   private onDeleteRecord(record: LifeRecord) {
