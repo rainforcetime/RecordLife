@@ -1,5 +1,5 @@
 // MorePage 备份处理类：处理备份相关的业务逻辑
-import { common } from '@kit.AbilityKit'
+import { common, Want } from '@kit.AbilityKit'
 import { picker, fileUri } from '@kit.CoreFileKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { zlib } from '@kit.BasicServicesKit'
@@ -22,6 +22,25 @@ interface RecordsMetadata {
 }
 
 export class MorePageBackupHandler {
+  /**
+   * 重启应用
+   * 使用 ApplicationContext.restartApp 方法重启应用
+   */
+  private static restartApp(context: common.UIAbilityContext): void {
+    try {
+      const applicationContext = context.getApplicationContext()
+      const want: Want = {
+        bundleName: 'com.rainforcetime.recordlife',
+        abilityName: 'EntryAbility'
+      }
+      console.info('[MorePageBackupHandler] 准备重启应用')
+      applicationContext.restartApp(want)
+      console.info('[MorePageBackupHandler] 重启应用已触发')
+    } catch (error) {
+      console.error('[MorePageBackupHandler] 重启应用失败: ' + JSON.stringify(error))
+    }
+  }
+  
   /**
    * 导出备份
    */
@@ -124,10 +143,12 @@ export class MorePageBackupHandler {
         
         if (success) {
           console.info('[MorePageBackupHandler] 备份导入成功')
-          promptAction.showToast({ message: '备份导入成功' })
+          promptAction.showToast({ message: '备份导入成功，应用即将重启' })
           
-          // 触发全局刷新
-          RefreshManager.getInstance().refresh()
+          // 延迟1秒后重启应用，让用户看到提示
+          setTimeout(() => {
+            MorePageBackupHandler.restartApp(context)
+          }, 1000)
         } else {
           console.error('[MorePageBackupHandler] 备份导入失败')
           promptAction.showToast({ message: '备份文件格式无效或已损坏' })
@@ -447,10 +468,12 @@ export class MorePageBackupHandler {
         if (recordsImported) messages.push('此刻记录')
         if (avatarImported) messages.push('头像')
         
-        promptAction.showToast({ message: `导入成功: ${messages.join('、')}` })
+        promptAction.showToast({ message: `导入成功: ${messages.join('、')}，应用即将重启` })
         
-        // 触发全局刷新
-        RefreshManager.getInstance().refresh()
+        // 延迟1秒后重启应用，让用户看到提示
+        setTimeout(() => {
+          MorePageBackupHandler.restartApp(context)
+        }, 1000)
       } else {
         promptAction.showToast({ message: '未找到有效数据' })
       }

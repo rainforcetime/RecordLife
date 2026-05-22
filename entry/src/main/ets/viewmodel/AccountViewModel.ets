@@ -126,7 +126,7 @@ export class AccountViewModel {
       appVersion: '0.0.1',
       buildNumber: '20260521',
       developer: 'rainforcetime',
-      website: 'https://github.com/rainforcetime/record-life',
+      website: 'https://github.com/rainforcetime/RecordLife',
       description: '记录生活，珍惜每一刻'
     };
 

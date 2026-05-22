@@ -198,12 +198,12 @@ export struct MorePage {
   
   // 导入配置处理
   private async onImportConfig() {
-    if (!this.configManager) {
+    if (!this.configManager || !this.context) {
       promptAction.showToast({ message: '配置管理器未初始化' })
       return
     }
     
-    await MorePageConfigHandler.importConfig(this.configManager, this.promptAction)
+    await MorePageConfigHandler.importConfig(this.context, this.configManager, this.promptAction)
   }
   
   // 导出备份处理

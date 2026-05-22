@@ -2,6 +2,8 @@
 import { AppInfo } from '../config/UserConfig'
 import { AppInfoManager } from '../config/AppInfoConfig'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
+import { common } from '@kit.AbilityKit'
+import { BusinessError } from '@kit.BasicServicesKit'
 
 @CustomDialog
 export struct AboutAppDialog {
@@ -11,7 +13,7 @@ export struct AboutAppDialog {
     appVersion: '0.0.1',
     buildNumber: '20260521',
     developer: 'rainforcetime',
-    website: 'https://github.com/rainforcetime/record-life',
+    website: 'https://github.com/rainforcetime/RecordLife',
     description: '记录生活，珍惜每一刻'
   }
   @Prop themeColors: ThemeColors = ThemeConfig.getColors(false)
@@ -91,7 +93,13 @@ export struct AboutAppDialog {
           .margin({ left: 15 })
 
         // 官网
-        this.InfoItem('官方网站', this.appInfo.website)
+        this.InfoItem('官方网站', this.appInfo.website, () => {
+          let context = getContext(this) as common.UIAbilityContext
+          context.openLink(this.appInfo.website, { appLinkingOnly: false })
+            .catch((error: BusinessError) => {
+              console.error('打开链接失败: ' + JSON.stringify(error))
+            })
+        })
       }
       .width('100%')
       .backgroundColor(this.themeColors.cardBackground)
@@ -118,7 +126,7 @@ export struct AboutAppDialog {
   }
 
   @Builder
-  InfoItem(label: string, value: string) {
+  InfoItem(label: string, value: string, onClick?: () => void) {
     Row() {
       Text(label)
         .fontSize(14)
@@ -127,12 +135,17 @@ export struct AboutAppDialog {
 
       Text(value)
         .fontSize(14)
-        .fontColor(this.themeColors.textPrimary)
+        .fontColor(onClick ? this.themeColors.primary : this.themeColors.textPrimary)
         .layoutWeight(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .maxLines(2)
     }
     .width('100%')
     .padding({ left: 15, right: 15, top: 12, bottom: 12 })
+    .onClick(() => {
+      if (onClick) {
+        onClick()
+      }
+    })
   }
 }

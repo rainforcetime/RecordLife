@@ -1,5 +1,5 @@
 // MorePage 配置处理类：处理配置相关的业务逻辑
-import { common } from '@kit.AbilityKit'
+import { common, Want } from '@kit.AbilityKit'
 import { picker } from '@kit.CoreFileKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { util } from '@kit.ArkTS'
@@ -10,6 +10,25 @@ import { NowViewModel } from '../../viewmodel/NowViewModel'
 import preferences from '@ohos.data.preferences'
 
 export class MorePageConfigHandler {
+  /**
+   * 重启应用
+   * 使用 ApplicationContext.restartApp 方法重启应用
+   */
+  private static restartApp(context: common.UIAbilityContext): void {
+    try {
+      const applicationContext = context.getApplicationContext()
+      const want: Want = {
+        bundleName: 'com.rainforcetime.recordlife',
+        abilityName: 'EntryAbility'
+      }
+      console.info('[MorePageConfigHandler] 准备重启应用')
+      applicationContext.restartApp(want)
+      console.info('[MorePageConfigHandler] 重启应用已触发')
+    } catch (error) {
+      console.error('[MorePageConfigHandler] 重启应用失败: ' + JSON.stringify(error))
+    }
+  }
+  
   /**
    * 导出配置
    */
@@ -60,6 +79,7 @@ export class MorePageConfigHandler {
    * 导入配置
    */
   static async importConfig(
+    context: common.UIAbilityContext,
     configManager: ConfigManager,
     promptAction: PromptAction
   ): Promise<void> {
@@ -94,7 +114,12 @@ export class MorePageConfigHandler {
         
         if (success) {
           console.info('[MorePageConfigHandler] 配置导入成功')
-          promptAction.showToast({ message: '配置导入成功，部分设置需重启生效' })
+          promptAction.showToast({ message: '配置导入成功，应用即将重启' })
+          
+          // 延迟1秒后重启应用，让用户看到提示
+          setTimeout(() => {
+            MorePageConfigHandler.restartApp(context)
+          }, 1000)
         } else {
           console.error('[MorePageConfigHandler] 配置导入失败：格式无效')
           promptAction.showToast({ message: '配置文件格式无效' })
@@ -177,10 +202,12 @@ export class MorePageConfigHandler {
             
             if (success) {
               console.info('[MorePageConfigHandler] 应用重置成功')
-              promptAction.showToast({ message: '应用已重置，请重启应用生效' })
+              promptAction.showToast({ message: '应用已重置，即将重启' })
               
-              // 触发全局刷新
-              RefreshManager.getInstance().refresh()
+              // 延迟1秒后重启应用，让用户看到提示
+              setTimeout(() => {
+                MorePageConfigHandler.restartApp(context)
+              }, 1000)
             } else {
               console.error('[MorePageConfigHandler] 应用重置失败')
               promptAction.showToast({ message: '重置失败，请重试' })

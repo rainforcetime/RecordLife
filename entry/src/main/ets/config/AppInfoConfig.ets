@@ -54,7 +54,7 @@ export class AppInfoManager {
         appVersion: bundleInfo.versionName,
         buildNumber: this.generateBuildNumber(),
         developer: 'rainforcetime',
-        website: 'https://github.com/rainforcetime/record-life',
+        website: 'https://github.com/rainforcetime/RecordLife',
         description: appDescription
       };
       
@@ -103,7 +103,7 @@ export class AppInfoManager {
       appVersion: '0.0.1',
       buildNumber: this.generateBuildNumber(),
       developer: 'rainforcetime',
-      website: 'https://github.com/rainforcetime/record-life',
+      website: 'https://github.com/rainforcetime/RecordLife',
       description: '记录生活，珍惜每一刻'
     };
   }
