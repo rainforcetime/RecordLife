@@ -2,13 +2,11 @@
 
 # RecordLife 活着
 
-**一款记录生活、追踪人生数据的 HarmonyOS 移动应用**
+一款记录生活、追踪人生数据的 HarmonyOS 移动应用
 
-只是想写一个记录自己活着的软件。
+## 项目简介
 
-## 应用简介
-
-RecordLife（活着）是一款基于 HarmonyOS Next 构建的生活记录与数据追踪应用，旨在帮助用户记录和可视化自己的生命历程。通过设置出生日期、目标年龄等个人信息，应用可以计算并展示用户在有限人生中的进度和统计数据。
+RecordLife（活着）是一款基于 HarmonyOS Next 构建的生活记录与数据追踪应用，帮助用户记录和可视化自己的生命历程。通过设置出生日期、目标年龄等个人信息，应用可以计算并展示用户在有限人生中的进度和统计数据。
 
 ## 功能特性
 
@@ -25,10 +23,10 @@ RecordLife（活着）是一款基于 HarmonyOS Next 构建的生活记录与数
 ## 技术栈
 
 - **框架**: HarmonyOS Next / ArkUI
-- **开发语言**: TypeScript / ETS (Extension TypeScript)
+- **开发语言**: TypeScript / ETS
 - **开发工具**: DevEco Studio
 
-## 项目架构
+## 项目结构
 
 ```
 entry/src/main/ets/
@@ -47,7 +45,6 @@ entry/src/main/ets/
 │   ├── AboutAppDialog.ets           # 关于对话框
 │   ├── EditProfileDialog.ets        # 编辑资料对话框
 │   ├── BirthDateSelector.ets        # 出生日期选择器
-│   ├── SettingItem*.ets             # 设置项系列组件
 │   └── ...                         # 其他自定义组件
 ├── config/                  # 配置管理层
 │   ├── ConfigManager.ets     # 配置管理器
@@ -59,7 +56,7 @@ entry/src/main/ets/
 │   ├── NowViewModel.ets     # "此刻"视图模型
 │   └── AccountViewModel.ets # 账户视图模型
 ├── pages/                   # 页面层
-│   ├── Index.ets            # 应用入口/导航页
+│   ├── Index.ets            # 应用入口
 │   ├── HomePage.ets          # 首页
 │   ├── NowPage.ets          # 此时此刻页
 │   ├── AccountPage.ets      # 账户页面
@@ -74,8 +71,8 @@ entry/src/main/ets/
 
 ### 环境要求
 
-- DevEco Studio (建议最新版本)
-- HarmonyOS SDK (API 9+)
+- DevEco Studio（建议最新版本）
+- HarmonyOS SDK（API 9+）
 - Node.js 18+
 
 ### 构建运行
