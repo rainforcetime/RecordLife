@@ -79,7 +79,8 @@ export struct AccountPage {
   // 关于应用弹窗控制器
   private aboutAppDialog: CustomDialogController = new CustomDialogController({
     builder: AboutAppDialog({
-      appInfo: this.appInfo
+      appInfo: this.appInfo,
+      themeColors: this.themeColors
     }),
     autoCancel: true,
     alignment: DialogAlignment.Center,
