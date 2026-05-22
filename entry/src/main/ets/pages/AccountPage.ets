@@ -335,7 +335,7 @@ export struct AccountPage {
       // 更多设置
       SettingItem({
         label: '更多',
-        summary: '导入配置、导出配置、重置应用'
+        summary: '导入/导出配置、备份/恢复记录、重置应用'
       })
       .onClick(() => {
         this.onMoreSettings()

@@ -7,6 +7,10 @@ import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { SettingItemWithAction } from '../components/SettingItemWithAction'
 import { ConfigManager } from '../config/ConfigManager'
 import { promptAction, PromptAction } from '@kit.ArkUI'
+import { BackupManager } from '../common/utils/BackupManager'
+import { RefreshManager } from '../common/RefreshManager'
+import { NowViewModel } from '../viewmodel/NowViewModel'
+import preferences from '@ohos.data.preferences'
 
 @Entry
 @Component
@@ -16,6 +20,7 @@ export struct MorePage {
   
   private context: common.UIAbilityContext | null = null
   private configManager: ConfigManager | null = null
+  private backupManager: BackupManager | null = null
   private promptAction: PromptAction = this.getUIContext().getPromptAction()
   
   // 页面初始化
@@ -28,6 +33,10 @@ export struct MorePage {
       // 初始化配置管理器
       this.configManager = await ConfigManager.getInstance()
       console.info('MorePage: configManager 已初始化 - ' + (this.configManager ? '成功' : '失败'))
+      
+      // 初始化备份管理器
+      this.backupManager = await BackupManager.getInstance()
+      console.info('MorePage: backupManager 已初始化 - ' + (this.backupManager ? '成功' : '失败'))
     } catch (error) {
       console.error('MorePage 初始化失败: ' + JSON.stringify(error))
     }
@@ -84,7 +93,7 @@ export struct MorePage {
     Column() {
       // 导出配置
       SettingItemWithAction({
-        label: '导出配置',
+        label: '导出用户配置',
         summary: '导出应用配置文件',
         onAction: () => {
           this.onExportConfig()
@@ -97,10 +106,36 @@ export struct MorePage {
       
       // 导入配置
       SettingItemWithAction({
-        label: '导入配置',
+        label: '导入用户配置',
         summary: '从文件导入配置',
         onAction: () => {
           this.onImportConfig()
+        }
+      })
+      
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
+      
+      // 导出备份
+      SettingItemWithAction({
+        label: '导出此刻记录备份',
+        summary: '导出所有此刻记录到 zip 文件',
+        onAction: () => {
+          this.onExportBackup()
+        }
+      })
+      
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
+      
+      // 导入备份
+      SettingItemWithAction({
+        label: '导入此刻记录备份',
+        summary: '从 zip 文件恢复此刻记录',
+        onAction: () => {
+          this.onImportBackup()
         }
       })
       
@@ -236,7 +271,7 @@ export struct MorePage {
   private onResetApp() {
     this.getUIContext().showAlertDialog({
       title: '重置应用',
-      message: '确定要重置应用吗？此操作将清除所有用户数据并恢复默认设置，不可恢复。',
+      message: '确定要重置应用吗？此操作将清除所有用户数据（包括此刻记录）并恢复默认设置，不可恢复。',
       primaryButton: {
         value: '取消',
         action: () => {
@@ -253,12 +288,25 @@ export struct MorePage {
             return
           }
           
+          if (!this.context) {
+            promptAction.showToast({ message: '上下文未初始化' })
+            return
+          }
+          
           try {
+            // 1. 删除此刻记录数据
+            const recordsDeleted = await this.deleteAllRecords()
+            console.info(`[MorePage] 删除了 ${recordsDeleted} 条记录`)
+            
+            // 2. 重置配置
             const success = await this.configManager.resetToDefault()
             
             if (success) {
               console.info('[MorePage] 应用重置成功')
               promptAction.showToast({ message: '应用已重置，请重启应用生效' })
+              
+              // 触发全局刷新
+              RefreshManager.getInstance().refresh()
             } else {
               console.error('[MorePage] 应用重置失败')
               promptAction.showToast({ message: '重置失败，请重试' })
@@ -270,5 +318,170 @@ export struct MorePage {
         }
       }
     })
+  }
+  
+  // 删除所有此刻记录
+  private async deleteAllRecords(): Promise<number> {
+    if (!this.context) {
+      return 0
+    }
+    
+    try {
+      // 1. 获取所有记录
+      const viewModel = await NowViewModel.getInstance()
+      const records = viewModel.getRecords()
+      
+      // 2. 删除所有图片文件
+      const recordsDir = `${this.context.filesDir}/records`
+      if (fileIo.accessSync(recordsDir)) {
+        const files = fileIo.listFileSync(recordsDir)
+        for (const fileName of files) {
+          const filePath = `${recordsDir}/${fileName}`
+          fileIo.unlinkSync(filePath)
+        }
+        console.info(`[MorePage] 删除了 ${files.length} 个图片文件`)
+      }
+      
+      // 3. 清空 Preferences 中的记录数据
+      const STORE_NAME = 'now_page_records'
+      const RECORDS_KEY = 'life_records'
+      const prefs = await preferences.getPreferences(this.context, STORE_NAME)
+      await prefs.put(RECORDS_KEY, '[]')
+      await prefs.flush()
+      
+      console.info('[MorePage] 记录数据已清空')
+      
+      return records.length
+    } catch (error) {
+      console.error('[MorePage] 删除记录失败: ' + JSON.stringify(error))
+      return 0
+    }
+  }
+  
+  // 导出备份处理
+  private async onExportBackup() {
+    console.info('[MorePage] 开始导出备份')
+    
+    if (!this.backupManager) {
+      promptAction.showToast({ message: '备份管理器未初始化' })
+      return
+    }
+    
+    if (!this.context) {
+      promptAction.showToast({ message: '上下文未初始化' })
+      return
+    }
+    
+    try {
+      // 创建备份
+      const zipPath = await this.backupManager.createBackup()
+      
+      if (!zipPath) {
+        promptAction.showToast({ message: '创建备份失败' })
+        return
+      }
+      
+      console.info('[MorePage] 备份已创建: ' + zipPath)
+      
+      // 使用 DocumentViewPicker 保存文件
+      const fileName = zipPath.split('/').pop() || 'backup.zip'
+      const documentSaveOptions: picker.DocumentSaveOptions = new picker.DocumentSaveOptions()
+      documentSaveOptions.newFileNames = [fileName]
+      const documentPicker: picker.DocumentViewPicker = new picker.DocumentViewPicker()
+      
+      const uriResult: Array<string> = await documentPicker.save(documentSaveOptions)
+      console.info('[MorePage] 文件选择结果: ' + JSON.stringify(uriResult))
+      
+      if (uriResult && uriResult.length > 0) {
+        const saveUri: string = uriResult[0]
+        
+        // 打开文件并写入备份内容
+        const zipFile = fileIo.openSync(zipPath, fileIo.OpenMode.READ_ONLY)
+        const stat = fileIo.statSync(zipFile.fd)
+        const buffer = new ArrayBuffer(stat.size)
+        fileIo.readSync(zipFile.fd, buffer)
+        fileIo.closeSync(zipFile)
+        
+        const destFile = fileIo.openSync(saveUri, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
+        fileIo.writeSync(destFile.fd, buffer)
+        fileIo.closeSync(destFile)
+        
+        // 删除临时备份文件
+        fileIo.unlinkSync(zipPath)
+        
+        console.info('[MorePage] 备份导出成功: ' + saveUri)
+        promptAction.showToast({ message: '备份导出成功' })
+      } else {
+        // 用户取消，删除临时备份文件
+        fileIo.unlinkSync(zipPath)
+        console.info('[MorePage] 用户取消导出')
+      }
+    } catch (error) {
+      console.error('[MorePage] 导出备份失败: ' + JSON.stringify(error))
+      promptAction.showToast({ message: '导出失败: ' + (error as Error).message })
+    }
+  }
+  
+  // 导入备份处理
+  private async onImportBackup() {
+    console.info('[MorePage] 开始导入备份')
+    
+    if (!this.backupManager) {
+      promptAction.showToast({ message: '备份管理器未初始化' })
+      return
+    }
+    
+    if (!this.context) {
+      promptAction.showToast({ message: '上下文未初始化' })
+      return
+    }
+    
+    try {
+      // 使用 DocumentViewPicker 选择备份文件
+      const documentSelectOptions: picker.DocumentSelectOptions = new picker.DocumentSelectOptions()
+      documentSelectOptions.maxSelectNumber = 1
+      const documentPicker: picker.DocumentViewPicker = new picker.DocumentViewPicker()
+      
+      const uriResult: Array<string> = await documentPicker.select(documentSelectOptions)
+      console.info('[MorePage] 文件选择结果: ' + JSON.stringify(uriResult))
+      
+      if (uriResult && uriResult.length > 0) {
+        const selectUri: string = uriResult[0]
+        
+        // 将文件复制到沙箱临时目录
+        const tempZipPath = `${this.context.cacheDir}/temp_backup.zip`
+        const srcFile = fileIo.openSync(selectUri, fileIo.OpenMode.READ_ONLY)
+        const stat = fileIo.statSync(srcFile.fd)
+        const buffer = new ArrayBuffer(stat.size)
+        fileIo.readSync(srcFile.fd, buffer)
+        fileIo.closeSync(srcFile)
+        
+        const destFile = fileIo.openSync(tempZipPath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
+        fileIo.writeSync(destFile.fd, buffer)
+        fileIo.closeSync(destFile)
+        
+        // 恢复备份
+        const success = await this.backupManager.restoreBackup(tempZipPath)
+        
+        // 删除临时文件
+        fileIo.unlinkSync(tempZipPath)
+        
+        if (success) {
+          console.info('[MorePage] 备份导入成功')
+          promptAction.showToast({ message: '备份导入成功' })
+          
+          // 触发全局刷新
+          RefreshManager.getInstance().refresh()
+        } else {
+          console.error('[MorePage] 备份导入失败')
+          promptAction.showToast({ message: '备份文件格式无效或已损坏' })
+        }
+      } else {
+        console.info('[MorePage] 用户取消导入')
+      }
+    } catch (error) {
+      console.error('[MorePage] 导入备份失败: ' + JSON.stringify(error))
+      promptAction.showToast({ message: '导入失败: ' + (error as Error).message })
+    }
   }
 }
