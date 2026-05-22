@@ -11,6 +11,10 @@
     {
       "name": "EntryAbility_label",
       "value": "活着"
+    },
+    {
+      "name": "camera_reason",
+      "value": "用于拍摄照片记录生活"
     }
   ]
 }
