@@ -32,38 +32,38 @@ RecordLife（活着）是一款基于 HarmonyOS Next 构建的生活记录与数
 entry/src/main/ets/
 ├── common/                   # 通用基础模块
 │   ├── types.ets             # 类型定义
-│   ├── RefreshManager.ets   # 刷新管理器
+│   ├── RefreshManager.ets    # 刷新管理器
 │   └── utils/               # 工具函数集
-│       ├── AccountUtils.ets # 账户工具
+│       ├── AccountUtils.ets  # 账户工具
 │       ├── BackupManager.ets # 备份管理
-│       └── TimeUtils.ets    # 时间工具
-├── components/               # 可复用 UI 组件
+│       └── TimeUtils.ets     # 时间工具
+├── components/              # 可复用 UI 组件
 │   ├── TimeCard.ets                  # 时间卡片
-│   ├── TimelineSection.ets           # 时间线区块
-│   ├── DataStatisticsSection.ets     # 数据统计区块
-│   ├── UserInfoSection.ets          # 用户信息区块
-│   ├── AboutAppDialog.ets           # 关于对话框
-│   ├── EditProfileDialog.ets        # 编辑资料对话框
-│   ├── BirthDateSelector.ets        # 出生日期选择器
+│   ├── TimelineSection.ets            # 时间线区块
+│   ├── DataStatisticsSection.ets        # 数据统计区块
+│   ├── UserInfoSection.ets            # 用户信息区块
+│   ├── AboutAppDialog.ets             # 关于对话框
+│   ├── EditProfileDialog.ets          # 编辑资料对话框
+│   ├── BirthDateSelector.ets          # 出生日期选择器
 │   └── ...                         # 其他自定义组件
 ├── config/                  # 配置管理层
-│   ├── ConfigManager.ets     # 配置管理器
-│   ├── UserConfig.ets        # 用户配置
-│   ├── ThemeManager.ets     # 主题管理器
-│   ├── ThemeConfig.ets       # 主题配置
-│   └── AppInfoConfig.ets     # 应用信息配置
+│   ├── ConfigManager.ets    # 配置管理器
+│   ├── UserConfig.ets       # 用户配置
+│   ├── ThemeManager.ets      # 主题管理器
+│   ├── ThemeConfig.ets      # 主题配置
+│   └── AppInfoConfig.ets    # 应用信息配置
 ├── viewmodel/               # 视图模型层
-│   ├── NowViewModel.ets     # "此刻"视图模型
+│   ├── NowViewModel.ets      # "此刻"视图模型
 │   └── AccountViewModel.ets # 账户视图模型
 ├── pages/                   # 页面层
 │   ├── Index.ets            # 应用入口
 │   ├── HomePage.ets          # 首页
-│   ├── NowPage.ets          # 此时此刻页
+│   ├── NowPage.ets           # 此时此刻页
 │   ├── AccountPage.ets      # 账户页面
 │   ├── ModulePage.ets        # 模块页面
-│   └── MorePage.ets         # 更多页面
+│   └── MorePage.ets          # 更多页面
 └── entryability/
-    ├── EntryAbility.ets              # 主入口 Ability
+    ├── EntryAbility.ets             # 主入口 Ability
     └── EntryBackupAbility.ets        # 备份 Ability
 ```
 
