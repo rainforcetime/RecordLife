@@ -8,6 +8,152 @@ import { BackupManager } from '../common/managers/BackupManager'
 import { MorePageBackupHandler } from '../common/handlers/MorePageBackupHandler'
 import { MorePageConfigHandler } from '../common/handlers/MorePageConfigHandler'
 
+// 导出选项弹窗
+@CustomDialog
+struct ExportOptionDialog {
+  controller: CustomDialogController
+  @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
+  onExportConfig: () => void = () => {}
+  onExportBackup: () => void = () => {}
+  onExportAll: () => void = () => {}
+
+  build() {
+    Column() {
+      Text('选择导出内容')
+        .fontSize(18)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(this.themeColors.textPrimary)
+        .margin({ bottom: 20 })
+
+      Button('用户配置')
+        .width('100%')
+        .height(44)
+        .backgroundColor(this.themeColors.cardBackground)
+        .fontColor(this.themeColors.textPrimary)
+        .borderRadius(8)
+        .onClick(() => {
+          this.controller.close()
+          this.onExportConfig()
+        })
+
+      Blank().height(12)
+
+      Button('此刻记录备份')
+        .width('100%')
+        .height(44)
+        .backgroundColor(this.themeColors.cardBackground)
+        .fontColor(this.themeColors.textPrimary)
+        .borderRadius(8)
+        .onClick(() => {
+          this.controller.close()
+          this.onExportBackup()
+        })
+
+      Blank().height(12)
+
+      Button('所有')
+        .width('100%')
+        .height(44)
+        .backgroundColor(this.themeColors.cardBackground)
+        .fontColor(this.themeColors.textPrimary)
+        .borderRadius(8)
+        .onClick(() => {
+          this.controller.close()
+          this.onExportAll()
+        })
+
+      Blank().height(12)
+
+      Button('取消')
+        .width('100%')
+        .height(44)
+        .backgroundColor(this.themeColors.divider)
+        .fontColor(this.themeColors.textSecondary)
+        .borderRadius(8)
+        .onClick(() => {
+          this.controller.close()
+        })
+    }
+    .width('80%')
+    .padding(24)
+    .backgroundColor(this.themeColors.cardBackground)
+    .borderRadius(16)
+  }
+}
+
+// 导入选项弹窗
+@CustomDialog
+struct ImportOptionDialog {
+  controller: CustomDialogController
+  @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
+  onImportConfig: () => void = () => {}
+  onImportBackup: () => void = () => {}
+  onImportAll: () => void = () => {}
+
+  build() {
+    Column() {
+      Text('选择导入内容')
+        .fontSize(18)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(this.themeColors.textPrimary)
+        .margin({ bottom: 20 })
+
+      Button('用户配置')
+        .width('100%')
+        .height(44)
+        .backgroundColor(this.themeColors.cardBackground)
+        .fontColor(this.themeColors.textPrimary)
+        .borderRadius(8)
+        .onClick(() => {
+          this.controller.close()
+          this.onImportConfig()
+        })
+
+      Blank().height(12)
+
+      Button('此刻记录备份')
+        .width('100%')
+        .height(44)
+        .backgroundColor(this.themeColors.cardBackground)
+        .fontColor(this.themeColors.textPrimary)
+        .borderRadius(8)
+        .onClick(() => {
+          this.controller.close()
+          this.onImportBackup()
+        })
+
+      Blank().height(12)
+
+      Button('所有')
+        .width('100%')
+        .height(44)
+        .backgroundColor(this.themeColors.cardBackground)
+        .fontColor(this.themeColors.textPrimary)
+        .borderRadius(8)
+        .onClick(() => {
+          this.controller.close()
+          this.onImportAll()
+        })
+
+      Blank().height(12)
+
+      Button('取消')
+        .width('100%')
+        .height(44)
+        .backgroundColor(this.themeColors.divider)
+        .fontColor(this.themeColors.textSecondary)
+        .borderRadius(8)
+        .onClick(() => {
+          this.controller.close()
+        })
+    }
+    .width('80%')
+    .padding(24)
+    .backgroundColor(this.themeColors.cardBackground)
+    .borderRadius(16)
+  }
+}
+
 @Entry
 @Component
 struct MorePage {
@@ -18,6 +164,40 @@ struct MorePage {
   private configManager: ConfigManager | null = null
   private backupManager: BackupManager | null = null
   private promptAction: PromptAction = this.getUIContext().getPromptAction()
+  
+  // 导出弹窗控制器
+  private exportDialogController: CustomDialogController = new CustomDialogController({
+    builder: ExportOptionDialog({
+      onExportConfig: () => {
+        this.onExportConfig()
+      },
+      onExportBackup: () => {
+        this.onExportBackup()
+      },
+      onExportAll: () => {
+        this.onExportAll()
+      }
+    }),
+    autoCancel: true,
+    customStyle: true
+  })
+  
+  // 导入弹窗控制器
+  private importDialogController: CustomDialogController = new CustomDialogController({
+    builder: ImportOptionDialog({
+      onImportConfig: () => {
+        this.onImportConfig()
+      },
+      onImportBackup: () => {
+        this.onImportBackup()
+      },
+      onImportAll: () => {
+        this.onImportAll()
+      }
+    }),
+    autoCancel: true,
+    customStyle: true
+  })
   
   // 页面初始化
   async aboutToAppear() {
@@ -87,12 +267,12 @@ struct MorePage {
   @Builder
   FunctionsSection() {
     Column() {
-      // 导出配置
+      // 导出
       SettingItemWithAction({
-        label: '导出用户配置',
-        summary: '导出应用配置文件',
+        label: '导出',
+        summary: '导出用户配置、此刻记录备份或所有数据',
         onAction: () => {
-          this.onExportConfig()
+          this.showExportDialog()
         }
       })
       
@@ -100,64 +280,12 @@ struct MorePage {
         .color(this.themeColors.divider)
         .margin({ left: 15 })
       
-      // 导入配置
+      // 导入
       SettingItemWithAction({
-        label: '导入用户配置',
-        summary: '从文件导入配置',
+        label: '导入',
+        summary: '导入用户配置、此刻记录备份或所有数据',
         onAction: () => {
-          this.onImportConfig()
-        }
-      })
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-      
-      // 导出备份
-      SettingItemWithAction({
-        label: '导出此刻记录备份',
-        summary: '导出所有此刻记录到 zip 文件',
-        onAction: () => {
-          this.onExportBackup()
-        }
-      })
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-      
-      // 导入备份
-      SettingItemWithAction({
-        label: '导入此刻记录备份',
-        summary: '从 zip 文件恢复此刻记录',
-        onAction: () => {
-          this.onImportBackup()
-        }
-      })
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-      
-      // 导出所有
-      SettingItemWithAction({
-        label: '导出所有',
-        summary: '导出用户配置和此刻记录到同一个 zip 文件',
-        onAction: () => {
-          this.onExportAll()
-        }
-      })
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-      
-      // 导入所有
-      SettingItemWithAction({
-        label: '导入所有',
-        summary: '从 zip 文件导入用户配置和此刻记录',
-        onAction: () => {
-          this.onImportAll()
+          this.showImportDialog()
         }
       })
       
@@ -179,6 +307,16 @@ struct MorePage {
     .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(10)
     .margin({ left: 15, right: 15 })
+  }
+  
+  // 显示导出选择对话框
+  private showExportDialog() {
+    this.exportDialogController.open()
+  }
+  
+  // 显示导入选择对话框
+  private showImportDialog() {
+    this.importDialogController.open()
   }
   
   // 返回处理

@@ -117,7 +117,7 @@ export async function createDefaultConfig(): Promise<UserConfig> {
   };
   
   const config: UserConfig = {
-    version: '1.0.0',
+    version: '1.0.0',  // 配置文件格式版本（与应用版本无关，当配置结构变化时才更新）
     profile: profile,
     settings: settings,
     backup: backup,
@@ -170,7 +170,7 @@ export function createDefaultConfigSync(): UserConfig {
   };
   
   const config: UserConfig = {
-    version: '1.0.0',
+    version: '1.0.0',  // 配置文件格式版本（与应用版本无关，当配置结构变化时才更新）
     profile: profile,
     settings: settings,
     backup: backup,

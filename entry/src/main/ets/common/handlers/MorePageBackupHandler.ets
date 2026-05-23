@@ -12,10 +12,11 @@ import { MorePageHelper } from '../utils/MorePageHelper'
 import { ConfigManager } from '../../config/ConfigManager'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { LifeRecord } from '../types'
+import { AppInfoManager } from '../../config/AppInfoConfig'
 
 // 记录元数据接口
 interface RecordsMetadata {
-  version: string
+  appVersion: string
   timestamp: number
   recordCount: number
   records: LifeRecord[]
@@ -200,9 +201,18 @@ export class MorePageBackupHandler {
       const viewModel = await NowViewModel.getInstance()
       const records = viewModel.getRecords()
       
+      // 从AppInfoManager获取应用版本号
+      let appVersion = '1.0.0'
+      try {
+        const appInfoManager = await AppInfoManager.getInstance()
+        appVersion = appInfoManager.getAppVersion()
+      } catch (error) {
+        console.error('[MorePageBackupHandler] 获取应用版本失败: ' + JSON.stringify(error))
+      }
+      
       // 创建记录元数据
       const recordsMetadata: RecordsMetadata = {
-        version: '1.0.0',
+        appVersion: appVersion,
         timestamp: Date.now(),
         recordCount: records.length,
         records: records
@@ -237,50 +247,7 @@ export class MorePageBackupHandler {
       }
       console.info(`[MorePageBackupHandler] 复制了 ${imageCount} 个图片文件`)
       
-      // 5. 复制头像文件
-      let avatarExported = false
-      const config = configManager.getConfig()
-      console.info('[MorePageBackupHandler] 头像配置: ' + config.profile.avatar)
-      
-      if (config.profile.avatar && config.profile.avatar.length > 0) {
-        // 从URI中提取路径
-        const avatarPath = MorePageHelper.uriToSandboxPath(config.profile.avatar)
-        
-        console.info('[MorePageBackupHandler] 头像路径: ' + avatarPath)
-        
-        try {
-          const fileExists = fileIo.accessSync(avatarPath)
-          console.info('[MorePageBackupHandler] 头像文件是否存在: ' + fileExists)
-          
-          if (fileExists) {
-            // 只有在文件存在时才创建avatar目录
-            const avatarDir = `${tempDir}/avatar`
-            fileIo.mkdirSync(avatarDir)
-            console.info('[MorePageBackupHandler] 创建avatar目录: ' + avatarDir)
-            
-            const avatarFileName = avatarPath.split('/').pop() || 'avatar.jpg'
-            const destAvatarPath = `${avatarDir}/${avatarFileName}`
-            console.info('[MorePageBackupHandler] 目标路径: ' + destAvatarPath)
-            
-            fileIo.copyFileSync(avatarPath, destAvatarPath)
-            
-            // 验证复制是否成功
-            const destExists = fileIo.accessSync(destAvatarPath)
-            console.info('[MorePageBackupHandler] 目标文件是否存在: ' + destExists)
-            
-            avatarExported = true
-            console.info('[MorePageBackupHandler] 头像文件已导出: ' + avatarFileName)
-          } else {
-            console.error('[MorePageBackupHandler] 头像文件不存在: ' + avatarPath)
-          }
-        } catch (avatarError) {
-          console.error('[MorePageBackupHandler] 导出头像失败: ' + JSON.stringify(avatarError))
-        }
-      } else {
-        console.info('[MorePageBackupHandler] 没有头像配置，跳过头像导出')
-      }
-      
-      // 6. 压缩为 zip 文件
+      // 5. 压缩为 zip 文件
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19)
       const zipFileName = `RecordLife_all_${timestamp}.zip`
       const zipPath = `${context.cacheDir}/${zipFileName}`
@@ -473,45 +440,15 @@ export class MorePageBackupHandler {
         console.info('[MorePageBackupHandler] 记录导入: ' + (recordsImported ? '成功' : '失败'))
       }
       
-      // 6. 恢复头像文件
-      const avatarDir = `${tempDir}/avatar`
-      let avatarImported = false
-      if (fileIo.accessSync(avatarDir)) {
-        const avatarFiles = fileIo.listFileSync(avatarDir)
-        if (avatarFiles.length > 0) {
-          // 恢复头像文件到 filesDir
-          const avatarFileName = avatarFiles[0]
-          const srcAvatarPath = `${avatarDir}/${avatarFileName}`
-          const destAvatarPath = `${context.filesDir}/${avatarFileName}`
-          fileIo.copyFileSync(srcAvatarPath, destAvatarPath)
-          
-          // 更新配置中的头像路径
-          const avatarUri = fileUri.getUriFromPath(destAvatarPath)
-          
-          // 更新配置
-          const currentConfig = configManager.getConfig()
-          await configManager.updateProfile(
-            currentConfig.profile.name,
-            currentConfig.profile.birthDate,
-            currentConfig.profile.gender,
-            avatarUri
-          )
-          
-          avatarImported = true
-          console.info('[MorePageBackupHandler] 头像文件已恢复: ' + avatarFileName)
-        }
-      }
-      
-      // 7. 清理临时文件
+      // 6. 清理临时文件
       fileIo.unlinkSync(tempZipPath)
       MorePageHelper.deleteDirectory(tempDir)
       
-      // 8. 显示结果
-      if (configImported || recordsImported || avatarImported) {
+      // 7. 显示结果
+      if (configImported || recordsImported) {
         const messages: string[] = []
         if (configImported) messages.push('用户配置')
         if (recordsImported) messages.push('此刻记录')
-        if (avatarImported) messages.push('头像')
         
         promptAction.showToast({ message: `导入成功: ${messages.join('、')}，应用即将重启` })
         

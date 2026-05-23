@@ -33,7 +33,7 @@ export struct AccountPage {
   // 数据统计
   @State statisticsInfo: DataStatistics = {
     usageDays: 0,
-    dataVersion: 'v1.0.0',
+    dataVersion: 'v0.0.1',  // 初始值，会在loadAppInfo时更新为实际版本
     lastActiveTime: '',
     storageSize: '计算中...'
   }

@@ -6,20 +6,20 @@ import { util } from '@kit.ArkTS'
 import { LifeRecord } from '../types'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import preferences from '@ohos.data.preferences'
+import { AppInfoManager } from '../../config/AppInfoConfig'
 
 // 备份元数据结构
 interface BackupMetadata {
-  version: string           // 备份版本号
-  timestamp: number         // 备份时间戳
-  recordCount: number       // 记录总数
-  records: LifeRecord[]     // 所有记录
+  appVersion: string       // 应用版本号
+  timestamp: number        // 备份时间戳
+  recordCount: number      // 记录总数
+  records: LifeRecord[]    // 所有记录
 }
 
 export class BackupManager {
   private static instance: BackupManager | null = null
   private context: common.UIAbilityContext | null = null
   
-  private readonly BACKUP_VERSION = '1.0.0'
   private readonly METADATA_FILE = 'metadata.json'
   private readonly RECORDS_DIR = 'records'
   private readonly TEMP_DIR = 'backup_temp'
@@ -76,9 +76,19 @@ export class BackupManager {
       
       console.info(`[BackupManager] 获取到 ${records.length} 条记录`)
       
+      // 从AppInfoManager获取应用版本号
+      let backupVersion = '1.0.0'
+      try {
+        const appInfoManager = await AppInfoManager.getInstance()
+        backupVersion = appInfoManager.getAppVersion()
+        console.info(`[BackupManager] 应用版本: ${backupVersion}`)
+      } catch (error) {
+        console.error('[BackupManager] 获取应用版本失败: ' + JSON.stringify(error))
+      }
+      
       // 3. 创建备份元数据
       const metadata: BackupMetadata = {
-        version: this.BACKUP_VERSION,
+        appVersion: backupVersion,
         timestamp: Date.now(),
         recordCount: records.length,
         records: records

@@ -8,17 +8,19 @@ import preferences from '@ohos.data.preferences';
 import common from '@ohos.app.ability.common';
 import { UserConfig, UserProfile, AppSettings, BackupConfig, DataStatistics, ConfigMetadata, createDefaultConfig, createDefaultConfigSync, validateConfig } from './UserConfig';
 import { TimeUtils } from '../common/utils/TimeUtils';
+import { AppInfoManager } from './AppInfoConfig';
+import { ImageBase64Utils } from '../common/utils/ImageBase64Utils';
+import { MorePageHelper } from '../common/utils/MorePageHelper';
 
 // 导出数据接口
 interface ExportData {
-  version: string;
-  profile: UserProfile;
   settings: AppSettings;
   backup: BackupConfig;
   statistics: DataStatistics;
   metadata: ConfigMetadata;
   exportedAt: string;
   appVersion: string;
+  profile: UserProfile;  // 放在最后，因为头像的 base64 数据很长
 }
 
 export class ConfigManager {
@@ -53,10 +55,10 @@ export class ConfigManager {
       let uiContext = AppStorage.get('uiContext') as common.UIAbilityContext;
       console.info('ConfigManager.init: uiContext - ' + (uiContext ? '存在' : '不存在'))
       
-      // 如果 uiContext 不存在，尝试从 AppStorage 获取 context
+      // 如果 uiContext 不存在，尝试从 AppStorage 获取 uiContext
       if (!uiContext) {
-        uiContext = AppStorage.get('context') as common.UIAbilityContext;
-        console.info('ConfigManager.init: 从 AppStorage 获取 context - ' + (uiContext ? '成功' : '失败'))
+        uiContext = AppStorage.get('uiContext') as common.UIAbilityContext;
+        console.info('ConfigManager.init: 从 AppStorage 获取 uiContext - ' + (uiContext ? '成功' : '失败'))
       }
       
       if (!uiContext) {
@@ -249,15 +251,62 @@ export class ConfigManager {
   // 导出配置 (用于备份)
   async exportConfig(): Promise<string> {
     const config = this.getConfig();
+    
+    // 从AppInfoManager获取应用版本号
+    let appVersion = '0.0.2';  // 默认使用当前app.json5中的版本号
+    try {
+      console.info('[ConfigManager] 开始获取应用版本...');
+      const appInfoManager = await AppInfoManager.getInstance();
+      appVersion = appInfoManager.getAppVersion();
+      console.info('[ConfigManager] 获取到应用版本: ' + appVersion);
+    } catch (error) {
+      console.error('[ConfigManager] 获取应用版本失败: ' + JSON.stringify(error));
+    }
+    
+    // 处理头像：将图片转换为 base64
+    let profileAvatar = config.profile.avatar;
+    if (config.profile.avatar && config.profile.avatar.length > 0) {
+      try {
+        // 将 URI 转换为沙箱路径
+        const avatarPath = MorePageHelper.uriToSandboxPath(config.profile.avatar);
+        console.info('[ConfigManager] 头像 URI: ' + config.profile.avatar);
+        console.info('[ConfigManager] 头像沙箱路径: ' + avatarPath);
+        
+        // 检查文件是否存在
+        if (MorePageHelper.fileExists(avatarPath)) {
+          // 转换为 base64
+          const base64Str = ImageBase64Utils.imageToBase64(avatarPath);
+          if (base64Str && base64Str.length > 0) {
+            profileAvatar = base64Str;
+            console.info('[ConfigManager] 头像已转换为 base64，长度: ' + base64Str.length);
+          } else {
+            console.warn('[ConfigManager] 头像转换 base64 失败，保留原始路径');
+          }
+        } else {
+          console.warn('[ConfigManager] 头像文件不存在: ' + avatarPath);
+        }
+      } catch (error) {
+        console.error('[ConfigManager] 处理头像失败: ' + JSON.stringify(error));
+      }
+    } else {
+      console.info('[ConfigManager] 没有头像，跳过转换');
+    }
+    
+    const profileWithBase64Avatar: UserProfile = {
+      name: config.profile.name,
+      birthDate: config.profile.birthDate,
+      gender: config.profile.gender,
+      avatar: profileAvatar
+    };
+    
     const exportData: ExportData = {
-      version: config.version,
-      profile: config.profile,
       settings: config.settings,
       backup: config.backup,
       statistics: config.statistics,
       metadata: config.metadata,
       exportedAt: new Date().toISOString(),
-      appVersion: '1.0.0'
+      appVersion: appVersion,
+      profile: profileWithBase64Avatar  // 放在最后
     };
     return JSON.stringify(exportData, null, 2);
   }
@@ -279,7 +328,55 @@ export class ConfigManager {
       }
       
       this.config.version = importedConfig.version;
-      this.config.profile = importedConfig.profile;
+      
+      // 处理头像：如果是 base64 字符串，则转换为图片文件
+      let profileAvatar = importedConfig.profile.avatar;
+      if (importedConfig.profile.avatar && importedConfig.profile.avatar.length > 0) {
+        // 检查是否是 base64 字符串
+        // Base64 字符串特征：长度较长且不是 file:// URI 格式
+        const avatarValue = importedConfig.profile.avatar;
+        const isFileUri = avatarValue.startsWith('file://');
+        const isBase64 = !isFileUri && avatarValue.length > 200;
+        
+        console.info('[ConfigManager] 头像检测: isFileUri=' + isFileUri + ', isBase64=' + isBase64 + ', length=' + avatarValue.length);
+        
+        if (isBase64) {
+          try {
+            // 获取 context
+            const context = AppStorage.get('uiContext') as common.UIAbilityContext;
+            if (context) {
+              // 获取头像保存路径
+              const avatarPath = ImageBase64Utils.getAvatarSavePath(context);
+              console.info('[ConfigManager] 将 base64 转换为图片: ' + avatarPath);
+              
+              // 转换 base64 为图片
+              const success = ImageBase64Utils.base64ToImage(importedConfig.profile.avatar, avatarPath);
+              if (success) {
+                // 将 avatar 更新为文件路径
+                profileAvatar = avatarPath;
+                console.info('[ConfigManager] 头像已从 base64 转换为图片文件');
+              } else {
+                console.warn('[ConfigManager] base64 转图片失败，保留原始数据');
+              }
+            } else {
+              console.warn('[ConfigManager] 无法获取 context，跳过头像转换');
+            }
+          } catch (error) {
+            console.error('[ConfigManager] 处理头像失败: ' + JSON.stringify(error));
+          }
+        } else {
+          console.info('[ConfigManager] 头像是文件路径或URI，无需转换');
+        }
+      }
+      
+      const profileWithImageAvatar: UserProfile = {
+        name: importedConfig.profile.name,
+        birthDate: importedConfig.profile.birthDate,
+        gender: importedConfig.profile.gender,
+        avatar: profileAvatar
+      };
+      
+      this.config.profile = profileWithImageAvatar;
       this.config.settings = importedConfig.settings;
       this.config.backup = importedConfig.backup;
       this.config.statistics = importedConfig.statistics;
