@@ -161,12 +161,13 @@ export class NowViewModel {
   }
   
   // 添加记录
-  async addRecord(content: string, imagePaths?: string[]): Promise<LifeRecord | null> {
+  async addRecord(content: string, imagePaths?: string[], tags?: string[]): Promise<LifeRecord | null> {
     const record: LifeRecord = {
       id: this.generateId(),
       timestamp: Date.now(),
       content: content,
-      imagePaths: imagePaths
+      imagePaths: imagePaths,
+      tags: tags
     }
     
     this.records.unshift(record) // 添加到开头
@@ -182,7 +183,7 @@ export class NowViewModel {
   }
   
   // 更新记录
-  async updateRecord(id: string, content: string, imagePaths?: string[]): Promise<boolean> {
+  async updateRecord(id: string, content: string, imagePaths?: string[], tags?: string[]): Promise<boolean> {
     const index = this.records.findIndex(r => r.id === id)
     if (index === -1) {
       console.error('[NowViewModel] 未找到记录: ' + id)
@@ -193,6 +194,11 @@ export class NowViewModel {
     
     // 更新文字内容
     record.content = content
+    
+    // 更新标签
+    if (tags !== undefined) {
+      record.tags = tags.length > 0 ? tags : undefined
+    }
     
     // 处理图片路径更新
     if (imagePaths !== undefined) {

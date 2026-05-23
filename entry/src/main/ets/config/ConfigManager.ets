@@ -309,4 +309,34 @@ export class ConfigManager {
     this.config.statistics.lastActiveTime = TimeUtils.now().toISOString();
     await this.saveConfig();
   }
+
+  // 获取累计模式设置
+  getIsAccumulatedMode(): boolean {
+    const config = this.getConfig();
+    return config.settings.isAccumulatedMode;
+  }
+
+  // 获取剩余模式设置
+  getIsRemainingMode(): boolean {
+    const config = this.getConfig();
+    return config.settings.isRemainingMode;
+  }
+
+  // 设置累计模式
+  async setIsAccumulatedMode(isAccumulatedMode: boolean): Promise<boolean> {
+    if (!this.config || !this.preferences) {
+      return false;
+    }
+    this.config.settings.isAccumulatedMode = isAccumulatedMode;
+    return await this.saveConfig();
+  }
+
+  // 设置剩余模式
+  async setIsRemainingMode(isRemainingMode: boolean): Promise<boolean> {
+    if (!this.config || !this.preferences) {
+      return false;
+    }
+    this.config.settings.isRemainingMode = isRemainingMode;
+    return await this.saveConfig();
+  }
 }

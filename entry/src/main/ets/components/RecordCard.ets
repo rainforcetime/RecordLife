@@ -3,11 +3,18 @@ import { LifeRecord } from '../common/types'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { NowViewModel } from '../viewmodel/NowViewModel'
 import { ImageViewer } from './ImageViewer'
+import { TagDisplay } from './TagSelector'
 
 // 记录卡片操作回调
 interface RecordCardCallbacks {
   onEdit: (record: LifeRecord) => void
   onDelete: (record: LifeRecord) => void
+}
+
+// 文本分段（用于高亮显示）
+interface TextSegment {
+  text: string
+  isHighlight: boolean
 }
 
 @Component
@@ -17,6 +24,9 @@ export struct RecordCard {
   
   // 是否显示日期（默认显示）
   @Prop showDate: boolean = true
+  
+  // 搜索关键词（用于高亮）
+  @Prop searchKeyword: string = ''
   
   // 回调函数
   onEdit?: (record: LifeRecord) => void
@@ -36,13 +46,16 @@ export struct RecordCard {
   
   build() {
     Column() {
+      // 标签显示（如果有）
+      if (this.record.tags && this.record.tags.length > 0) {
+        TagDisplay({ tagIds: this.record.tags })
+          .margin({ bottom: 8 })
+      }
+      
       // 文字内容（如果有）
       if (this.record.content && this.record.content.length > 0) {
-        Text(this.record.content)
-          .fontSize(15)
-          .fontColor(this.themeColors.textPrimary)
-          .width('100%')
-          .lineHeight(22)
+        // 使用高亮文本显示
+        this.HighlightText(this.record.content, this.searchKeyword)
       }
       
       // 图片网格（如果有）
@@ -108,6 +121,70 @@ export struct RecordCard {
     .bindContentCover($$this.showImageViewer, this.ImageViewerBuilder(), {
       modalTransition: ModalTransition.DEFAULT
     })
+  }
+  
+  // 高亮文本构建器
+  @Builder
+  HighlightText(text: string, keyword: string) {
+    if (keyword.length === 0) {
+      // 无关键词，直接显示原文
+      Text(text)
+        .fontSize(15)
+        .fontColor(this.themeColors.textPrimary)
+        .width('100%')
+        .lineHeight(22)
+    } else {
+      // 有关键词，分段高亮显示
+      Text() {
+        ForEach(this.splitTextByKeyword(text, keyword), (segment: TextSegment) => {
+          Span(segment.text)
+            .fontSize(15)
+            .fontColor(segment.isHighlight ? this.themeColors.primary : this.themeColors.textPrimary)
+            .fontWeight(segment.isHighlight ? FontWeight.Bold : FontWeight.Normal)
+        }, (segment: TextSegment, index: number) => `segment-${index}`)
+      }
+      .width('100%')
+      .lineHeight(22)
+    }
+  }
+  
+  // 将文本按关键词分割
+  private splitTextByKeyword(text: string, keyword: string): TextSegment[] {
+    const segments: TextSegment[] = []
+    const lowerText = text.toLowerCase()
+    const lowerKeyword = keyword.toLowerCase()
+    
+    let lastIndex = 0
+    let currentIndex = lowerText.indexOf(lowerKeyword)
+    
+    while (currentIndex !== -1) {
+      // 添加关键词前的普通文本
+      if (currentIndex > lastIndex) {
+        segments.push({
+          text: text.substring(lastIndex, currentIndex),
+          isHighlight: false
+        })
+      }
+      
+      // 添加高亮的关键词（保持原文大小写）
+      segments.push({
+        text: text.substring(currentIndex, currentIndex + keyword.length),
+        isHighlight: true
+      })
+      
+      lastIndex = currentIndex + keyword.length
+      currentIndex = lowerText.indexOf(lowerKeyword, lastIndex)
+    }
+    
+    // 添加剩余的普通文本
+    if (lastIndex < text.length) {
+      segments.push({
+        text: text.substring(lastIndex),
+        isHighlight: false
+      })
+    }
+    
+    return segments
   }
   
   // 打开图片预览（从路径数组）

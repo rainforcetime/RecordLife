@@ -5,6 +5,7 @@ import { ImagePickerUtils, ImagePickMode, ImagePickResult } from '../common/util
 import { common } from '@kit.AbilityKit'
 import { PromptAction } from '@kit.ArkUI'
 import { NowViewModel } from '../viewmodel/NowViewModel'
+import { TagSelector } from './TagSelector'
 
 @Component
 export struct EditRecordDialog {
@@ -21,6 +22,9 @@ export struct EditRecordDialog {
   
   // 本地图片数组副本（用于 UI 渲染）
   @State private localImagePaths: string[] = []
+  
+  // 选中的标签
+  @Link editTags: string[]
   
   // 图片路径更新回调
   onImagePathsChange: ((paths: string[]) => void) | null = null
@@ -77,6 +81,13 @@ export struct EditRecordDialog {
           .border({ width: 1, color: this.themeColors.border })
           .fontColor(this.themeColors.textPrimary)
           .padding(12)
+        
+        // 标签选择区域
+        Column() {
+          TagSelector({ selectedTagIds: $editTags })
+        }
+        .width('100%')
+        .margin({ top: 16 })
         
         // 图片区域
         this.ImageGridBuilder()

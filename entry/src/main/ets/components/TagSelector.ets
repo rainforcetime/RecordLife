@@ -1,0 +1,164 @@
+// 标签选择组件：components/TagSelector.ets
+import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
+import { Tag, DEFAULT_TAGS } from '../common/types'
+
+@Component
+export struct TagSelector {
+  @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
+  
+  // 已选中的标签ID列表（双向绑定）
+  @Link selectedTagIds: string[]
+  
+  // 可用的标签列表
+  @Prop availableTags: Tag[] = DEFAULT_TAGS
+  
+  // 是否为编辑模式（紧凑显示）
+  @Prop isCompact: boolean = false
+  
+  build() {
+    Column() {
+      // 标题
+      if (!this.isCompact) {
+        Row() {
+          Text('标签')
+            .fontSize(14)
+            .fontColor(this.themeColors.textSecondary)
+          
+          Blank()
+          
+          if (this.selectedTagIds.length > 0) {
+            Text(`已选 ${this.selectedTagIds.length} 个`)
+              .fontSize(12)
+              .fontColor(this.themeColors.textSecondary)
+          }
+        }
+        .width('100%')
+        .margin({ bottom: 10 })
+      }
+      
+      // 标签列表
+      Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
+        ForEach(this.availableTags, (tag: Tag) => {
+          this.TagItem(tag)
+        }, (tag: Tag) => tag.id)
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
+  }
+  
+  // 将十六进制颜色转换为 rgba 格式
+  private hexToRgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  }
+  
+  // 单个标签项
+  @Builder
+  TagItem(tag: Tag) {
+    Row() {
+      // 图标
+      if (tag.icon) {
+        Text(tag.icon)
+          .fontSize(this.isCompact ? 12 : 14)
+      }
+      
+      // 名称
+      Text(tag.name)
+        .fontSize(this.isCompact ? 12 : 14)
+        .fontColor(this.isTagSelected(tag.id) ? '#FFFFFF' : tag.color)
+        .fontWeight(this.isTagSelected(tag.id) ? FontWeight.Medium : FontWeight.Normal)
+        .margin({ left: tag.icon ? 4 : 0 })
+    }
+    .padding({ 
+      left: this.isCompact ? 8 : 10, 
+      right: this.isCompact ? 8 : 10, 
+      top: this.isCompact ? 4 : 6, 
+      bottom: this.isCompact ? 4 : 6 
+    })
+    .backgroundColor(this.isTagSelected(tag.id) ? tag.color : this.hexToRgba(tag.color, 0.15))
+    .borderRadius(this.isCompact ? 12 : 16)
+    .margin({ right: 8, bottom: 8 })
+    .onClick(() => {
+      this.toggleTag(tag.id)
+    })
+  }
+  
+  // 判断标签是否选中
+  private isTagSelected(tagId: string): boolean {
+    return this.selectedTagIds.includes(tagId)
+  }
+  
+  // 切换标签选中状态
+  private toggleTag(tagId: string) {
+    const index = this.selectedTagIds.indexOf(tagId)
+    if (index === -1) {
+      // 选中标签
+      this.selectedTagIds = [...this.selectedTagIds, tagId]
+    } else {
+      // 取消选中
+      const newTags = [...this.selectedTagIds]
+      newTags.splice(index, 1)
+      this.selectedTagIds = newTags
+    }
+  }
+}
+
+// 标签显示组件（只读，用于 RecordCard）
+@Component
+export struct TagDisplay {
+  @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
+  
+  // 标签ID列表
+  @Prop tagIds: string[] = []
+  
+  // 可用的标签列表
+  @Prop availableTags: Tag[] = DEFAULT_TAGS
+  
+  // 将十六进制颜色转换为 rgba 格式
+  private hexToRgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  }
+  
+  build() {
+    if (this.tagIds.length > 0) {
+      Row() {
+        ForEach(this.getTagsByIds(), (tag: Tag, index: number) => {
+          Row() {
+            if (tag.icon) {
+              Text(tag.icon)
+                .fontSize(11)
+            }
+            Text(tag.name)
+              .fontSize(11)
+              .fontColor(tag.color)
+              .margin({ left: tag.icon ? 2 : 0 })
+          }
+          .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+          .backgroundColor(this.hexToRgba(tag.color, 0.15))
+          .borderRadius(10)
+          .margin({ right: index < this.tagIds.length - 1 ? 6 : 0 })
+        }, (tag: Tag) => tag.id)
+      }
+      .width('100%')
+    }
+  }
+  
+  // 根据ID获取标签对象
+  private getTagsByIds(): Tag[] {
+    const result: Tag[] = []
+    for (const id of this.tagIds) {
+      const tag = this.availableTags.find(t => t.id === id)
+      if (tag !== undefined) {
+        result.push(tag)
+      }
+    }
+    return result
+  }
+}

@@ -27,6 +27,9 @@ export interface AppSettings {
   showTimeDetails: boolean;
   enableNotifications: boolean;
   timeFormat: string; // 'standard' | 'compact'
+  // HomePage 模式设置
+  isAccumulatedMode: boolean; // true: 累计模式, false: 非累计模式
+  isRemainingMode: boolean; // true: 剩余模式, false: 已存活模式
 }
 
 // 备份配置
@@ -88,7 +91,9 @@ export async function createDefaultConfig(): Promise<UserConfig> {
     language: 'zh-CN',
     showTimeDetails: true,
     enableNotifications: false,
-    timeFormat: 'standard'
+    timeFormat: 'standard',
+    isAccumulatedMode: true,  // 默认累计模式
+    isRemainingMode: false    // 默认已存活模式
   };
   
   const backup: BackupConfig = {
@@ -139,7 +144,9 @@ export function createDefaultConfigSync(): UserConfig {
     language: 'zh-CN',
     showTimeDetails: true,
     enableNotifications: false,
-    timeFormat: 'standard'
+    timeFormat: 'standard',
+    isAccumulatedMode: true,  // 默认累计模式
+    isRemainingMode: false    // 默认已存活模式
   };
   
   const backup: BackupConfig = {

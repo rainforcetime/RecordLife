@@ -5,6 +5,8 @@ import { NowViewModel } from '../viewmodel/NowViewModel'
 import { TimelineSection } from '../components/TimelineSection'
 import { AddRecordSection } from '../components/AddRecordSection'
 import { EditRecordDialog } from '../components/EditRecordDialog'
+import { SearchBar } from '../components/SearchBar'
+import { CalendarView } from '../components/CalendarView'
 import { RefreshManager } from '../common/RefreshManager'
 import { PromptAction } from '@kit.ArkUI'
 
@@ -19,6 +21,13 @@ struct NowPage {
   // 刷新触发器（用于强制刷新）
   @State private refreshTrigger: number = 0
   
+  // 搜索状态
+  @State private searchText: string = ''
+  @State private isSearching: boolean = false
+  
+  // 视图模式：'timeline' | 'calendar'
+  @State private viewMode: string = 'timeline'
+  
   // 正在编辑的记录
   @State private editingRecord: LifeRecord | null = null
   @State private showEditDialog: boolean = false
@@ -26,6 +35,9 @@ struct NowPage {
   
   // 编辑图片时的临时变量
   @State private editImagePaths: string[] = []
+  
+  // 编辑标签时的临时变量
+  @State private editTags: string[] = []
   
   // 记录此刻弹窗
   @State private showAddRecordDialog: boolean = false
@@ -72,7 +84,7 @@ struct NowPage {
       // 时间线展示区域（全屏）
       Scroll() {
         Column() {
-          // 页面标题
+          // 页面标题和视图切换
           Row() {
             Text('此刻')
               .fontSize(28)
@@ -80,6 +92,43 @@ struct NowPage {
               .fontColor(this.themeColors.textPrimary)
             
             Blank()
+            
+            // 视图切换按钮
+            Row() {
+              // 时间线视图按钮
+              Column() {
+                SymbolGlyph($r('sys.symbol.list_bullet'))
+                  .fontSize(18)
+                  .fontColor([this.viewMode === 'timeline' ? this.themeColors.primary : this.themeColors.textSecondary])
+              }
+              .width(36)
+              .height(36)
+              .justifyContent(FlexAlign.Center)
+              .alignItems(HorizontalAlign.Center)
+              .backgroundColor(this.viewMode === 'timeline' ? this.themeColors.primaryLight + '30' : 'transparent')
+              .borderRadius(8)
+              .onClick(() => {
+                this.viewMode = 'timeline'
+              })
+              
+              // 日历视图按钮
+              Column() {
+                SymbolGlyph($r('sys.symbol.calendar'))
+                  .fontSize(18)
+                  .fontColor([this.viewMode === 'calendar' ? this.themeColors.primary : this.themeColors.textSecondary])
+              }
+              .width(36)
+              .height(36)
+              .justifyContent(FlexAlign.Center)
+              .alignItems(HorizontalAlign.Center)
+              .backgroundColor(this.viewMode === 'calendar' ? this.themeColors.primaryLight + '30' : 'transparent')
+              .borderRadius(8)
+              .margin({ left: 8 })
+              .onClick(() => {
+                this.viewMode = 'calendar'
+              })
+            }
+            .margin({ right: 12 })
             
             // 统计信息
             if (this.timelineData.years.length > 0) {
@@ -89,19 +138,43 @@ struct NowPage {
             }
           }
           .width('100%')
-          .padding({ left: 4, right: 4, bottom: 16 })
+          .padding({ left: 4, right: 4, bottom: 12 })
           
-          // 时间线内容
-          TimelineSection({
-            timelineData: this.timelineData,
-            timelineDataVersion: this.refreshTrigger,
-            onEditRecord: (record: LifeRecord) => {
-              this.onEditRecord(record)
-            },
-            onDeleteRecord: (record: LifeRecord) => {
-              this.onDeleteRecord(record)
-            }
-          })
+          // 搜索栏（仅时间线视图显示）
+          if (this.viewMode === 'timeline') {
+            SearchBar({
+              searchText: $searchText,
+              isSearching: $isSearching,
+              placeholder: '搜索记录...'
+            })
+            .margin({ bottom: 16 })
+          }
+          
+          // 内容区域
+          if (this.viewMode === 'timeline') {
+            // 时间线视图
+            TimelineSection({
+              timelineData: this.timelineData,
+              timelineDataVersion: this.refreshTrigger,
+              searchKeyword: this.searchText,  // 传递搜索关键词
+              onEditRecord: (record: LifeRecord) => {
+                this.onEditRecord(record)
+              },
+              onDeleteRecord: (record: LifeRecord) => {
+                this.onDeleteRecord(record)
+              }
+            })
+          } else {
+            // 日历视图
+            CalendarView({
+              timelineData: this.timelineData,
+              onRecordsClick: (records: LifeRecord[], dateStr: string) => {
+                // 点击查看全部记录时，切换到时间线视图
+                // TODO: 可以滚动到对应日期
+                this.viewMode = 'timeline'
+              }
+            })
+          }
         }
         .width('100%')
         .padding({ left: 16, right: 16, top: 20, bottom: 100 })
@@ -184,6 +257,7 @@ struct NowPage {
       record: this.editingRecord,
       editContent: $editContent,
       editImagePaths: this.editImagePaths,  // ✅ 传递当前值
+      editTags: $editTags,  // ✅ 双向绑定标签
       onImagePathsChange: (paths: string[]) => {
         // ✅ 通过回调更新图片数组
         console.info('[NowPage] 收到图片更新回调，旧数量: ' + this.editImagePaths.length + ', 新数量: ' + paths.length)
@@ -202,6 +276,7 @@ struct NowPage {
         this.showEditDialog = false
         this.editingRecord = null as LifeRecord | null
         this.editImagePaths = []
+        this.editTags = []
       },
       saveImageToSandbox: async (uri: string) => {
         if (this.viewModel) {
@@ -259,6 +334,13 @@ struct NowPage {
       this.editImagePaths = []
     }
     
+    // 如果有标签，初始化标签列表
+    if (record.tags && record.tags.length > 0) {
+      this.editTags = [...record.tags]  // 复制数组
+    } else {
+      this.editTags = []
+    }
+    
     this.showEditDialog = true
   }
   
@@ -279,11 +361,12 @@ struct NowPage {
     }
     
     try {
-      // 传递图片路径数组（空数组也要传递，表示删除所有图片）
+      // 传递图片路径数组和标签数组
       const success = await this.viewModel.updateRecord(
         this.editingRecord.id,
         this.editContent.trim(),
-        this.editImagePaths  // ✅ 直接传递，空数组也会更新
+        this.editImagePaths,  // ✅ 直接传递，空数组也会更新
+        this.editTags  // ✅ 传递标签
       )
       
       if (success) {
@@ -295,6 +378,7 @@ struct NowPage {
         this.showEditDialog = false
         this.editingRecord = null as LifeRecord | null
         this.editImagePaths = []
+        this.editTags = []
         // 触发全局刷新
         RefreshManager.getInstance().refresh()
         this.refreshTimeline()

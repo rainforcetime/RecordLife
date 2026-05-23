@@ -6,6 +6,7 @@ import { LifeRecord, ImageInfo } from '../common/types'
 import { RefreshManager } from '../common/RefreshManager'
 import { PromptAction } from '@kit.ArkUI'
 import { ImagePickerUtils, ImagePickMode } from '../common/utils/ImagePickerUtils'
+import { TagSelector } from './TagSelector'
 
 @Component
 export struct AddRecordSection {
@@ -16,6 +17,9 @@ export struct AddRecordSection {
   
   // 图片列表（最多9张）
   @State private images: ImageInfo[] = []
+  
+  // 选中的标签
+  @State private selectedTags: string[] = []
   
   // 是否正在保存
   @State private isSaving: boolean = false
@@ -64,6 +68,13 @@ export struct AddRecordSection {
           .fontColor(this.themeColors.textPrimary)
           .placeholderColor(this.themeColors.textTertiary)
           .padding(12)
+        
+        // 标签选择区域
+        Column() {
+          TagSelector({ selectedTagIds: $selectedTags })
+        }
+        .width('100%')
+        .margin({ top: 16 })
         
         // 图片区域
         Column() {
@@ -222,10 +233,14 @@ export struct AddRecordSection {
       // 提取图片路径数组
       const imagePaths = this.images.length > 0 ? this.images.map(img => img.path) : undefined
       
+      // 提取标签数组
+      const tags = this.selectedTags.length > 0 ? this.selectedTags : undefined
+      
       // 统一保存记录
       const record = await this.viewModel.addRecord(
         this.textContent.trim(),
-        imagePaths
+        imagePaths,
+        tags
       )
       
       if (record) {
@@ -238,6 +253,7 @@ export struct AddRecordSection {
         // 清空输入
         this.textContent = ''
         this.images = []
+        this.selectedTags = []
         
         // 触发全局刷新
         console.info('[AddRecordSection] 触发全局刷新')

@@ -17,6 +17,9 @@ export struct TimelineSection {
   @Prop timelineData: TimelineData = { years: [] }
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
   
+  // 搜索关键词（用于过滤和高亮）
+  @Prop searchKeyword: string = ''
+  
   // 回调函数
   onEditRecord?: (record: LifeRecord) => void
   onDeleteRecord?: (record: LifeRecord) => void
@@ -48,7 +51,15 @@ export struct TimelineSection {
     for (const yearNode of this.timelineData.years) {
       for (const monthNode of yearNode.months) {
         for (const dayNode of monthNode.days) {
-          if (dayNode.records.length > 0) {
+          // 过滤记录（如果有搜索关键词）
+          let filteredRecords = dayNode.records
+          if (this.searchKeyword.length > 0) {
+            filteredRecords = dayNode.records.filter(record => 
+              record.content.toLowerCase().includes(this.searchKeyword.toLowerCase())
+            )
+          }
+          
+          if (filteredRecords.length > 0) {
             // 计算日期描述
             const recordDate = new Date(yearNode.year, monthNode.month - 1, dayNode.day)
             const diffDays = Math.floor((today.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24))
@@ -71,7 +82,7 @@ export struct TimelineSection {
               month: monthNode.month,
               day: dayNode.day,
               dateStr: dateStr,
-              records: dayNode.records
+              records: filteredRecords
             })
           }
         }
@@ -112,7 +123,7 @@ export struct TimelineSection {
     Column() {
       // 图标背景
       Column() {
-        Text('📝')
+        Text(this.searchKeyword.length > 0 ? '🔍' : '📝')
           .fontSize(48)
       }
       .width(100)
@@ -123,17 +134,33 @@ export struct TimelineSection {
       .alignItems(HorizontalAlign.Center)
       .margin({ bottom: 24 })
       
-      Text('还没有记录')
-        .fontSize(20)
-        .fontColor(this.themeColors.textPrimary)
-        .fontWeight(FontWeight.Medium)
-        .margin({ bottom: 8 })
-      
-      Text('点击右下角的按钮开始记录你的生活')
-        .fontSize(14)
-        .fontColor(this.themeColors.textSecondary)
-        .textAlign(TextAlign.Center)
-        .lineHeight(22)
+      if (this.searchKeyword.length > 0) {
+        // 搜索无结果
+        Text('没有找到相关记录')
+          .fontSize(20)
+          .fontColor(this.themeColors.textPrimary)
+          .fontWeight(FontWeight.Medium)
+          .margin({ bottom: 8 })
+        
+        Text(`没有包含"${this.searchKeyword}"的记录`)
+          .fontSize(14)
+          .fontColor(this.themeColors.textSecondary)
+          .textAlign(TextAlign.Center)
+          .lineHeight(22)
+      } else {
+        // 无记录
+        Text('还没有记录')
+          .fontSize(20)
+          .fontColor(this.themeColors.textPrimary)
+          .fontWeight(FontWeight.Medium)
+          .margin({ bottom: 8 })
+        
+        Text('点击右下角的按钮开始记录你的生活')
+          .fontSize(14)
+          .fontColor(this.themeColors.textSecondary)
+          .textAlign(TextAlign.Center)
+          .lineHeight(22)
+      }
     }
     .width('100%')
     .height('100%')
@@ -154,6 +181,7 @@ export struct TimelineSection {
         RecordCard({
           record: record,
           showDate: false,  // 不显示日期，因为已经在分隔线显示了
+          searchKeyword: this.searchKeyword,  // 传递搜索关键词
           onEdit: this.onEditRecord,
           onDelete: this.onDeleteRecord
         })

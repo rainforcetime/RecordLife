@@ -38,6 +38,10 @@ export struct HomePage {
     // 加载出生日期
     this.birthDate = this.configManager.getBirthDate();
     
+    // 加载保存的模式设置
+    this.isAccumulatedMode = this.configManager.getIsAccumulatedMode();
+    this.isRemainingMode = this.configManager.getIsRemainingMode();
+    
     // 开始计算时间
     this.calculateTime();
     this.intervalId = setInterval(() => {
@@ -234,9 +238,13 @@ export struct HomePage {
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .backgroundColor(!this.isRemainingMode ? '#FF6B6B' : 'transparent')
                 .borderRadius(12)
-                .onClick(() => {
+                .onClick(async () => {
                   if (this.isRemainingMode) {
                     this.isRemainingMode = false;
+                    // 保存设置
+                    if (this.configManager) {
+                      await this.configManager.setIsRemainingMode(false);
+                    }
                     this.calculateTime();
                   }
                 })
@@ -248,9 +256,13 @@ export struct HomePage {
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .backgroundColor(this.isRemainingMode ? '#4CAF50' : 'transparent')
                 .borderRadius(12)
-                .onClick(() => {
+                .onClick(async () => {
                   if (!this.isRemainingMode) {
                     this.isRemainingMode = true;
+                    // 保存设置
+                    if (this.configManager) {
+                      await this.configManager.setIsRemainingMode(true);
+                    }
                     this.calculateTime();
                   }
                 })
@@ -278,9 +290,13 @@ export struct HomePage {
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .backgroundColor(this.isAccumulatedMode ? (this.isRemainingMode ? '#4CAF50' : '#FF6B6B') : 'transparent')
                 .borderRadius(12)
-                .onClick(() => {
+                .onClick(async () => {
                   if (!this.isAccumulatedMode) {
                     this.isAccumulatedMode = true;
+                    // 保存设置
+                    if (this.configManager) {
+                      await this.configManager.setIsAccumulatedMode(true);
+                    }
                     this.calculateTime();
                   }
                 })
@@ -292,9 +308,13 @@ export struct HomePage {
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .backgroundColor(!this.isAccumulatedMode ? (this.isRemainingMode ? '#4CAF50' : '#FF6B6B') : 'transparent')
                 .borderRadius(12)
-                .onClick(() => {
+                .onClick(async () => {
                   if (this.isAccumulatedMode) {
                     this.isAccumulatedMode = false;
+                    // 保存设置
+                    if (this.configManager) {
+                      await this.configManager.setIsAccumulatedMode(false);
+                    }
                     this.calculateTime();
                   }
                 })
