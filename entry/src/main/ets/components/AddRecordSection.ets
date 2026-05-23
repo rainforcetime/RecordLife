@@ -7,6 +7,12 @@ import { RefreshManager } from '../common/RefreshManager'
 import { PromptAction } from '@kit.ArkUI'
 import { ImagePickerUtils, ImagePickMode } from '../common/utils/ImagePickerUtils'
 
+// 图片信息
+interface ImageInfo {
+  path: string    // 沙箱路径
+  uri: string     // 显示 URI
+}
+
 @Component
 export struct AddRecordSection {
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
@@ -14,12 +20,14 @@ export struct AddRecordSection {
   // 文字内容
   @State private textContent: string = ''
   
-  // 图片路径
-  @State private imagePath: string = ''
-  @State private imageUri: string = ''
+  // 图片列表（最多9张）
+  @State private images: ImageInfo[] = []
   
   // 是否正在保存
   @State private isSaving: boolean = false
+  
+  // 最大图片数量
+  private readonly MAX_IMAGE_COUNT: number = 9
   
   // ViewModel（直接获取单例实例）
   private viewModel: NowViewModel | null = null
@@ -55,7 +63,7 @@ export struct AddRecordSection {
         // 文字输入区域
         TextArea({ placeholder: '记录此刻的想法...', text: $$this.textContent })
           .width('100%')
-          .height('40%')
+          .height(120)
           .backgroundColor(this.themeColors.cardBackground)
           .borderRadius(12)
           .border({ width: 1, color: this.themeColors.border })
@@ -63,101 +71,10 @@ export struct AddRecordSection {
           .placeholderColor(this.themeColors.textTertiary)
           .padding(12)
         
-        // 图片区域（可选）
+        // 图片区域
         Column() {
-          // 图片预览或添加按钮
-          if (this.imageUri) {
-            // 已添加图片
-            Column() {
-              Image(this.imageUri)
-                .width(120)
-                .height('auto')
-                .objectFit(ImageFit.Contain)
-                .borderRadius(8)
-                .constraintSize({ maxHeight: 150 })
-                .margin({ bottom: 8 })
-              
-              Row() {
-                Button('拍照')
-                  .fontSize(12)
-                  .height(32)
-                  .backgroundColor(this.themeColors.background)
-                  .fontColor(this.themeColors.primary)
-                  .borderRadius(8)
-                  .onClick(() => {
-                    this.onPickImage(ImagePickMode.CAMERA)
-                  })
-                
-                Button('从相册选择')
-                  .fontSize(12)
-                  .height(32)
-                  .backgroundColor(this.themeColors.background)
-                  .fontColor(this.themeColors.primary)
-                  .borderRadius(8)
-                  .margin({ left: 8 })
-                  .onClick(() => {
-                    this.onPickImage(ImagePickMode.GALLERY)
-                  })
-                
-                Button('移除')
-                  .fontSize(12)
-                  .height(32)
-                  .backgroundColor(this.themeColors.background)
-                  .fontColor(this.themeColors.error)
-                  .borderRadius(8)
-                  .margin({ left: 8 })
-                  .onClick(() => {
-                    this.imagePath = ''
-                    this.imageUri = ''
-                  })
-              }
-            }
-            .width('100%')
-            .alignItems(HorizontalAlign.Center)
-          } else {
-            // 添加图片按钮
-            Row() {
-              Button() {
-                Column() {
-                  Text('📷')
-                    .fontSize(24)
-                  Text('拍照')
-                    .fontSize(12)
-                    .fontColor(this.themeColors.textSecondary)
-                    .margin({ top: 4 })
-                }
-              }
-              .layoutWeight(1)
-              .height(100)
-              .backgroundColor(this.themeColors.background)
-              .borderRadius(12)
-              .border({ width: 1, color: this.themeColors.border, style: BorderStyle.Dashed })
-              .onClick(() => {
-                this.onPickImage(ImagePickMode.CAMERA)
-              })
-              
-              Button() {
-                Column() {
-                  Text('🖼️')
-                    .fontSize(24)
-                  Text('从相册选择')
-                    .fontSize(12)
-                    .fontColor(this.themeColors.textSecondary)
-                    .margin({ top: 4 })
-                }
-              }
-              .layoutWeight(1)
-              .height(100)
-              .backgroundColor(this.themeColors.background)
-              .borderRadius(12)
-              .border({ width: 1, color: this.themeColors.border, style: BorderStyle.Dashed })
-              .margin({ left: 12 })
-              .onClick(() => {
-                this.onPickImage(ImagePickMode.GALLERY)
-              })
-            }
-            .width('100%')
-          }
+          // 图片网格
+          this.ImageGridBuilder()
         }
         .width('100%')
         .margin({ top: 16 })
@@ -187,24 +104,92 @@ export struct AddRecordSection {
     .align(Alignment.Top)
   }
   
-  // 判断是否可以保存（至少有文字或图片）
-  private canSave(): boolean {
-    return this.textContent.trim().length > 0 || this.imagePath.length > 0
+  // 图片网格构建器
+  @Builder
+  ImageGridBuilder() {
+    Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
+      // 已选择的图片
+      ForEach(this.images, (image: ImageInfo, index: number) => {
+        Stack({ alignContent: Alignment.TopEnd }) {
+          // 图片
+          Image(image.uri)
+            .width('100%')
+            .height('100%')
+            .objectFit(ImageFit.Cover)
+            .borderRadius(8)
+          
+          // 删除按钮
+          Column() {
+            Text('×')
+              .fontSize(16)
+              .fontColor('#FFFFFF')
+              .fontWeight(FontWeight.Bold)
+          }
+          .width(24)
+          .height(24)
+          .borderRadius(12)
+          .backgroundColor('#80000000')
+          .justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.Center)
+          .margin({ top: 4, right: 4 })
+          .onClick(() => {
+            this.removeImage(index)
+          })
+        }
+        .width('32%')
+        .aspectRatio(1)  // 正方形
+        .margin({ right: index % 3 === 2 ? 0 : '2%', bottom: 8 })
+      }, (image: ImageInfo) => image.path)  // 使用 path 作为唯一 key
+      
+      // 添加图片按钮（如果未达到最大数量）
+      if (this.images.length < this.MAX_IMAGE_COUNT) {
+        Column() {
+          Text('+')
+            .fontSize(32)
+            .fontColor(this.themeColors.textSecondary)
+          Text('添加图片')
+            .fontSize(12)
+            .fontColor(this.themeColors.textSecondary)
+            .margin({ top: 4 })
+        }
+        .width('32%')
+        .aspectRatio(1)  // 正方形
+        .backgroundColor(this.themeColors.background)
+        .borderRadius(8)
+        .border({ width: 1, color: this.themeColors.border, style: BorderStyle.Dashed })
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+        .margin({ right: this.images.length % 3 === 2 ? 0 : '2%', bottom: 8 })
+        .onClick(() => {
+          this.onPickImage()
+        })
+      }
+    }
+    .width('100%')
   }
   
-  // 选择图片（拍照或从相册选择）
-  private async onPickImage(mode: ImagePickMode) {
+  // 判断是否可以保存（至少有文字或图片）
+  private canSave(): boolean {
+    return this.textContent.trim().length > 0 || this.images.length > 0
+  }
+  
+  // 选择图片
+  private async onPickImage() {
     try {
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext
-      const result = await ImagePickerUtils.pickImage(context, mode)
+      const result = await ImagePickerUtils.pickImage(context, ImagePickMode.GALLERY)
       
       if (result.success && result.uri) {
         // 保存图片到沙箱目录（返回 URI 格式）
         if (this.viewModel) {
           const savedUri = await this.viewModel.saveImageToSandbox(result.uri)
           if (savedUri) {
-            this.imagePath = savedUri  // 存储 URI
-            this.imageUri = savedUri   // 显示 URI（统一格式，无需转换）
+            // 添加到图片列表
+            this.images.push({
+              path: savedUri,
+              uri: savedUri
+            })
+            console.info('[AddRecordSection] 添加图片成功，当前图片数: ' + this.images.length)
           }
         }
       } else if (result.errorMessage && this.promptAction) {
@@ -216,6 +201,12 @@ export struct AddRecordSection {
         ImagePickerUtils.showErrorToast(this.promptAction, '选择图片失败，请重试')
       }
     }
+  }
+  
+  // 移除图片
+  private removeImage(index: number) {
+    this.images.splice(index, 1)
+    console.info('[AddRecordSection] 移除图片，当前图片数: ' + this.images.length)
   }
   
   // 保存记录
@@ -234,10 +225,13 @@ export struct AddRecordSection {
     this.isSaving = true
     
     try {
+      // 提取图片路径数组
+      const imagePaths = this.images.length > 0 ? this.images.map(img => img.path) : undefined
+      
       // 统一保存记录
       const record = await this.viewModel.addRecord(
         this.textContent.trim(),
-        this.imagePath.length > 0 ? this.imagePath : undefined
+        imagePaths
       )
       
       if (record) {
@@ -249,8 +243,7 @@ export struct AddRecordSection {
         
         // 清空输入
         this.textContent = ''
-        this.imagePath = ''
-        this.imageUri = ''
+        this.images = []
         
         // 触发全局刷新
         console.info('[AddRecordSection] 触发全局刷新')

@@ -161,12 +161,12 @@ export class NowViewModel {
   }
   
   // 添加记录
-  async addRecord(content: string, imagePath?: string): Promise<LifeRecord | null> {
+  async addRecord(content: string, imagePaths?: string[]): Promise<LifeRecord | null> {
     const record: LifeRecord = {
       id: this.generateId(),
       timestamp: Date.now(),
       content: content,
-      imagePath: imagePath
+      imagePaths: imagePaths
     }
     
     this.records.unshift(record) // 添加到开头
@@ -182,7 +182,7 @@ export class NowViewModel {
   }
   
   // 更新记录
-  async updateRecord(id: string, content: string, imagePath?: string): Promise<boolean> {
+  async updateRecord(id: string, content: string, imagePaths?: string[]): Promise<boolean> {
     const index = this.records.findIndex(r => r.id === id)
     if (index === -1) {
       console.error('[NowViewModel] 未找到记录: ' + id)
@@ -195,27 +195,30 @@ export class NowViewModel {
     record.content = content
     
     // 处理图片路径更新
-    if (imagePath !== undefined) {
-      // 如果新路径是空字符串，表示移除图片
-      if (imagePath.length === 0) {
-        // 删除原来的图片文件
-        if (record.imagePath) {
-          try {
-            // 将 URI 转换为沙箱路径进行文件操作
-            const sandboxPath = this.uriToSandboxPath(record.imagePath)
-            if (this.context && fileIo.accessSync(sandboxPath)) {
-              fileIo.unlinkSync(sandboxPath)
-              console.info('[NowViewModel] 图片文件已删除: ' + sandboxPath)
+    if (imagePaths !== undefined) {
+      // 删除不再使用的图片文件
+      if (record.imagePaths) {
+        for (const oldPath of record.imagePaths) {
+          // 如果新图片列表中不包含这张图片，则删除
+          if (!imagePaths.includes(oldPath)) {
+            try {
+              const sandboxPath = this.uriToSandboxPath(oldPath)
+              if (this.context && fileIo.accessSync(sandboxPath)) {
+                fileIo.unlinkSync(sandboxPath)
+                console.info('[NowViewModel] 图片文件已删除: ' + sandboxPath)
+              }
+            } catch (error) {
+              console.error('[NowViewModel] 删除图片文件失败: ' + JSON.stringify(error))
             }
-          } catch (error) {
-            console.error('[NowViewModel] 删除图片文件失败: ' + JSON.stringify(error))
           }
         }
-        // 移除 imagePath 字段（设置为 undefined）
-        record.imagePath = undefined
+      }
+      
+      // 更新图片路径列表
+      if (imagePaths.length === 0) {
+        record.imagePaths = undefined
       } else {
-        // 更新为新的图片路径（URI 格式）
-        record.imagePath = imagePath
+        record.imagePaths = imagePaths
       }
     }
     
@@ -232,17 +235,18 @@ export class NowViewModel {
     
     const record = this.records[index]
     
-    // 如果有图片，删除图片文件
-    if (record.imagePath) {
-      try {
-        // 将 URI 转换为沙箱路径进行文件操作
-        const sandboxPath = this.uriToSandboxPath(record.imagePath)
-        if (this.context && fileIo.accessSync(sandboxPath)) {
-          fileIo.unlinkSync(sandboxPath)
-          console.info('[NowViewModel] 图片文件已删除: ' + sandboxPath)
+    // 如果有图片，删除所有图片文件
+    if (record.imagePaths && record.imagePaths.length > 0) {
+      for (const imagePath of record.imagePaths) {
+        try {
+          const sandboxPath = this.uriToSandboxPath(imagePath)
+          if (this.context && fileIo.accessSync(sandboxPath)) {
+            fileIo.unlinkSync(sandboxPath)
+            console.info('[NowViewModel] 图片文件已删除: ' + sandboxPath)
+          }
+        } catch (error) {
+          console.error('[NowViewModel] 删除图片文件失败: ' + JSON.stringify(error))
         }
-      } catch (error) {
-        console.error('[NowViewModel] 删除图片文件失败: ' + JSON.stringify(error))
       }
     }
     

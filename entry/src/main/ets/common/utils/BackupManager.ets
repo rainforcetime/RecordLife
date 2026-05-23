@@ -101,16 +101,21 @@ export class BackupManager {
       
       let imageCount = 0
       for (const record of records) {
-        if (record.imagePath) {
-          // 检查图片文件是否存在
-          if (fileIo.accessSync(record.imagePath)) {
-            // 获取文件名
-            const fileName = record.imagePath.split('/').pop() || `image_${record.id}.jpg`
-            const destPath = `${recordsDir}/${fileName}`
+        if (record.imagePaths && record.imagePaths.length > 0) {
+          for (const imagePath of record.imagePaths) {
+            // 将 URI 转换为沙箱路径
+            const sandboxPath = this.uriToSandboxPath(imagePath)
             
-            // 复制文件
-            fileIo.copyFileSync(record.imagePath, destPath)
-            imageCount++
+            // 检查图片文件是否存在
+            if (fileIo.accessSync(sandboxPath)) {
+              // 获取文件名
+              const fileName = sandboxPath.split('/').pop() || `image_${record.id}_${imageCount}.jpg`
+              const destPath = `${recordsDir}/${fileName}`
+              
+              // 复制文件
+              fileIo.copyFileSync(sandboxPath, destPath)
+              imageCount++
+            }
           }
         }
       }
@@ -195,20 +200,50 @@ export class BackupManager {
         fileIo.mkdirSync(destRecordsDir)
       }
       
-      // 复制图片文件
-      if (fileIo.accessSync(recordsDir)) {
-        const files = fileIo.listFileSync(recordsDir)
-        for (const fileName of files) {
-          const srcPath = `${recordsDir}/${fileName}`
-          const destPath = `${destRecordsDir}/${fileName}`
-          fileIo.copyFileSync(srcPath, destPath)
+      // 复制图片文件并更新记录中的路径
+      const updatedRecords: LifeRecord[] = metadata.records.map(record => {
+        const updatedRecord: LifeRecord = {
+          id: record.id,
+          timestamp: record.timestamp,
+          content: record.content,
+          imagePaths: undefined
         }
-        console.info(`[BackupManager] 恢复了 ${files.length} 个图片文件`)
-      }
+        
+        if (record.imagePaths && record.imagePaths.length > 0) {
+          const newImagePaths: string[] = []
+          
+          for (const oldImagePath of record.imagePaths) {
+            // 从旧路径提取文件名
+            const oldSandboxPath = this.uriToSandboxPath(oldImagePath)
+            const fileName = oldSandboxPath.split('/').pop()
+            
+            if (fileName) {
+              const srcPath = `${recordsDir}/${fileName}`
+              const destPath = `${destRecordsDir}/${fileName}`
+              
+              // 如果备份中有这个图片文件，复制并更新路径
+              if (fileIo.accessSync(srcPath)) {
+                fileIo.copyFileSync(srcPath, destPath)
+                // 转换为 URI 格式
+                const newUri = this.sandboxPathToUri(destPath)
+                newImagePaths.push(newUri)
+              }
+            }
+          }
+          
+          if (newImagePaths.length > 0) {
+            updatedRecord.imagePaths = newImagePaths
+          }
+        }
+        
+        return updatedRecord
+      })
+      
+      console.info(`[BackupManager] 图片文件已恢复，记录路径已更新`)
       
       // 5. 恢复记录到 Preferences
       const viewModel = await NowViewModel.getInstance()
-      const success = await this.restoreRecordsToPreferences(metadata.records)
+      const success = await this.restoreRecordsToPreferences(updatedRecords)
       
       if (success) {
         console.info('[BackupManager] 备份恢复成功')
@@ -271,6 +306,31 @@ export class BackupManager {
     } catch (error) {
       console.error('[BackupManager] 删除目录失败: ' + JSON.stringify(error))
     }
+  }
+  
+  // 将 URI 转换为沙箱路径（用于文件操作）
+  private uriToSandboxPath(uri: string): string {
+    if (uri.startsWith('file://')) {
+      // URI 格式: file://<bundleName>/data/storage/... 或 file:///data/storage/...
+      let path = uri.substring(7)  // 移除 'file://'
+      
+      // 找到第一个 '/' 的位置，从那里开始截取路径
+      const slashIndex = path.indexOf('/')
+      if (slashIndex !== -1) {
+        path = path.substring(slashIndex)
+      }
+      
+      return path
+    }
+    return uri  // 已经是沙箱路径格式
+  }
+  
+  // 将沙箱路径转换为 URI 格式
+  private sandboxPathToUri(path: string): string {
+    if (path.startsWith('file://')) {
+      return path  // 已经是 URI 格式
+    }
+    return `file://${path}`
   }
   
   // 获取上下文

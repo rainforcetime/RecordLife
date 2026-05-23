@@ -221,15 +221,17 @@ export class MorePageBackupHandler {
       
       let imageCount = 0
       for (const record of records) {
-        if (record.imagePath) {
-          // 将 URI 转换为沙箱路径
-          const imagePath = MorePageHelper.uriToSandboxPath(record.imagePath)
-          
-          if (fileIo.accessSync(imagePath)) {
-            const fileName = imagePath.split('/').pop() || `image_${record.id}.jpg`
-            const destPath = `${recordsDir}/${fileName}`
-            fileIo.copyFileSync(imagePath, destPath)
-            imageCount++
+        if (record.imagePaths && record.imagePaths.length > 0) {
+          for (const imagePath of record.imagePaths) {
+            // 将 URI 转换为沙箱路径
+            const sandboxPath = MorePageHelper.uriToSandboxPath(imagePath)
+            
+            if (fileIo.accessSync(sandboxPath)) {
+              const fileName = sandboxPath.split('/').pop() || `image_${record.id}_${imageCount}.jpg`
+              const destPath = `${recordsDir}/${fileName}`
+              fileIo.copyFileSync(sandboxPath, destPath)
+              imageCount++
+            }
           }
         }
       }
@@ -425,18 +427,49 @@ export class MorePageBackupHandler {
           fileIo.mkdirSync(destRecordsDir)
         }
         
-        if (fileIo.accessSync(recordsDir)) {
-          const files = fileIo.listFileSync(recordsDir)
-          for (const fileName of files) {
-            const srcPath = `${recordsDir}/${fileName}`
-            const destPath = `${destRecordsDir}/${fileName}`
-            fileIo.copyFileSync(srcPath, destPath)
+        // 复制图片文件并更新记录中的路径
+        const updatedRecords: LifeRecord[] = metadata.records.map(record => {
+          const updatedRecord: LifeRecord = {
+            id: record.id,
+            timestamp: record.timestamp,
+            content: record.content,
+            imagePaths: undefined
           }
-          console.info(`[MorePageBackupHandler] 恢复了 ${files.length} 个图片文件`)
-        }
+          
+          if (record.imagePaths && record.imagePaths.length > 0) {
+            const newImagePaths: string[] = []
+            
+            for (const oldImagePath of record.imagePaths) {
+              // 从旧路径提取文件名
+              const oldSandboxPath = MorePageHelper.uriToSandboxPath(oldImagePath)
+              const fileName = oldSandboxPath.split('/').pop()
+              
+              if (fileName) {
+                const srcPath = `${recordsDir}/${fileName}`
+                const destPath = `${destRecordsDir}/${fileName}`
+                
+                // 如果备份中有这个图片文件，复制并更新路径
+                if (fileIo.accessSync(srcPath)) {
+                  fileIo.copyFileSync(srcPath, destPath)
+                  // 转换为 URI 格式
+                  const newUri = `file://${destPath}`
+                  newImagePaths.push(newUri)
+                }
+              }
+            }
+            
+            if (newImagePaths.length > 0) {
+              updatedRecord.imagePaths = newImagePaths
+            }
+          }
+          
+          return updatedRecord
+        })
+        
+        console.info(`[MorePageBackupHandler] 图片文件已恢复，记录路径已更新`)
         
         // 恢复记录到 Preferences
-        recordsImported = await MorePageBackupHandler.restoreRecordsToPreferences(context, metadata.records)
+        recordsImported = await MorePageBackupHandler.restoreRecordsToPreferences(context, updatedRecords)
         console.info('[MorePageBackupHandler] 记录导入: ' + (recordsImported ? '成功' : '失败'))
       }
       

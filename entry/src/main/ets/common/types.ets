@@ -22,7 +22,7 @@ export interface LifeRecord {
   id: string;                    // 唯一标识
   timestamp: number;             // 时间戳（毫秒）
   content: string;               // 文字内容（可为空）
-  imagePath?: string;            // 图片路径（可选）
+  imagePaths?: string[];         // 图片路径数组（可选，最多9张）
 }
 
 // 时间线日期节点

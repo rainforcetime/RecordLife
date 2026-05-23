@@ -150,18 +150,41 @@ export class MorePageConfigHandler {
       const viewModel = await NowViewModel.getInstance()
       const records = viewModel.getRecords()
       
-      // 2. 删除所有图片文件
-      const recordsDir = `${context.filesDir}/records`
-      if (fileIo.accessSync(recordsDir)) {
-        const files = fileIo.listFileSync(recordsDir)
+      // 2. 删除沙盒目录下的所有文件和目录
+      const filesDir = context.filesDir
+      if (fileIo.accessSync(filesDir)) {
+        const files = fileIo.listFileSync(filesDir)
         for (const fileName of files) {
-          const filePath = `${recordsDir}/${fileName}`
-          fileIo.unlinkSync(filePath)
+          const filePath = `${filesDir}/${fileName}`
+          const stat = fileIo.statSync(filePath)
+          if (stat.isDirectory()) {
+            // 递归删除目录
+            MorePageConfigHandler.deleteDirectory(filePath)
+          } else {
+            // 删除文件
+            fileIo.unlinkSync(filePath)
+          }
         }
-        console.info(`[MorePageConfigHandler] 删除了 ${files.length} 个图片文件`)
+        console.info(`[MorePageConfigHandler] 删除了 filesDir 下的所有文件`)
       }
       
-      // 3. 清空 Preferences 中的记录数据
+      // 3. 清空缓存目录
+      const cacheDir = context.cacheDir
+      if (fileIo.accessSync(cacheDir)) {
+        const cacheFiles = fileIo.listFileSync(cacheDir)
+        for (const fileName of cacheFiles) {
+          const filePath = `${cacheDir}/${fileName}`
+          const stat = fileIo.statSync(filePath)
+          if (stat.isDirectory()) {
+            MorePageConfigHandler.deleteDirectory(filePath)
+          } else {
+            fileIo.unlinkSync(filePath)
+          }
+        }
+        console.info(`[MorePageConfigHandler] 删除了 cacheDir 下的所有文件`)
+      }
+      
+      // 4. 清空 Preferences 中的记录数据
       const STORE_NAME = 'now_page_records'
       const RECORDS_KEY = 'life_records'
       const prefs = await preferences.getPreferences(context, STORE_NAME)
@@ -174,6 +197,32 @@ export class MorePageConfigHandler {
     } catch (error) {
       console.error('[MorePageConfigHandler] 删除记录失败: ' + JSON.stringify(error))
       return 0
+    }
+  }
+  
+  /**
+   * 递归删除目录
+   */
+  private static deleteDirectory(dirPath: string): void {
+    try {
+      if (!fileIo.accessSync(dirPath)) {
+        return
+      }
+      
+      const files = fileIo.listFileSync(dirPath)
+      for (const fileName of files) {
+        const filePath = `${dirPath}/${fileName}`
+        const stat = fileIo.statSync(filePath)
+        if (stat.isDirectory()) {
+          MorePageConfigHandler.deleteDirectory(filePath)
+        } else {
+          fileIo.unlinkSync(filePath)
+        }
+      }
+      
+      fileIo.rmdirSync(dirPath)
+    } catch (error) {
+      console.error('[MorePageConfigHandler] 删除目录失败: ' + JSON.stringify(error))
     }
   }
   

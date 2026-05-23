@@ -25,8 +25,7 @@ struct NowPage {
   @State private editContent: string = ''
   
   // 编辑图片时的临时变量
-  @State private editImagePath: string = ''
-  @State private editImageUri: string = ''
+  @State private editImagePaths: string[] = []
   
   // 记录此刻弹窗
   @State private showAddRecordDialog: boolean = false
@@ -184,16 +183,25 @@ struct NowPage {
     EditRecordDialog({
       record: this.editingRecord,
       editContent: $editContent,
-      editImagePath: $editImagePath,
-      editImageUri: $editImageUri,
+      editImagePaths: this.editImagePaths,  // ✅ 传递当前值
+      onImagePathsChange: (paths: string[]) => {
+        // ✅ 通过回调更新图片数组
+        console.info('[NowPage] 收到图片更新回调，旧数量: ' + this.editImagePaths.length + ', 新数量: ' + paths.length)
+        console.info('[NowPage] 旧数组: ' + JSON.stringify(this.editImagePaths))
+        console.info('[NowPage] 新数组: ' + JSON.stringify(paths))
+        
+        // 强制创建新数组引用，确保触发 UI 更新
+        this.editImagePaths = [...paths]
+        
+        console.info('[NowPage] 图片数组已更新，当前数量: ' + this.editImagePaths.length)
+      },
       onSave: () => {
         this.onSaveEdit()
       },
       onCancel: () => {
         this.showEditDialog = false
         this.editingRecord = null as LifeRecord | null
-        this.editImagePath = ''
-        this.editImageUri = ''
+        this.editImagePaths = []
       },
       saveImageToSandbox: async (uri: string) => {
         if (this.viewModel) {
@@ -244,13 +252,11 @@ struct NowPage {
     this.editingRecord = record
     this.editContent = record.content
     
-    // 如果有图片，初始化图片路径和 URI（统一为 URI 格式）
-    if (record.imagePath) {
-      this.editImagePath = record.imagePath  // 已经是 URI 格式
-      this.editImageUri = record.imagePath   // 直接使用，无需转换
+    // 如果有图片，初始化图片路径列表
+    if (record.imagePaths && record.imagePaths.length > 0) {
+      this.editImagePaths = [...record.imagePaths]  // 复制数组
     } else {
-      this.editImagePath = ''
-      this.editImageUri = ''
+      this.editImagePaths = []
     }
     
     this.showEditDialog = true
@@ -263,7 +269,7 @@ struct NowPage {
     }
     
     // 至少需要文字或图片
-    if (this.editContent.trim().length === 0 && this.editImagePath.length === 0) {
+    if (this.editContent.trim().length === 0 && this.editImagePaths.length === 0) {
       try {
         this.promptAction.showToast({ message: '请输入内容或添加图片' })
       } catch (error) {
@@ -273,11 +279,11 @@ struct NowPage {
     }
     
     try {
-      // 直接传递 editImagePath，空字符串表示移除图片
+      // 传递图片路径数组（空数组也要传递，表示删除所有图片）
       const success = await this.viewModel.updateRecord(
         this.editingRecord.id,
         this.editContent.trim(),
-        this.editImagePath  // 空字符串表示移除图片
+        this.editImagePaths  // ✅ 直接传递，空数组也会更新
       )
       
       if (success) {
@@ -288,8 +294,7 @@ struct NowPage {
         }
         this.showEditDialog = false
         this.editingRecord = null as LifeRecord | null
-        this.editImagePath = ''
-        this.editImageUri = ''
+        this.editImagePaths = []
         // 触发全局刷新
         RefreshManager.getInstance().refresh()
         this.refreshTimeline()
