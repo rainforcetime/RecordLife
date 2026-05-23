@@ -36,7 +36,7 @@ export struct BirthDateRow {
       // 日期显示
       Text(this.formatDate(this.birthDate))
         .fontSize(15)
-        .fontColor('#FF6B6B')
+        .fontColor(this.themeColors.error)
         .margin({ right: 12 })
 
       // 编辑按钮
@@ -96,7 +96,7 @@ export struct BirthDateRow {
       Button('确定')
         .width('80%')
         .height(44)
-        .backgroundColor('#FF6B6B')
+        .backgroundColor(this.themeColors.error)
         .fontColor(Color.White)
         .margin({ top: 20 })
         .onClick(() => {

@@ -21,7 +21,7 @@ export struct TargetAgeRow {
       // 目标年龄显示
       Text(`${this.targetAge} 岁`)
         .fontSize(15)
-        .fontColor('#4CAF50')
+        .fontColor(this.themeColors.success)
         .margin({ right: 12 })
 
       // 编辑按钮
@@ -81,7 +81,7 @@ export struct TargetAgeRow {
         Text(`${this.targetAge}`)
           .fontSize(48)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#4CAF50')
+          .fontColor(this.themeColors.success)
           .margin({ left: 30, right: 30 })
 
         Button('+')
@@ -105,7 +105,7 @@ export struct TargetAgeRow {
       Button('确定')
         .width('80%')
         .height(44)
-        .backgroundColor('#4CAF50')
+        .backgroundColor(this.themeColors.success)
         .fontColor(Color.White)
         .margin({ top: 20 })
         .onClick(() => {

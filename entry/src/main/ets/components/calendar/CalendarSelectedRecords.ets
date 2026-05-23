@@ -2,6 +2,7 @@
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { LifeRecord } from '../../common/types'
 import { CalendarUtils } from './CalendarUtils'
+import { ColorUtils } from '../../common/ColorUtils'
 
 /**
  * 选中日期记录预览组件
@@ -97,7 +98,7 @@ export struct CalendarSelectedRecords {
     }
     .height(32)
     .padding({ left: 12, right: 12 })
-    .backgroundColor(this.themeColors.primary + '15')
+    .backgroundColor(ColorUtils.primaryUltraLight(this.themeColors.primary))
     .borderRadius(16)
     .onClick(() => {
       if (this.onRecordsClick) {
@@ -244,10 +245,10 @@ export struct CalendarSelectedRecords {
   // 获取记录图标背景色
   private getRecordIconBackground(record: LifeRecord): string {
     if (record.imagePaths && record.imagePaths.length > 0) {
-      return this.themeColors.primary + '20'
+      return ColorUtils.primaryExtraLight(this.themeColors.primary)
     }
     if (record.tags && record.tags.length > 0) {
-      return this.themeColors.success + '20'
+      return ColorUtils.primaryExtraLight(this.themeColors.success)
     }
     return this.themeColors.cardBackground
   }

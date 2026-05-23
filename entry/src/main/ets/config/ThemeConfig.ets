@@ -90,7 +90,7 @@ export const DarkTheme: ThemeColors = {
   primaryDark: '#007DFF',
   
   // 功能色
-  success: '#69F0AE',
+  success: '#26C6DA',      // 青色（深色模式更协调）
   warning: '#FFB74D',
   error: '#FF6B6B',
   info: '#64B5F6',

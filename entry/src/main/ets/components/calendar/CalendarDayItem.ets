@@ -2,6 +2,7 @@
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { CalendarDay } from '../../common/types'
 import { CalendarUtils } from './CalendarUtils'
+import { ColorUtils } from '../../common/ColorUtils'
 
 /**
  * 日历日期项组件
@@ -48,6 +49,27 @@ export struct CalendarDayItem {
     this.onSelectedChange()
   }
   
+  // 判断是否为深色模式
+  private isDarkMode(): boolean {
+    console.log('[CalendarDayItem]', this.themeColors.textPrimary);
+    console.log(this.themeColors.textPrimary);
+    return this.themeColors.textPrimary === '#FFFFFF'
+  }
+  
+  // 获取选中背景色（适配深色模式）
+  private getSelectedBgColor(): string {
+    // 深色模式使用更高的透明度
+    const alpha = this.isDarkMode() ? 64 : 38 // 25% vs 15%
+    return ColorUtils.withAlpha(this.themeColors.primary, alpha)
+  }
+  
+  // 获取今天背景色（更浅，与选中区分）
+  private getTodayBgColor(): string {
+    // 今天使用更浅的背景，与选中状态区分
+    const alpha = this.isDarkMode() ? 30 : 20 // 12% vs 8%
+    return ColorUtils.withAlpha(this.themeColors.primary, alpha)
+  }
+  
   build() {
     // 如果是空白位置（day = 0），显示空占位
     if (this.calendarDay.day === 0) {
@@ -56,34 +78,58 @@ export struct CalendarDayItem {
         .height(56)
     } else {
       Column() {
-        // 日期数字
-        Text(this.calendarDay.day.toString())
-          .fontSize(16)
-          .fontWeight(this.calendarDay.isToday ? FontWeight.Bold : FontWeight.Normal)
-          .fontColor(
-            this.isSelected ? '#FFFFFF' :
-            this.calendarDay.isToday ? this.themeColors.primary : this.themeColors.textPrimary
-          )
-          .height(24)
+        // 日期数字（带选中框）
+        Column() {
+          Text(this.calendarDay.day.toString())
+            .fontSize(16)
+            .fontWeight(this.calendarDay.isToday || this.isSelected ? FontWeight.Bold : FontWeight.Normal)
+            .fontColor(
+              this.calendarDay.isToday ? this.themeColors.primary :
+              this.isSelected ? this.themeColors.primary : this.themeColors.textPrimary
+            )
+        }
+        .width(32)
+        .height(32)
+        .justifyContent(FlexAlign.Center)
+        .backgroundColor(
+          this.isSelected ? this.getSelectedBgColor() :
+          this.calendarDay.isToday ? this.getTodayBgColor() : 'transparent'
+        )
+        .borderRadius(8)
+        .border({
+          width: this.isSelected ? 2 : (this.calendarDay.isToday ? 1 : 0),
+          color: this.themeColors.primary,
+          style: this.isSelected ? BorderStyle.Solid : (this.calendarDay.isToday ? BorderStyle.Dashed : BorderStyle.Solid)
+        })
         
-        // 记录指示器
+        // 记录小点标识（紧贴选中框下方）
+        if (this.calendarDay.recordCount > 0) {
+          Column()
+            .width(4)
+            .height(4)
+            .borderRadius(2)
+            .backgroundColor(this.themeColors.primary)
+            .margin({ top: 2 })
+        } else {
+          // 无记录时占位
+          Column()
+            .height(6)
+        }
+        
+        // 记录类型指示器（相机、书签等）
         if (this.calendarDay.recordCount > 0) {
           this.RecordIndicator()
         } else {
           // 占位，保持高度一致
           Column()
-            .height(16)
+            .height(14)
         }
       }
       .width('14.28%')
       .height(56)
-      .justifyContent(FlexAlign.Center)
+      .justifyContent(FlexAlign.Start)
       .alignItems(HorizontalAlign.Center)
-      .backgroundColor(
-        this.isSelected ? this.themeColors.primary :
-        this.calendarDay.isToday ? this.themeColors.primary + '20' : 'transparent'
-      )
-      .borderRadius(this.isSelected ? 28 : 8)
+      .padding({ top: 2 })
       .onClick(() => {
         if (this.onDayClick) {
           this.onDayClick(this.calendarDay.year, this.calendarDay.month, this.calendarDay.day)
@@ -104,13 +150,6 @@ export struct CalendarDayItem {
       // 检查是否有标签记录
       if (CalendarUtils.hasTagRecords(this.calendarDay.records)) {
         this.TagIcon()
-      }
-      
-      // 记录数量指示
-      if (this.calendarDay.recordCount <= 3) {
-        this.DotIndicator()
-      } else {
-        this.NumberBadge()
       }
     }
     .margin({ top: 2 })

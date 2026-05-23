@@ -15,6 +15,11 @@ export struct TagSelector {
   // 是否为编辑模式（紧凑显示）
   @Prop isCompact: boolean = false
   
+  // 判断是否深色模式
+  private isDarkMode(): boolean {
+    return this.themeColors.textPrimary === '#FFFFFF'
+  }
+  
   build() {
     Column() {
       // 标题
@@ -56,6 +61,20 @@ export struct TagSelector {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`
   }
   
+  // 获取标签背景色（深色模式适配）
+  private getTagBackground(tagColor: string, isSelected: boolean): string {
+    if (isSelected) {
+      return tagColor
+    }
+    if (this.isDarkMode()) {
+      // 深色模式：使用更低的透明度，避免过于鲜艳
+      return this.hexToRgba(tagColor, 0.25)
+    } else {
+      // 浅色模式：使用正常透明度
+      return this.hexToRgba(tagColor, 0.15)
+    }
+  }
+  
   // 单个标签项
   @Builder
   TagItem(tag: Tag) {
@@ -79,7 +98,7 @@ export struct TagSelector {
       top: this.isCompact ? 4 : 6, 
       bottom: this.isCompact ? 4 : 6 
     })
-    .backgroundColor(this.isTagSelected(tag.id) ? tag.color : this.hexToRgba(tag.color, 0.15))
+    .backgroundColor(this.getTagBackground(tag.color, this.isTagSelected(tag.id)))
     .borderRadius(this.isCompact ? 12 : 16)
     .margin({ right: 8, bottom: 8 })
     .onClick(() => {
@@ -118,12 +137,28 @@ export struct TagDisplay {
   // 可用的标签列表
   @Prop availableTags: Tag[] = DEFAULT_TAGS
   
+  // 判断是否深色模式
+  private isDarkMode(): boolean {
+    return this.themeColors.textPrimary === '#FFFFFF'
+  }
+  
   // 将十六进制颜色转换为 rgba 格式
   private hexToRgba(hex: string, alpha: number): string {
     const r = parseInt(hex.slice(1, 3), 16)
     const g = parseInt(hex.slice(3, 5), 16)
     const b = parseInt(hex.slice(5, 7), 16)
     return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  }
+  
+  // 获取标签背景色（深色模式适配）
+  private getTagBackground(tagColor: string): string {
+    if (this.isDarkMode()) {
+      // 深色模式：使用更低的透明度，避免过于鲜艳
+      return this.hexToRgba(tagColor, 0.25)
+    } else {
+      // 浅色模式：使用正常透明度
+      return this.hexToRgba(tagColor, 0.15)
+    }
   }
   
   build() {
@@ -141,7 +176,7 @@ export struct TagDisplay {
               .margin({ left: tag.icon ? 2 : 0 })
           }
           .padding({ left: 6, right: 6, top: 2, bottom: 2 })
-          .backgroundColor(this.hexToRgba(tag.color, 0.15))
+          .backgroundColor(this.getTagBackground(tag.color))
           .borderRadius(10)
           .margin({ right: index < this.tagIds.length - 1 ? 6 : 0 })
         }, (tag: Tag) => tag.id)

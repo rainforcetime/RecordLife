@@ -2,6 +2,7 @@
 import { TimelineData, TimelineYear, TimelineMonth, TimelineDay, LifeRecord } from '../../common/types'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { RecordCard } from './RecordCard'
+import { ColorUtils } from '../../common/ColorUtils'
 
 // 日期分组数据结构
 interface DateGroup {
@@ -177,7 +178,7 @@ export struct TimelineSection {
       .width(100)
       .height(100)
       .borderRadius(50)
-      .backgroundColor(this.themeColors.primary + '15')
+      .backgroundColor(ColorUtils.primaryUltraLight(this.themeColors.primary))
       .justifyContent(FlexAlign.Center)
       .alignItems(HorizontalAlign.Center)
       .margin({ bottom: 24 })
@@ -279,7 +280,7 @@ export struct TimelineSection {
             .fontWeight(FontWeight.Medium)
         }
         .padding({ left: 10, right: 10, top: 4, bottom: 4 })
-        .backgroundColor(this.themeColors.primary + '20')
+        .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
         .borderRadius(12)
       }
     }

@@ -8,6 +8,7 @@ import { EditRecordDialog } from '../components/dialog/EditRecordDialog'
 import { SearchBar } from '../components/common/SearchBar'
 import { CalendarView } from '../components/calendar/CalendarView'
 import { RefreshManager } from '../common/managers/RefreshManager'
+import { ColorUtils } from '../common/ColorUtils'
 import { PromptAction } from '@kit.ArkUI'
 
 @Entry
@@ -113,7 +114,7 @@ struct NowPage {
               .height(36)
               .justifyContent(FlexAlign.Center)
               .alignItems(HorizontalAlign.Center)
-              .backgroundColor(this.viewMode === 'timeline' ? this.themeColors.primary + '20' : 'transparent')
+              .backgroundColor(this.viewMode === 'timeline' ? ColorUtils.primaryExtraLight(this.themeColors.primary) : 'transparent')
               .borderRadius(8)
               .onClick(() => {
                 this.viewMode = 'timeline'
@@ -129,7 +130,7 @@ struct NowPage {
               .height(36)
               .justifyContent(FlexAlign.Center)
               .alignItems(HorizontalAlign.Center)
-              .backgroundColor(this.viewMode === 'calendar' ? this.themeColors.primary + '20' : 'transparent')
+              .backgroundColor(this.viewMode === 'calendar' ? ColorUtils.primaryExtraLight(this.themeColors.primary) : 'transparent')
               .borderRadius(8)
               .margin({ left: 8 })
               .onClick(() => {

@@ -7,6 +7,12 @@ import { TimeCard } from '../components/record/TimeCard';
 import { BirthDateSelector } from '../components/user/BirthDateSelector';
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig';
 
+// 卡片颜色配置接口
+interface CardColors {
+  cardColor: string;
+  valueColor: string;
+}
+
 // 首页组件
 @Component
 export struct HomePage {
@@ -29,6 +35,82 @@ export struct HomePage {
   
   private configManager: ConfigManager | null = null;
   private intervalId: number = -1;
+  
+  // 判断是否为深色模式
+  private isDarkMode(): boolean {
+    return this.themeColors.textPrimary === '#FFFFFF'
+  }
+  
+  // 获取已过模式颜色（红色系）
+  private getPassedColor(): string {
+    return this.themeColors.error
+  }
+  
+  // 获取剩余模式颜色（青色系，深色模式更协调）
+  private getRemainingColor(): string {
+    return this.themeColors.success
+  }
+  
+  // 获取卡片背景色（适配深色模式）
+  private getCardBgColor(lightColor: string): string {
+    // 深色模式下使用卡片背景色
+    return this.isDarkMode() ? this.themeColors.cardBackground : lightColor
+  }
+  
+  // 获取年卡片颜色
+  private getYearCardColors(): CardColors {
+    if (this.isRemainingMode) {
+      return {
+        cardColor: this.getCardBgColor('#E8F5E9'),
+        valueColor: this.getRemainingColor()
+      }
+    } else {
+      return {
+        cardColor: this.getCardBgColor('#FFE8E8'),
+        valueColor: this.getPassedColor()
+      }
+    }
+  }
+  
+  // 获取月卡片颜色（橙色系）
+  private getMonthCardColors(): CardColors {
+    return {
+      cardColor: this.getCardBgColor('#FFF3E0'),
+      valueColor: this.isDarkMode() ? '#FFB74D' : '#FFA726'
+    }
+  }
+  
+  // 获取日卡片颜色（绿色系->青色系）
+  private getDayCardColors(): CardColors {
+    return {
+      cardColor: this.getCardBgColor('#E8F5E9'),
+      valueColor: this.isDarkMode() ? '#4DD0E1' : '#66BB6A'
+    }
+  }
+  
+  // 获取小时卡片颜色（蓝色系）
+  private getHourCardColors(): CardColors {
+    return {
+      cardColor: this.getCardBgColor('#E3F2FD'),
+      valueColor: this.isDarkMode() ? '#64B5F6' : '#42A5F5'
+    }
+  }
+  
+  // 获取分钟卡片颜色（紫色系）
+  private getMinuteCardColors(): CardColors {
+    return {
+      cardColor: this.getCardBgColor('#F3E5F5'),
+      valueColor: this.isDarkMode() ? '#BA68C8' : '#AB47BC'
+    }
+  }
+  
+  // 获取秒卡片颜色（黄色系）
+  private getSecondCardColors(): CardColors {
+    return {
+      cardColor: this.getCardBgColor('#FFFDE7'),
+      valueColor: this.isDarkMode() ? '#FFD54F' : '#FFEE58'
+    }
+  }
 
   async aboutToAppear() {
     // 初始化配置管理器
@@ -236,7 +318,7 @@ export struct HomePage {
                 .fontColor(!this.isRemainingMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(!this.isRemainingMode ? FontWeight.Medium : FontWeight.Normal)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-                .backgroundColor(!this.isRemainingMode ? '#FF6B6B' : 'transparent')
+                .backgroundColor(!this.isRemainingMode ? this.getPassedColor() : 'transparent')
                 .borderRadius(12)
                 .onClick(async () => {
                   if (this.isRemainingMode) {
@@ -254,7 +336,7 @@ export struct HomePage {
                 .fontColor(this.isRemainingMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(this.isRemainingMode ? FontWeight.Medium : FontWeight.Normal)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-                .backgroundColor(this.isRemainingMode ? '#4CAF50' : 'transparent')
+                .backgroundColor(this.isRemainingMode ? this.getRemainingColor() : 'transparent')
                 .borderRadius(12)
                 .onClick(async () => {
                   if (!this.isRemainingMode) {
@@ -288,7 +370,7 @@ export struct HomePage {
                 .fontColor(this.isAccumulatedMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(this.isAccumulatedMode ? FontWeight.Medium : FontWeight.Normal)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-                .backgroundColor(this.isAccumulatedMode ? (this.isRemainingMode ? '#4CAF50' : '#FF6B6B') : 'transparent')
+                .backgroundColor(this.isAccumulatedMode ? (this.isRemainingMode ? this.getRemainingColor() : this.getPassedColor()) : 'transparent')
                 .borderRadius(12)
                 .onClick(async () => {
                   if (!this.isAccumulatedMode) {
@@ -306,7 +388,7 @@ export struct HomePage {
                 .fontColor(!this.isAccumulatedMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(!this.isAccumulatedMode ? FontWeight.Medium : FontWeight.Normal)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-                .backgroundColor(!this.isAccumulatedMode ? (this.isRemainingMode ? '#4CAF50' : '#FF6B6B') : 'transparent')
+                .backgroundColor(!this.isAccumulatedMode ? (this.isRemainingMode ? this.getRemainingColor() : this.getPassedColor()) : 'transparent')
                 .borderRadius(12)
                 .onClick(async () => {
                   if (this.isAccumulatedMode) {
@@ -335,8 +417,8 @@ export struct HomePage {
                   value: this.timeData.years,
                   label: '年',
                   description: this.isRemainingMode ? '剩余年数' : '已经存活',
-                  cardColor: this.isRemainingMode ? '#E8F5E9' : '#FFE8E8',
-                  valueColor: this.isRemainingMode ? '#4CAF50' : '#FF6B6B',
+                  cardColor: this.getYearCardColors().cardColor,
+                  valueColor: this.getYearCardColors().valueColor,
                   valueFontSize: 28
                 })
               }
@@ -350,8 +432,8 @@ export struct HomePage {
                   description: this.isAccumulatedMode ? 
                     (this.isRemainingMode ? '剩余总月数' : '累计月数') : 
                     (this.isRemainingMode ? '剩余月数' : '当前月数'),
-                  cardColor: '#FFF3E0',
-                  valueColor: '#FFA726',
+                  cardColor: this.getMonthCardColors().cardColor,
+                  valueColor: this.getMonthCardColors().valueColor,
                   valueFontSize: 28
                 })
               }
@@ -365,8 +447,8 @@ export struct HomePage {
                   description: this.isAccumulatedMode ? 
                     (this.isRemainingMode ? '剩余总天数' : '累计天数') : 
                     (this.isRemainingMode ? '剩余天数' : '当前天数'),
-                  cardColor: '#E8F5E9',
-                  valueColor: '#66BB6A',
+                  cardColor: this.getDayCardColors().cardColor,
+                  valueColor: this.getDayCardColors().valueColor,
                   valueFontSize: 28
                 })
               }
@@ -384,8 +466,8 @@ export struct HomePage {
                   description: this.isAccumulatedMode ? 
                     (this.isRemainingMode ? '剩余总小时数' : '累计小时数') : 
                     (this.isRemainingMode ? '剩余小时' : '当前小时'),
-                  cardColor: '#E3F2FD',
-                  valueColor: '#42A5F5'
+                  cardColor: this.getHourCardColors().cardColor,
+                  valueColor: this.getHourCardColors().valueColor
                 })
               }
               .layoutWeight(1)
@@ -402,8 +484,8 @@ export struct HomePage {
                   description: this.isAccumulatedMode ? 
                     (this.isRemainingMode ? '剩余总分钟数' : '累计分钟数') : 
                     (this.isRemainingMode ? '剩余分钟' : '当前分钟'),
-                  cardColor: '#F3E5F5',
-                  valueColor: '#AB47BC'
+                  cardColor: this.getMinuteCardColors().cardColor,
+                  valueColor: this.getMinuteCardColors().valueColor
                 })
               }
               .layoutWeight(1)
@@ -420,8 +502,8 @@ export struct HomePage {
                   description: this.isAccumulatedMode ? 
                     (this.isRemainingMode ? '剩余总秒数' : '累计秒数') : 
                     (this.isRemainingMode ? '剩余秒数' : '当前秒数'),
-                  cardColor: '#FFFDE7',
-                  valueColor: '#FFEE58'
+                  cardColor: this.getSecondCardColors().cardColor,
+                  valueColor: this.getSecondCardColors().valueColor
                 })
               }
               .layoutWeight(1)

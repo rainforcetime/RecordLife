@@ -1,5 +1,6 @@
 // 月份导航组件：components/calendar/CalendarMonthNavigator.ets
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
+import { ColorUtils } from '../../common/ColorUtils'
 
 /**
  * 月份导航组件
@@ -139,7 +140,7 @@ export struct CalendarMonthNavigator {
     }
     .height(36)
     .padding({ left: 12, right: 12 })
-    .backgroundColor(this.themeColors.primary + '15')
+    .backgroundColor(ColorUtils.primaryUltraLight(this.themeColors.primary))
     .borderRadius(18)
     .margin({ left: 12 })
     .onClick(() => {
