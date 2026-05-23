@@ -4,9 +4,9 @@ import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { SettingItemWithAction } from '../components/setting/SettingItemWithAction'
 import { ConfigManager } from '../config/ConfigManager'
 import { promptAction, PromptAction } from '@kit.ArkUI'
-import { BackupManager } from '../common/utils/BackupManager'
-import { MorePageBackupHandler } from '../common/utils/MorePageBackupHandler'
-import { MorePageConfigHandler } from '../common/utils/MorePageConfigHandler'
+import { BackupManager } from '../common/managers/BackupManager'
+import { MorePageBackupHandler } from '../common/handlers/MorePageBackupHandler'
+import { MorePageConfigHandler } from '../common/handlers/MorePageConfigHandler'
 
 @Entry
 @Component
