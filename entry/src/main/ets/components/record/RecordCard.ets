@@ -58,66 +58,73 @@ export struct RecordCard {
   
   build() {
     Column() {
-      // 标签显示（如果有）
-      if (this.record.tags && this.record.tags.length > 0) {
-        TagDisplay({ tagIds: this.record.tags })
-          .margin({ bottom: 8 })
-      }
-      
-      // 文字内容（如果有）
-      if (this.record.content && this.record.content.length > 0) {
-        // 使用高亮文本显示
-        this.HighlightText(this.record.content, this.searchKeyword)
-      }
-      
-      // 图片网格（如果有）
-      if (this.record.imagePaths && this.record.imagePaths.length > 0 && this.viewModel) {
-        // 单张图片：大图展示
-        if (this.record.imagePaths.length === 1) {
-          Image(this.viewModel.getImageUri(this.record.imagePaths[0]))
-            .width('100%')
-            .height('auto')
-            .objectFit(ImageFit.Cover)
-            .borderRadius(8)
-            .constraintSize({ maxHeight: 300 })
-            .margin({ top: this.record.content ? 12 : 0 })
-            .onClick(() => {
-              this.openImageViewer([this.viewModel!.getImageUri(this.record.imagePaths![0])], 0)
-            })
-        } else {
-          // 多张图片：网格布局（一行三张，正方形）
-          Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
-            ForEach(this.record.imagePaths, (path: string, index: number) => {
-              Image(this.viewModel!.getImageUri(path))
-                .width('32%')
-                .aspectRatio(1)  // 正方形
-                .objectFit(ImageFit.Cover)
-                .borderRadius(4)
-                .margin({ right: index % 3 === 2 ? 0 : '2%', bottom: index < this.record.imagePaths!.length - 3 ? 4 : 0 })
-                .onClick(() => {
-                  this.openImageViewerFromPath(index)
-                })
-            }, (path: string, index: number) => `image-${index}`)
-          }
-          .width('100%')
-          .margin({ top: this.record.content ? 12 : 0 })
+      Column() {
+        // 标签显示（如果有）
+        if (this.record.tags && this.record.tags.length > 0) {
+          TagDisplay({ tagIds: this.record.tags })
+            .margin({ bottom: 8 })
         }
-      }
-      
-      // 底部信息栏：时间 + 操作按钮
-      Row() {
-        // 时间戳
-        Text(this.formatTime(this.record.timestamp))
-          .fontSize(13)
-          .fontColor(this.themeColors.textSecondary)
         
-        Blank()
+        // 文字内容（如果有）
+        if (this.record.content && this.record.content.length > 0) {
+          // 使用高亮文本显示
+          this.HighlightText(this.record.content, this.searchKeyword)
+        }
         
-        // 操作按钮
-        this.ActionButtons()
+        // 图片网格（如果有）
+        if (this.record.imagePaths && this.record.imagePaths.length > 0 && this.viewModel) {
+          // 单张图片：大图展示
+          if (this.record.imagePaths.length === 1) {
+            Image(this.viewModel.getImageUri(this.record.imagePaths[0]))
+              .width('100%')
+              .height('auto')
+              .objectFit(ImageFit.Cover)
+              .borderRadius(8)
+              .constraintSize({ maxHeight: 300 })
+              .margin({ top: this.record.content ? 12 : 0 })
+              .onClick(() => {
+                this.openImageViewer([this.viewModel!.getImageUri(this.record.imagePaths![0])], 0)
+              })
+          } else {
+            // 多张图片：网格布局（一行三张，正方形）
+            Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
+              ForEach(this.record.imagePaths, (path: string, index: number) => {
+                Image(this.viewModel!.getImageUri(path))
+                  .width('32%')
+                  .aspectRatio(1)  // 正方形
+                  .objectFit(ImageFit.Cover)
+                  .borderRadius(4)
+                  .margin({ right: index % 3 === 2 ? 0 : '2%', bottom: index < this.record.imagePaths!.length - 3 ? 4 : 0 })
+                  .onClick(() => {
+                    this.openImageViewerFromPath(index)
+                  })
+              }, (path: string, index: number) => `image-${index}`)
+            }
+            .width('100%')
+            .margin({ top: this.record.content ? 12 : 0 })
+          }
+        }
+        
+        // 底部信息栏：时间 + 操作按钮
+        Row() {
+          // 时间戳
+          Text(this.formatTime(this.record.timestamp))
+            .fontSize(13)
+            .fontColor(this.themeColors.textSecondary)
+          
+          Blank()
+          
+          // 操作按钮
+          this.ActionButtons()
+        }
+        .width('100%')
+        .margin({ top: this.record.content || (this.record.imagePaths && this.record.imagePaths.length > 0) ? 12 : 0 })
       }
       .width('100%')
-      .margin({ top: this.record.content || (this.record.imagePaths && this.record.imagePaths.length > 0) ? 12 : 0 })
+      .alignItems(HorizontalAlign.Start)
+      .bindContentCover($$this.showImageViewer, this.ImageViewerBuilder(), {
+        modalTransition: ModalTransition.DEFAULT
+      })
     }
     .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(16)
@@ -129,14 +136,10 @@ export struct RecordCard {
       offsetY: 2
     })
     .width('100%')
-    .alignItems(HorizontalAlign.Start)
     .bindSheet($$this.showShareDialog, this.ShareDialogBuilder(), {
       height: 'auto',
       backgroundColor: 'transparent',
       dragBar: false
-    })
-    .bindContentCover($$this.showImageViewer, this.ImageViewerBuilder(), {
-      modalTransition: ModalTransition.DEFAULT
     })
   }
   
