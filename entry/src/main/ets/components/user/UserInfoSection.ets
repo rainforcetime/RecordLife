@@ -65,41 +65,47 @@ export struct UserInfoSection {
         if (this.userInfo.hasCustomAvatar && this.userInfo.userAvatar) {
           // 显示用户自定义头像
           Image(this.userInfo.userAvatar)
-            .width(90)
-            .height(90)
-            .borderRadius(45)
-            .border({ width: 3, color: this.themeColors.primary })
+            .width(100)
+            .height(100)
+            .borderRadius(50)
+            .border({ width: 4, color: this.themeColors.primary })
         } else {
           // 显示默认头像（使用系统图标）
           Column() {
             SymbolGlyph($r('sys.symbol.person_fill'))
-              .fontSize(50)
+              .fontSize(52)
               .fontColor([this.themeColors.textSecondary])
           }
-          .width(90)
-          .height(90)
-          .borderRadius(45)
+          .width(100)
+          .height(100)
+          .borderRadius(50)
           .backgroundColor(this.themeColors.divider)
           .justifyContent(FlexAlign.Center)
-          .border({ width: 3, color: this.themeColors.primary })
+          .border({ width: 4, color: this.themeColors.primary })
         }
 
         // 编辑图标（使用系统图标：相机圆形填充）
         Column() {
           SymbolGlyph($r('sys.symbol.camera_circle_fill'))
-            .fontSize(20)
+            .fontSize(22)
             .fontColor([Color.White])
         }
-        .width(28)
-        .height(28)
-        .borderRadius(14)
+        .width(32)
+        .height(32)
+        .borderRadius(16)
         .backgroundColor(this.themeColors.primary)
         .justifyContent(FlexAlign.Center)
         .margin({ right: 2, bottom: 2 })
+        .shadow({
+          radius: 6,
+          color: this.themeColors.primary + '40',
+          offsetX: 0,
+          offsetY: 2
+        })
       }
-      .width(90)
-      .height(90)
-      .margin({ top: 20, bottom: 16 })
+      .width(100)
+      .height(100)
+      .margin({ top: 16, bottom: 18 })
       .onClick(() => {
         if (this.onChangeAvatar) {
           this.onChangeAvatar()
@@ -108,10 +114,10 @@ export struct UserInfoSection {
 
       // 用户名
       Text(this.userInfo.userName)
-        .fontSize(22)
+        .fontSize(24)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.themeColors.textPrimary)
-        .margin({ bottom: 12 })
+        .margin({ bottom: 14 })
 
       // 用户信息标签
       Row() {
@@ -120,56 +126,56 @@ export struct UserInfoSection {
           SymbolGlyph($r('sys.symbol.person'))
             .fontSize(14)
             .fontColor([this.getLabelTextColor()])
-            .margin({ right: 4 })
+            .margin({ right: 5 })
           Text(this.userInfo.userGender)
             .fontSize(13)
             .fontColor(this.getLabelTextColor())
             .fontWeight(FontWeight.Medium)
         }
-        .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+        .padding({ left: 12, right: 12, top: 6, bottom: 6 })
         .backgroundColor(this.getLabelBackgroundColor())
-        .borderRadius(12)
+        .borderRadius(14)
 
         // 出生日期标签
         Row() {
           SymbolGlyph($r('sys.symbol.calendar'))
             .fontSize(14)
             .fontColor([this.getLabelTextColor()])
-            .margin({ right: 4 })
+            .margin({ right: 5 })
           Text(this.userInfo.userBirthday)
             .fontSize(13)
             .fontColor(this.getLabelTextColor())
             .fontWeight(FontWeight.Medium)
         }
-        .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+        .padding({ left: 12, right: 12, top: 6, bottom: 6 })
         .backgroundColor(this.getLabelBackgroundColor())
-        .borderRadius(12)
-        .margin({ left: 8 })
+        .borderRadius(14)
+        .margin({ left: 10 })
       }
-      .margin({ bottom: 20 })
+      .margin({ bottom: 22 })
 
       // 编辑资料按钮
       Button() {
         Row() {
           SymbolGlyph($r('sys.symbol.square_and_pencil'))
-            .fontSize(16)
+            .fontSize(18)
             .fontColor([Color.White])
-            .margin({ right: 6 })
+            .margin({ right: 8 })
           Text('编辑资料')
-            .fontSize(15)
+            .fontSize(16)
             .fontColor(Color.White)
             .fontWeight(FontWeight.Medium)
         }
       }
       .backgroundColor(this.themeColors.primary)
-      .borderRadius(24)
-      .width(150)
-      .height(46)
+      .borderRadius(26)
+      .width(160)
+      .height(50)
       .shadow({
-        radius: 12,
+        radius: 16,
         color: this.themeColors.primary + '50',
         offsetX: 0,
-        offsetY: 6
+        offsetY: 8
       })
       .onClick(() => {
         if (this.onEditProfile) {
@@ -179,14 +185,14 @@ export struct UserInfoSection {
     }
     .width('90%')
     .backgroundColor(this.themeColors.cardBackground)
-    .borderRadius(16)
+    .borderRadius(18)
     .margin({ bottom: 16 })
-    .padding({ left: 20, right: 20, top: 10, bottom: 20 })
+    .padding({ left: 24, right: 24, top: 12, bottom: 24 })
     .shadow({
-      radius: 12,
+      radius: 16,
       color: this.themeColors.shadow,
       offsetX: 0,
-      offsetY: 4
+      offsetY: 6
     })
   }
 }

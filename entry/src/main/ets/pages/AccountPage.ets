@@ -238,13 +238,21 @@ export struct AccountPage {
   build() {
     Scroll() {
       Column() {
-        // 页面标题
-        Text('账号设置')
-          .fontSize(26)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.themeColors.textPrimary)
-          .margin({ top: 24, bottom: 20 })
-          .width('90%')
+        // 页面标题区域
+        Row() {
+          SymbolGlyph($r('sys.symbol.person_fill'))
+            .fontSize(28)
+            .fontColor([this.themeColors.primary])
+            .margin({ right: 12 })
+          
+          Text('账号设置')
+            .fontSize(26)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(this.themeColors.textPrimary)
+        }
+        .width('90%')
+        .margin({ top: 24, bottom: 20 })
+        .justifyContent(FlexAlign.Start)
         
         // 用户信息区域
         UserInfoSection({
@@ -261,24 +269,36 @@ export struct AccountPage {
         // 设置项列表
         this.SettingsSection()
         
-        // 已使用天数提示
+        // 已使用天数提示卡片
         Row() {
-          SymbolGlyph($r('sys.symbol.calendar'))
-            .fontSize(14)
-            .fontColor([this.themeColors.textSecondary])
-            .margin({ right: 4 })
-          
-          Text(`已使用 ${this.statisticsInfo.usageDays} 天`)
-            .fontSize(12)
-            .fontColor(this.themeColors.textSecondary)
+          Row() {
+            SymbolGlyph($r('sys.symbol.clock'))
+              .fontSize(16)
+              .fontColor([this.themeColors.primary])
+              .margin({ right: 8 })
+            
+            Text(`已使用 ${this.statisticsInfo.usageDays} 天`)
+              .fontSize(13)
+              .fontColor(this.themeColors.textSecondary)
+              .fontWeight(FontWeight.Medium)
+          }
+          .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+          .backgroundColor(this.themeColors.cardBackground)
+          .borderRadius(20)
+          .shadow({
+            radius: 6,
+            color: this.themeColors.shadow,
+            offsetX: 0,
+            offsetY: 2
+          })
         }
         .width('90%')
         .justifyContent(FlexAlign.Center)
-        .margin({ top: 2, bottom: 2 })
+        .margin({ top: 8, bottom: 8 })
         
         // 底部留白
         Column()
-          .height(20)
+          .height(24)
       }
       .width('100%')
       .alignItems(HorizontalAlign.Center)
@@ -296,6 +316,11 @@ export struct AccountPage {
     Column() {
       // 区域标题
       Row() {
+        SymbolGlyph($r('sys.symbol.gearshape_fill'))
+          .fontSize(18)
+          .fontColor([this.themeColors.primary])
+          .margin({ right: 8 })
+        
         Text('设置')
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
