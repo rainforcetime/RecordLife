@@ -2,16 +2,10 @@
 import { common } from '@kit.AbilityKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { NowViewModel } from '../viewmodel/NowViewModel'
-import { LifeRecord } from '../common/types'
+import { LifeRecord, ImageInfo } from '../common/types'
 import { RefreshManager } from '../common/RefreshManager'
 import { PromptAction } from '@kit.ArkUI'
 import { ImagePickerUtils, ImagePickMode } from '../common/utils/ImagePickerUtils'
-
-// 图片信息
-interface ImageInfo {
-  path: string    // 沙箱路径
-  uri: string     // 显示 URI
-}
 
 @Component
 export struct AddRecordSection {

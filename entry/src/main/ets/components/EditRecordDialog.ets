@@ -1,16 +1,10 @@
 // 编辑记录对话框组件：components/EditRecordDialog.ets
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
-import { LifeRecord } from '../common/types'
+import { LifeRecord, ImageInfo } from '../common/types'
 import { ImagePickerUtils, ImagePickMode, ImagePickResult } from '../common/utils/ImagePickerUtils'
 import { common } from '@kit.AbilityKit'
 import { PromptAction } from '@kit.ArkUI'
 import { NowViewModel } from '../viewmodel/NowViewModel'
-
-// 图片信息
-interface ImageInfo {
-  path: string    // 沙箱路径
-  uri: string     // 显示 URI
-}
 
 @Component
 export struct EditRecordDialog {

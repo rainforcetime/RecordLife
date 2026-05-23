@@ -50,3 +50,11 @@ export interface TimelineYear {
 export interface TimelineData {
   years: TimelineYear[];         // 年份列表
 }
+
+// ==================== 图片相关类型定义 ====================
+
+// 图片信息接口
+export interface ImageInfo {
+  path: string;                  // 图片路径
+  uri: string;                   // 图片URI
+}

@@ -5,7 +5,7 @@ import { NowViewModel } from '../viewmodel/NowViewModel'
 import { ImageViewer } from './ImageViewer'
 
 // 记录卡片操作回调
-export interface RecordCardCallbacks {
+interface RecordCardCallbacks {
   onEdit: (record: LifeRecord) => void
   onDelete: (record: LifeRecord) => void
 }

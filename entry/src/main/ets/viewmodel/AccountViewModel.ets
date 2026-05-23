@@ -33,7 +33,7 @@ export interface DataStatistics {
 }
 
 // 头像信息模型
-export interface AvatarInfo {
+interface AvatarInfo {
   avatar: string
   hasCustomAvatar: boolean
 }

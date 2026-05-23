@@ -8,17 +8,10 @@ import { SettingItemWithInfo } from '../components/SettingItemWithInfo'
 import { EditProfileDialog } from '../components/EditProfileDialog'
 import { AboutAppDialog } from '../components/AboutAppDialog'
 import { UserInfoSection, UserInfo } from '../components/UserInfoSection'
-import { AccountViewModel, UserProfile, ThemeSettings, DataStatistics } from '../viewmodel/AccountViewModel'
+import { AccountViewModel, DataStatistics } from '../viewmodel/AccountViewModel'
 import { AccountUtils } from '../common/utils/AccountUtils'
 import { AppInfo } from '../config/UserConfig'
-
-// 数据统计信息模型
-interface DataStatisticsInfo {
-  usageDays: number
-  dataVersion: string
-  lastActiveTime: string
-  storageSize: string
-}
+import { RefreshManager } from '../common/RefreshManager'
 
 @Component
 export struct AccountPage {
@@ -38,7 +31,7 @@ export struct AccountPage {
   @State currentTheme: string = '跟随系统'
   
   // 数据统计
-  @State statisticsInfo: DataStatisticsInfo = {
+  @State statisticsInfo: DataStatistics = {
     usageDays: 0,
     dataVersion: 'v1.0.0',
     lastActiveTime: '',
@@ -110,9 +103,28 @@ export struct AccountPage {
       
       // 加载数据统计信息
       await this.loadDataStatistics()
+      
+      // 注册全局刷新回调
+      RefreshManager.getInstance().register('AccountPage', () => {
+        console.info('[AccountPage] 收到全局刷新通知')
+        this.loadDataStatistics()
+      })
     } catch (error) {
       console.error('AccountPage 初始化失败: ' + JSON.stringify(error))
     }
+  }
+  
+  // 页面销毁时注销回调
+  aboutToDisappear() {
+    console.info('[AccountPage] aboutToDisappear')
+    // 注销刷新回调
+    RefreshManager.getInstance().unregister('AccountPage')
+  }
+  
+  // 页面显示时刷新数据
+  onPageShow() {
+    console.info('[AccountPage] onPageShow')
+    this.loadDataStatistics()
   }
   
   // 加载用户资料
