@@ -2,6 +2,7 @@
   "src": [
     "pages/Index",
     "pages/NowPage",
-    "pages/MorePage"
+    "pages/MorePage",
+    "pages/StorageImagePage"
   ]
 }

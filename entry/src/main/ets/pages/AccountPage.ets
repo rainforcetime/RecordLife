@@ -236,6 +236,18 @@ export struct AccountPage {
     }
   }
   
+  // 存储空间点击处理
+  private onStorageClick() {
+    console.log('存储空间')
+    try {
+      this.getUIContext().getRouter().pushUrl({
+        url: 'pages/StorageImagePage'
+      })
+    } catch (error) {
+      console.error('页面跳转失败: ' + JSON.stringify(error))
+    }
+  }
+  
   build() {
     Scroll() {
       Column() {
@@ -322,6 +334,9 @@ export struct AccountPage {
       SettingItemWithInfo({
         label: '存储空间',
         info: this.statisticsInfo.storageSize
+      })
+      .onClick(() => {
+        this.onStorageClick()
       })
       
       Divider()
