@@ -3,8 +3,8 @@ import { ConfigManager } from '../config/ConfigManager';
 import { UserConfig } from '../config/UserConfig';
 import { TimeUtils } from '../common/utils/TimeUtils';
 import { TimeData, DateDifference } from '../common/types';
-import { TimeCard } from '../components/TimeCard';
-import { BirthDateSelector } from '../components/BirthDateSelector';
+import { TimeCard } from '../components/record/TimeCard';
+import { BirthDateSelector } from '../components/user/BirthDateSelector';
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig';
 
 // 首页组件

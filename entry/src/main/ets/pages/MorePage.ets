@@ -1,7 +1,7 @@
 // 更多设置页面：pages/MorePage.ets
 import { common } from '@kit.AbilityKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
-import { SettingItemWithAction } from '../components/SettingItemWithAction'
+import { SettingItemWithAction } from '../components/setting/SettingItemWithAction'
 import { ConfigManager } from '../config/ConfigManager'
 import { promptAction, PromptAction } from '@kit.ArkUI'
 import { BackupManager } from '../common/utils/BackupManager'
