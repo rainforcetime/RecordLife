@@ -29,6 +29,33 @@ export struct UserInfoSection {
   
   // 更换头像回调
   onChangeAvatar?: () => void
+  
+  // 判断是否为深色模式
+  private isDarkMode(): boolean {
+    return this.themeColors.textPrimary === '#FFFFFF'
+  }
+  
+  // 获取标签文字颜色（深色模式适配）
+  private getLabelTextColor(): string {
+    if (this.isDarkMode()) {
+      // 深色模式：使用白色文字，更清晰
+      return '#FFFFFF'
+    } else {
+      // 浅色模式：使用主题色
+      return this.themeColors.primary
+    }
+  }
+  
+  // 获取标签背景颜色（深色模式适配）
+  private getLabelBackgroundColor(): string {
+    if (this.isDarkMode()) {
+      // 深色模式：使用主题色作为背景，透明度30%
+      return this.themeColors.primary + '30'
+    } else {
+      // 浅色模式：使用浅色主题色背景，透明度20%
+      return this.themeColors.primaryLight + '20'
+    }
+  }
 
   build() {
     Column() {
@@ -92,53 +119,63 @@ export struct UserInfoSection {
         Row() {
           SymbolGlyph($r('sys.symbol.person'))
             .fontSize(14)
-            .fontColor([this.themeColors.textSecondary])
+            .fontColor([this.getLabelTextColor()])
             .margin({ right: 4 })
           Text(this.userInfo.userGender)
             .fontSize(13)
-            .fontColor(this.themeColors.textSecondary)
+            .fontColor(this.getLabelTextColor())
+            .fontWeight(FontWeight.Medium)
         }
         .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-        .backgroundColor(this.themeColors.primaryLight + '20')
+        .backgroundColor(this.getLabelBackgroundColor())
         .borderRadius(12)
 
         // 出生日期标签
         Row() {
           SymbolGlyph($r('sys.symbol.calendar'))
             .fontSize(14)
-            .fontColor([this.themeColors.textSecondary])
+            .fontColor([this.getLabelTextColor()])
             .margin({ right: 4 })
           Text(this.userInfo.userBirthday)
             .fontSize(13)
-            .fontColor(this.themeColors.textSecondary)
+            .fontColor(this.getLabelTextColor())
+            .fontWeight(FontWeight.Medium)
         }
         .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-        .backgroundColor(this.themeColors.primaryLight + '20')
+        .backgroundColor(this.getLabelBackgroundColor())
         .borderRadius(12)
         .margin({ left: 8 })
       }
       .margin({ bottom: 20 })
 
       // 编辑资料按钮
-      Button('编辑资料')
-        .fontSize(15)
-        .fontWeight(FontWeight.Medium)
-        .backgroundColor(this.themeColors.primary)
-        .fontColor(Color.White)
-        .borderRadius(22)
-        .width(140)
-        .height(44)
-        .shadow({
-          radius: 8,
-          color: this.themeColors.primary + '40',
-          offsetX: 0,
-          offsetY: 4
-        })
-        .onClick(() => {
-          if (this.onEditProfile) {
-            this.onEditProfile()
-          }
-        })
+      Button() {
+        Row() {
+          SymbolGlyph($r('sys.symbol.square_and_pencil'))
+            .fontSize(16)
+            .fontColor([Color.White])
+            .margin({ right: 6 })
+          Text('编辑资料')
+            .fontSize(15)
+            .fontColor(Color.White)
+            .fontWeight(FontWeight.Medium)
+        }
+      }
+      .backgroundColor(this.themeColors.primary)
+      .borderRadius(24)
+      .width(150)
+      .height(46)
+      .shadow({
+        radius: 12,
+        color: this.themeColors.primary + '50',
+        offsetX: 0,
+        offsetY: 6
+      })
+      .onClick(() => {
+        if (this.onEditProfile) {
+          this.onEditProfile()
+        }
+      })
     }
     .width('90%')
     .backgroundColor(this.themeColors.cardBackground)
