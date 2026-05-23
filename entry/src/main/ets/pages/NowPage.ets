@@ -22,8 +22,16 @@ struct NowPage {
   @State private refreshTrigger: number = 0
   
   // 搜索状态
+  @Watch('onSearchTextChange')
   @State private searchText: string = ''
   @State private isSearching: boolean = false
+  @State private searchKeywordVersion: number = 0  // 搜索关键词版本号（用于强制刷新）
+  
+  // 监听搜索关键词改变
+  private onSearchTextChange() {
+    this.searchKeywordVersion++
+    console.info('[NowPage] searchText 改变: ' + this.searchText + ', version: ' + this.searchKeywordVersion)
+  }
   
   // 视图模式：'timeline' | 'calendar'
   @State private viewMode: string = 'timeline'
@@ -105,7 +113,7 @@ struct NowPage {
               .height(36)
               .justifyContent(FlexAlign.Center)
               .alignItems(HorizontalAlign.Center)
-              .backgroundColor(this.viewMode === 'timeline' ? this.themeColors.primaryLight + '30' : 'transparent')
+              .backgroundColor(this.viewMode === 'timeline' ? this.themeColors.primary + '20' : 'transparent')
               .borderRadius(8)
               .onClick(() => {
                 this.viewMode = 'timeline'
@@ -121,7 +129,7 @@ struct NowPage {
               .height(36)
               .justifyContent(FlexAlign.Center)
               .alignItems(HorizontalAlign.Center)
-              .backgroundColor(this.viewMode === 'calendar' ? this.themeColors.primaryLight + '30' : 'transparent')
+              .backgroundColor(this.viewMode === 'calendar' ? this.themeColors.primary + '20' : 'transparent')
               .borderRadius(8)
               .margin({ left: 8 })
               .onClick(() => {
@@ -147,7 +155,34 @@ struct NowPage {
               isSearching: $isSearching,
               placeholder: '搜索记录...'
             })
-            .margin({ bottom: 16 })
+            .margin({ bottom: 8 })
+            
+            // 搜索结果数量提示
+            if (this.searchText.length > 0) {
+              Row() {
+                SymbolGlyph($r('sys.symbol.checkmark_circle'))
+                  .fontSize(16)
+                  .fontColor([this.themeColors.primary])
+                
+                Text(`找到 ${this.getFilteredRecordCount()} 条相关记录`)
+                  .fontSize(14)
+                  .fontColor(this.themeColors.textSecondary)
+                  .margin({ left: 6 })
+              }
+              .width('100%')
+              .padding({ left: 4, bottom: 12 })
+            } else {
+              // 无搜索时显示总记录数
+              if (this.timelineData.years.length > 0) {
+                Row() {
+                  Text(`共 ${this.getTotalRecordCount()} 条记录`)
+                    .fontSize(14)
+                    .fontColor(this.themeColors.textSecondary)
+                }
+                .width('100%')
+                .padding({ left: 4, bottom: 12 })
+              }
+            }
           }
           
           // 内容区域
@@ -157,6 +192,7 @@ struct NowPage {
               timelineData: this.timelineData,
               timelineDataVersion: this.refreshTrigger,
               searchKeyword: this.searchText,  // 传递搜索关键词
+              searchKeywordVersion: this.searchKeywordVersion,  // 传递搜索关键词版本号
               onEditRecord: (record: LifeRecord) => {
                 this.onEditRecord(record)
               },
@@ -320,6 +356,63 @@ struct NowPage {
       }
     }
     return count
+  }
+  
+  // 获取过滤后的记录数量（用于搜索结果显示）
+  private getFilteredRecordCount(): number {
+    if (this.searchText.length === 0) {
+      return this.getTotalRecordCount()
+    }
+    
+    let count = 0
+    const keyword = this.searchText.toLowerCase()
+    for (const year of this.timelineData.years) {
+      for (const month of year.months) {
+        for (const day of month.days) {
+          for (const record of day.records) {
+            if (this.matchRecord(record, keyword)) {
+              count++
+            }
+          }
+        }
+      }
+    }
+    return count
+  }
+  
+  // 匹配记录（搜索内容和标签）
+  private matchRecord(record: LifeRecord, keyword: string): boolean {
+    // 1. 搜索文字内容
+    if (record.content.toLowerCase().includes(keyword)) {
+      return true
+    }
+    
+    // 2. 搜索标签名称
+    if (record.tags && record.tags.length > 0) {
+      for (const tagId of record.tags) {
+        const tagName = this.getTagNameById(tagId)
+        if (tagName && tagName.toLowerCase().includes(keyword)) {
+          return true
+        }
+      }
+    }
+    
+    return false
+  }
+  
+  // 根据标签ID获取标签名称
+  private getTagNameById(tagId: string): string | null {
+    const tagMap: Record<string, string> = {
+      'work': '工作',
+      'life': '生活',
+      'travel': '旅行',
+      'food': '美食',
+      'health': '健康',
+      'study': '学习',
+      'entertainment': '娱乐',
+      'family': '家庭'
+    }
+    return tagMap[tagId] || null
   }
   
   // 编辑记录

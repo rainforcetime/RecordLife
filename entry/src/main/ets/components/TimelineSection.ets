@@ -19,6 +19,9 @@ export struct TimelineSection {
   
   // 搜索关键词（用于过滤和高亮）
   @Prop searchKeyword: string = ''
+  // 搜索关键词版本号（用于强制刷新）
+  @Watch('onSearchKeywordChange')
+  @Prop searchKeywordVersion: number = 0
   
   // 回调函数
   onEditRecord?: (record: LifeRecord) => void
@@ -41,6 +44,51 @@ export struct TimelineSection {
     this.buildDateGroups()
   }
   
+  // 当搜索关键词改变时重新构建数据
+  private onSearchKeywordChange() {
+    console.info('[TimelineSection] searchKeyword 改变: ' + this.searchKeyword)
+    this.buildDateGroups()
+  }
+  
+  // 匹配记录（搜索内容和标签）
+  private matchRecord(record: LifeRecord, keyword: string): boolean {
+    const lowerKeyword = keyword.toLowerCase()
+    
+    // 1. 搜索文字内容
+    if (record.content.toLowerCase().includes(lowerKeyword)) {
+      return true
+    }
+    
+    // 2. 搜索标签名称
+    if (record.tags && record.tags.length > 0) {
+      for (const tagId of record.tags) {
+        // 根据标签ID获取标签名称
+        const tagName = this.getTagNameById(tagId)
+        if (tagName && tagName.toLowerCase().includes(lowerKeyword)) {
+          return true
+        }
+      }
+    }
+    
+    return false
+  }
+  
+  // 根据标签ID获取标签名称
+  private getTagNameById(tagId: string): string | null {
+    // 标签ID到名称的映射
+    const tagMap: Record<string, string> = {
+      'work': '工作',
+      'life': '生活',
+      'travel': '旅行',
+      'food': '美食',
+      'health': '健康',
+      'study': '学习',
+      'entertainment': '娱乐',
+      'family': '家庭'
+    }
+    return tagMap[tagId] || null
+  }
+  
   // 构建扁平化的日期分组数据
   private buildDateGroups() {
     const groups: DateGroup[] = []
@@ -55,7 +103,7 @@ export struct TimelineSection {
           let filteredRecords = dayNode.records
           if (this.searchKeyword.length > 0) {
             filteredRecords = dayNode.records.filter(record => 
-              record.content.toLowerCase().includes(this.searchKeyword.toLowerCase())
+              this.matchRecord(record, this.searchKeyword)
             )
           }
           
@@ -129,7 +177,7 @@ export struct TimelineSection {
       .width(100)
       .height(100)
       .borderRadius(50)
-      .backgroundColor(this.themeColors.primaryLight + '20')
+      .backgroundColor(this.themeColors.primary + '15')
       .justifyContent(FlexAlign.Center)
       .alignItems(HorizontalAlign.Center)
       .margin({ bottom: 24 })
@@ -231,7 +279,7 @@ export struct TimelineSection {
             .fontWeight(FontWeight.Medium)
         }
         .padding({ left: 10, right: 10, top: 4, bottom: 4 })
-        .backgroundColor(this.themeColors.primaryLight + '30')
+        .backgroundColor(this.themeColors.primary + '20')
         .borderRadius(12)
       }
     }

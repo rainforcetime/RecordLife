@@ -81,3 +81,17 @@ export interface ImageInfo {
   path: string;                  // 图片路径
   uri: string;                   // 图片URI
 }
+
+// ==================== 日历相关类型定义 ====================
+
+// 日历日期数据
+export interface CalendarDay {
+  date: Date;                    // 日期对象
+  year: number;                  // 年份
+  month: number;                 // 月份（1-12）
+  day: number;                   // 日期（1-31）
+  isCurrentMonth: boolean;       // 是否当前月份
+  isToday: boolean;              // 是否今天
+  recordCount: number;           // 当天记录数量
+  records: LifeRecord[];         // 当天的记录
+}

@@ -71,18 +71,24 @@ export struct SearchBar {
         Row() {
           SymbolGlyph($r('sys.symbol.magnifyingglass'))
             .fontSize(20)
-            .fontColor([this.themeColors.textSecondary])
+            .fontColor([this.themeColors.primary])
           
           Text(this.placeholder)
-            .fontSize(14)
+            .fontSize(15)
             .fontColor(this.themeColors.textSecondary)
             .margin({ left: 8 })
         }
         .width('100%')
-        .height(44)
+        .height(48)
         .justifyContent(FlexAlign.Center)
         .backgroundColor(this.themeColors.cardBackground)
-        .borderRadius(22)
+        .borderRadius(24)
+        .shadow({
+          radius: 12,
+          color: this.themeColors.shadow,
+          offsetX: 0,
+          offsetY: 4
+        })
         .onClick(() => {
           this.isSearching = true
         })
