@@ -73,7 +73,8 @@ export struct AccountPage {
   private aboutAppDialog: CustomDialogController = new CustomDialogController({
     builder: AboutAppDialog({
       appInfo: this.appInfo,
-      themeColors: this.themeColors
+      themeColors: this.themeColors,
+      usageDays: this.statisticsInfo.usageDays
     }),
     autoCancel: true,
     alignment: DialogAlignment.Center,
@@ -268,33 +269,6 @@ export struct AccountPage {
         
         // 设置项列表
         this.SettingsSection()
-        
-        // 已使用天数提示卡片
-        Row() {
-          Row() {
-            SymbolGlyph($r('sys.symbol.clock'))
-              .fontSize(16)
-              .fontColor([this.themeColors.primary])
-              .margin({ right: 8 })
-            
-            Text(`已使用 ${this.statisticsInfo.usageDays} 天`)
-              .fontSize(13)
-              .fontColor(this.themeColors.textSecondary)
-              .fontWeight(FontWeight.Medium)
-          }
-          .padding({ left: 16, right: 16, top: 10, bottom: 10 })
-          .backgroundColor(this.themeColors.cardBackground)
-          .borderRadius(20)
-          .shadow({
-            radius: 6,
-            color: this.themeColors.shadow,
-            offsetX: 0,
-            offsetY: 2
-          })
-        }
-        .width('90%')
-        .justifyContent(FlexAlign.Center)
-        .margin({ top: 8, bottom: 8 })
         
         // 底部留白
         Column()

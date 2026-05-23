@@ -17,6 +17,7 @@ export struct AboutAppDialog {
     description: '记录生活，珍惜每一刻'
   }
   @Prop themeColors: ThemeColors = ThemeConfig.getColors(false)
+  @Prop usageDays: number = 0
   
   // 应用信息管理器
   private appInfoManager: AppInfoManager | null = null
@@ -78,6 +79,13 @@ export struct AboutAppDialog {
 
       // 应用信息列表
       Column() {
+        // 已使用天数
+        this.InfoItem('已使用', `${this.usageDays} 天`)
+
+        Divider()
+          .color(this.themeColors.divider)
+          .margin({ left: 15 })
+
         // 应用描述
         this.InfoItem('应用描述', this.appInfo.description)
 
