@@ -26,6 +26,7 @@ export struct SearchBar {
           
           // 输入框
           TextInput({ text: $$this.searchText, placeholder: this.placeholder })
+            .id('search_input')
             .layoutWeight(1)
             .height(40)
             .backgroundColor('transparent')
@@ -34,6 +35,16 @@ export struct SearchBar {
             .fontColor(this.themeColors.textPrimary)
             .fontSize(14)
             .caretColor(this.themeColors.primary)
+            .onAppear(() => {
+              // 输入框出现时自动请求焦点，弹出输入法
+              focusControl.requestFocus('search_input')
+            })
+            .onBlur(() => {
+              // 失去焦点时，如果搜索内容为空，则还原搜索框状态
+              if (this.searchText.length === 0) {
+                this.isSearching = false
+              }
+            })
           
           // 清除按钮
           if (this.searchText.length > 0) {
