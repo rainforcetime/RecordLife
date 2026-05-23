@@ -7,7 +7,7 @@ import { AddRecordSection } from '../components/record/AddRecordSection'
 import { EditRecordDialog } from '../components/dialog/EditRecordDialog'
 import { SearchBar } from '../components/common/SearchBar'
 import { CalendarView } from '../components/calendar/CalendarView'
-import { RefreshManager } from '../common/RefreshManager'
+import { RefreshManager } from '../common/managers/RefreshManager'
 import { PromptAction } from '@kit.ArkUI'
 
 @Entry

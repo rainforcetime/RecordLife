@@ -11,7 +11,7 @@ import { UserInfoSection, UserInfo } from '../components/user/UserInfoSection'
 import { AccountViewModel, DataStatistics } from '../viewmodel/AccountViewModel'
 import { AccountUtils } from '../common/utils/AccountUtils'
 import { AppInfo } from '../config/UserConfig'
-import { RefreshManager } from '../common/RefreshManager'
+import { RefreshManager } from '../common/managers/RefreshManager'
 
 @Component
 export struct AccountPage {

@@ -5,7 +5,7 @@ import { fileIo } from '@kit.CoreFileKit'
 import { util } from '@kit.ArkTS'
 import { PromptAction, UIContext } from '@kit.ArkUI'
 import { ConfigManager } from '../../config/ConfigManager'
-import { RefreshManager } from '../RefreshManager'
+import { RefreshManager } from '../managers/RefreshManager'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import preferences from '@ohos.data.preferences'
 
