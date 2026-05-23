@@ -4,6 +4,9 @@ import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { ImageViewer } from '../common/ImageViewer'
 import { TagDisplay } from '../common/TagSelector'
+import { ShareRecordCard } from '../share/ShareRecordCard'
+import { ShareUtils } from '../../utils/ShareUtils'
+import { common } from '@kit.AbilityKit'
 
 // 记录卡片操作回调
 interface RecordCardCallbacks {
@@ -40,8 +43,17 @@ export struct RecordCard {
   @State private viewerImageUris: string[] = []
   @State private viewerCurrentIndex: number = 0
   
+  // 分享相关状态
+  @State private showShareDialog: boolean = false
+  @State private isSharing: boolean = false
+  
+  // 分享卡片组件ID（使用记录ID确保唯一性）
+  private shareCardId: string = ''
+  
   async aboutToAppear() {
     this.viewModel = await NowViewModel.getInstance()
+    // 初始化分享卡片ID
+    this.shareCardId = `share_card_${this.record.id}`
   }
   
   build() {
@@ -118,6 +130,11 @@ export struct RecordCard {
     })
     .width('100%')
     .alignItems(HorizontalAlign.Start)
+    .bindSheet($$this.showShareDialog, this.ShareDialogBuilder(), {
+      height: 'auto',
+      backgroundColor: 'transparent',
+      dragBar: false
+    })
     .bindContentCover($$this.showImageViewer, this.ImageViewerBuilder(), {
       modalTransition: ModalTransition.DEFAULT
     })
@@ -189,12 +206,19 @@ export struct RecordCard {
   
   // 打开图片预览（从路径数组）
   private openImageViewerFromPath(index: number) {
+    console.info('[RecordCard] 进入图片打开事件')
     if (!this.viewModel || !this.record.imagePaths) {
+      console.info('[RecordCard] 没有viewModel 或 imagePaths')
       return
     }
+    console.info('[RecordCard] 不为空')
     
     const imageUris: string[] = []
     for (let i = 0; i < this.record.imagePaths.length; i++) {
+      if (!this.viewModel || !this.record.imagePaths[i]) {
+        console.info('[RecordCard] 没有viewModel 或 imagePaths[i]')
+        continue
+      }
       imageUris.push(this.viewModel.getImageUri(this.record.imagePaths[i]))
     }
     
@@ -205,6 +229,7 @@ export struct RecordCard {
   
   // 打开图片预览
   private openImageViewer(uris: string[], index: number) {
+    console.info('[RecordCard] openImageViewer')
     this.viewerImageUris = uris
     this.viewerCurrentIndex = index
     this.showImageViewer = true
@@ -226,6 +251,15 @@ export struct RecordCard {
   @Builder
   ActionButtons() {
     Row({ space: 16 }) {
+      // 分享按钮
+      Image($r('sys.media.ohos_ic_public_share'))
+        .width(18)
+        .height(18)
+        .fillColor(this.themeColors.iconColor)
+        .onClick(() => {
+          this.showShareDialog = true
+        })
+      
       // 编辑按钮
       Image($r('sys.media.ohos_ic_public_edit'))
         .width(18)
@@ -247,6 +281,95 @@ export struct RecordCard {
             this.onDelete(this.record)
           }
         })
+    }
+  }
+  
+  // 分享弹窗构建器
+  @Builder
+  ShareDialogBuilder() {
+    Column() {
+      // 分享卡片预览区域
+      Column() {
+        // 分享卡片（固定宽度，居中显示）
+        Column() {
+          ShareRecordCard({ record: this.record })
+            .id(this.shareCardId)  // 设置组件ID用于截图
+        }
+        .width(340)
+      }
+      .width('100%')
+      .padding(20)
+      
+      // 操作按钮
+      Row({ space: 12 }) {
+        // 取消按钮
+        Button('取消')
+          .layoutWeight(1)
+          .height(44)
+          .fontSize(16)
+          .fontColor(this.themeColors.textSecondary)
+          .backgroundColor(this.themeColors.cardBackground)
+          .borderRadius(22)
+          .enabled(!this.isSharing)
+          .onClick(() => {
+            this.showShareDialog = false
+          })
+        
+        // 分享按钮
+        Button(this.isSharing ? '分享中...' : '分享')
+          .layoutWeight(1)
+          .height(44)
+          .fontSize(16)
+          .fontColor('#FFFFFF')
+          .backgroundColor(this.isSharing ? this.themeColors.textTertiary : this.themeColors.primary)
+          .borderRadius(22)
+          .enabled(!this.isSharing)
+          .onClick(() => {
+            this.doShare()
+          })
+      }
+      .width('100%')
+      .padding({ left: 20, right: 20, bottom: 20 })
+    }
+    .width('100%')
+    .backgroundColor(this.themeColors.background)
+    .borderRadius({ topLeft: 24, topRight: 24 })
+  }
+  
+  // 执行分享
+  private async doShare() {
+    if (this.isSharing) {
+      return
+    }
+    
+    this.isSharing = true
+    console.info('[RecordCard] 开始分享，记录ID: ' + this.record.id)
+    
+    try {
+      const context = getContext(this) as common.UIAbilityContext
+      const success = await ShareUtils.shareComponent(
+        this.getUIContext(),
+        this.shareCardId,
+        context,
+        '记录分享',
+        '来自 RecordLife 的记录分享'
+      )
+      
+      if (success) {
+        console.info('[RecordCard] 分享成功')
+        // 延迟关闭弹窗，让用户看到分享成功
+        setTimeout(() => {
+          this.showShareDialog = false
+          this.isSharing = false
+        }, 500)
+      } else {
+        console.error('[RecordCard] 分享失败')
+        this.isSharing = false
+        // 可以在这里显示错误提示
+      }
+    } catch (error) {
+      console.error('[RecordCard] 分享异常: ' + JSON.stringify(error))
+      this.isSharing = false
     }
   }
   
