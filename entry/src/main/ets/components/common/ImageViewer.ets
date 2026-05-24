@@ -98,7 +98,7 @@ export struct ImageViewer {
       
       // 3. 顶层：工具栏（使用绝对定位）
       Column() {
-        // 顶部工具栏
+        // 顶部工具栏（添加安全区域顶部避让）
         Row() {
           // 关闭按钮
           Image($r('sys.media.ohos_ic_public_arrow_left'))
@@ -121,10 +121,11 @@ export struct ImageViewer {
         .width('100%')
         .height(56)
         .padding({ left: 16, right: 16 })
+        .margin({ top: 48 })  // 添加顶部 margin 避让状态栏（典型状态栏高度约 48vp）
         
         Blank()
         
-        // 底部工具栏
+        // 底部工具栏（添加安全区域底部避让）
         Row() {
           Blank()
           
@@ -148,6 +149,7 @@ export struct ImageViewer {
         .width('100%')
         .height(56)
         .padding({ left: 16, right: 16 })
+        .margin({ bottom: 24 })  // 添加底部 margin 避让导航条
       }
       .width('100%')
       .height('100%')
@@ -158,5 +160,7 @@ export struct ImageViewer {
     }
     .width('100%')
     .height('100%')
+    // 扩展安全区域，让背景延伸到状态栏和导航条区域
+    .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
   }
 }
