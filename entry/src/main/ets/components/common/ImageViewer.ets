@@ -87,16 +87,19 @@ export struct ImageViewer {
       
       // 2. 中层：图片展示区域（居中，点击不关闭）
       if (this.imageUris.length > 0 && this.currentIndex < this.imageUris.length) {
-        Image(this.imageUris[this.currentIndex])
-          .width('100%')
-          .height('100%')
-          .objectFit(ImageFit.Contain)
-          .onClick(() => {
-            // 点击图片不做任何操作，阻止事件冒泡
-          })
+        // 使用 Column 包裹图片，阻止点击事件穿透到下层背景
+        Column() {
+          Image(this.imageUris[this.currentIndex])
+            .width('100%')
+            .height('100%')
+            .objectFit(ImageFit.Contain)
+        }
+        .width('100%')
+        .height('100%')
+        .hitTestBehavior(HitTestMode.Block)  // 阻止点击事件穿透
       }
       
-      // 3. 顶层：工具栏（使用绝对定位）
+      // 3. 顶层：工具栏
       Column() {
         // 顶部工具栏（添加安全区域顶部避让）
         Row() {
@@ -153,10 +156,7 @@ export struct ImageViewer {
       }
       .width('100%')
       .height('100%')
-      .onClick(() => {
-        // 工具栏区域点击穿透到背景（关闭预览）
-        this.closeViewer()
-      })
+      .hitTestBehavior(HitTestMode.Transparent)  // 让工具栏区域的空白点击穿透到下层
     }
     .width('100%')
     .height('100%')
