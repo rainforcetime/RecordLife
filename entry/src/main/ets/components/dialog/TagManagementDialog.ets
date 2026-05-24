@@ -208,7 +208,7 @@ export struct TagManagementDialog {
         .fontSize(13)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
-        .margin({ bottom: 12 })
+        .margin({ bottom: 16 })
 
       // 自定义标签列表
       if (this.customTags.length > 0) {
@@ -281,17 +281,17 @@ export struct TagManagementDialog {
         .width('100%')
         .scrollBar(BarState.Off)
         .constraintSize({ maxHeight: 300 })
+        .divider({ strokeWidth: 0.5, color: this.themeColors.border, startMargin: 12, endMargin: 12 })
+        .edgeEffect(EdgeEffect.None)
       } else {
         // 空状态
-        Column() {
+        Column({ space: 16 }) {
           Text('🏷️')
             .fontSize(40)
-            .margin({ bottom: 12 })
 
           Text('暂无自定义标签')
             .fontSize(15)
             .fontColor(this.themeColors.textSecondary)
-            .margin({ bottom: 16 })
 
           Button('添加第一个标签')
             .fontSize(14)
@@ -304,7 +304,7 @@ export struct TagManagementDialog {
             })
         }
         .width('100%')
-        .padding({ top: 20, bottom: 20 })
+        .padding({ top: 24, bottom: 24 })
       }
     }
     .width('100%')
@@ -349,14 +349,14 @@ export struct TagManagementDialog {
           })
       }
       .width('100%')
-      .margin({ bottom: 20 })
+      .margin({ bottom: 16 })
 
       // 名称输入
       Text('标签名称')
         .fontSize(13)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
-        .margin({ bottom: 6 })
+        .margin({ bottom: 8 })
 
       TextInput({ text: $$this.editTagName, placeholder: '输入标签名称' })
         .width('100%')
@@ -377,7 +377,7 @@ export struct TagManagementDialog {
         .fontSize(13)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
-        .margin({ bottom: 6 })
+        .margin({ bottom: 8 })
 
       // 当前颜色预览
       Row() {
@@ -421,7 +421,7 @@ export struct TagManagementDialog {
             .backgroundColor(this.editingTag.color === color ? color : this.hexToRgba(color, 0.15))
             .justifyContent(FlexAlign.Center)
             .alignItems(HorizontalAlign.Center)
-            .margin({ right: 6, bottom: 6 })
+            .margin({ right: 8, bottom: 8 })
             .onClick(() => {
               this.editingTag.color = color
             })
@@ -436,7 +436,7 @@ export struct TagManagementDialog {
         .fontSize(13)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
-        .margin({ bottom: 6 })
+        .margin({ bottom: 8 })
 
       Row() {
         if (this.editingTag.icon) {
@@ -481,7 +481,7 @@ export struct TagManagementDialog {
           .border({ width: 1, color: this.editingTag.icon === '' ? this.themeColors.primary : this.themeColors.border })
           .justifyContent(FlexAlign.Center)
           .alignItems(HorizontalAlign.Center)
-          .margin({ right: 6, bottom: 6 })
+          .margin({ right: 8, bottom: 8 })
           .onClick(() => {
             this.editingTag.icon = ''
           })
@@ -498,7 +498,7 @@ export struct TagManagementDialog {
             .border({ width: 1, color: this.editingTag.icon === icon ? this.themeColors.primary : this.themeColors.border })
             .justifyContent(FlexAlign.Center)
             .alignItems(HorizontalAlign.Center)
-            .margin({ right: 6, bottom: 6 })
+            .margin({ right: 8, bottom: 8 })
             .onClick(() => {
               this.editingTag.icon = icon
             })
@@ -513,7 +513,7 @@ export struct TagManagementDialog {
         .fontSize(13)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
-        .margin({ bottom: 6 })
+        .margin({ bottom: 8 })
 
       Row() {
         if (this.editingTag.icon) {
@@ -526,11 +526,9 @@ export struct TagManagementDialog {
           .fontColor(this.editTagName ? '#FFFFFF' : this.themeColors.textTertiary)
           .margin({ left: this.editingTag.icon ? 4 : 0 })
       }
-      .padding({ left: 10, right: 10, top: 6, bottom: 6 })
+      .padding({ left: 12, right: 12, top: 6, bottom: 6 })
       .backgroundColor(this.editingTag.color)
       .borderRadius(16)
-
-      Blank()
     }
     .width('100%')
     .padding(20)

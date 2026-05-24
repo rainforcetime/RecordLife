@@ -383,20 +383,6 @@ export struct AccountPage {
         .margin({ left: 15 })
         .height(0.5)
       
-      // 关于应用（信息展示）
-      SettingItemWithInfo({
-        label: '关于应用',
-        info: `版本 ${this.appInfo.appVersion}`
-      })
-      .onClick(() => {
-        this.onAboutApp()
-      })
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-        .height(0.5)
-      
       // 标签管理
       SettingItem({
         label: '标签管理',
@@ -418,6 +404,20 @@ export struct AccountPage {
       })
       .onClick(() => {
         this.onMoreSettings()
+      })
+      
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
+        .height(0.5)
+      
+      // 关于应用（信息展示）
+      SettingItemWithInfo({
+        label: '关于应用',
+        info: `版本 ${this.appInfo.appVersion}`
+      })
+      .onClick(() => {
+        this.onAboutApp()
       })
     }
     .width('90%')

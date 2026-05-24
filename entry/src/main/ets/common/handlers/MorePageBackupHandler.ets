@@ -400,7 +400,9 @@ export class MorePageBackupHandler {
             id: record.id,
             timestamp: record.timestamp,
             content: record.content,
-            imagePaths: undefined
+            imagePaths: undefined,
+            tags: record.tags,
+            isPinned: record.isPinned
           }
           
           if (record.imagePaths && record.imagePaths.length > 0) {
