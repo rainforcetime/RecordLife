@@ -627,7 +627,7 @@ export struct HomePage {
       }
       .width('90%')
       .backgroundColor(this.themeColors.cardBackground)
-      .borderRadius(20)
+      .borderRadius(4)
       .shadow({
         radius: 20,
         color: 'rgba(0, 0, 0, 0.3)',

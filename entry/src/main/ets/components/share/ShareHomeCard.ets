@@ -19,6 +19,13 @@ export struct ShareHomeCard {
   @Prop isAccumulatedMode: boolean = true
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
   
+  // 计算数值的显示权重（基于数值位数）
+  private getValueWeight(value: number): number {
+    const digitCount = value.toString().length;
+    // 基硈权重1.0，每增加一位增加0.15权重
+    return 1.0 + (digitCount - 1) * 0.15;
+  }
+  
   build() {
     Column() {
       // 顶部标题栏
@@ -91,11 +98,24 @@ export struct ShareHomeCard {
         
         // 时间数据展示
         Column() {
-          // 第一行：年月日
-          Row({ space: 8 }) {
-            this.TimeItem(this.timeData.years, '年', this.isRemainingMode ? '#4CAF50' : '#F44336')
-            this.TimeItem(this.timeData.months, '月', '#FFA726')
-            this.TimeItem(this.timeData.days, '日', '#66BB6A')
+          // 第一行：年月日（根据数值长度自适应宽度）
+          Row() {
+            Column() {
+              this.TimeItem(this.timeData.years, '年', this.isRemainingMode ? '#4CAF50' : '#F44336')
+            }
+            .layoutWeight(this.getValueWeight(this.timeData.years))
+            .margin({ right: 8 })
+
+            Column() {
+              this.TimeItem(this.timeData.months, '月', '#FFA726')
+            }
+            .layoutWeight(this.getValueWeight(this.timeData.months))
+            .margin({ right: 8 })
+
+            Column() {
+              this.TimeItem(this.timeData.days, '日', '#66BB6A')
+            }
+            .layoutWeight(this.getValueWeight(this.timeData.days))
           }
           .width('100%')
           .margin({ bottom: 8 })
@@ -105,11 +125,13 @@ export struct ShareHomeCard {
             this.TimeItem(this.timeData.hours, '小时', '#42A5F5')
           }
           .width('100%')
+          .margin({ bottom: 8 })
           // 第三行：分
           Row({ space: 8 }) {
             this.TimeItem(this.timeData.minutes, '分钟', '#AB47BC')
           }
           .width('100%')
+          .margin({ bottom: 8 })
           // 第四行：秒
           Row({ space: 8 }) {
             this.TimeItem(this.timeData.seconds, '秒', '#FFEE58')
@@ -165,7 +187,9 @@ export struct ShareHomeCard {
         .fontColor('#999999')
         .margin({ top: 4 })
     }
-    .layoutWeight(1)
+    .width('100%')
+    .height(80)
+    .justifyContent(FlexAlign.Center)
     .padding(12)
     .backgroundColor('#F5F5F5')
     .borderRadius(8)
