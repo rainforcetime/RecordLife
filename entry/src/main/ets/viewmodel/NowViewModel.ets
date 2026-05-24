@@ -4,6 +4,7 @@ import preferences from '@ohos.data.preferences'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { LifeRecord, TimelineYear, TimelineMonth, TimelineDay, TimelineData } from '../common/types'
 import { TimeUtils } from '../common/utils/TimeUtils'
+import { ImageGenerator } from '../utils/ImageGenerator'
 
 // 生活记录数据管理类
 export class NowViewModel {
@@ -99,8 +100,35 @@ export class NowViewModel {
   private async initSampleData(): Promise<void> {
     console.info('[NowViewModel] 初始化示例数据')
     
+    if (!this.context) {
+      console.error('[NowViewModel] context 未初始化，无法生成示例图片')
+      return
+    }
+    
     const now = Date.now()
     const oneDayMs = 24 * 60 * 60 * 1000
+    
+    // 生成示例图片（纯色渐变）
+    let sampleImagePath: string | null = null
+    try {
+      // 生成一张渐变色图片（蓝色到紫色渐变）
+      sampleImagePath = await ImageGenerator.generateGradientImage(
+        this.context,
+        800,  // 宽度
+        600,  // 高度
+        0xFF4A90E2,  // 起始颜色：蓝色
+        0xFF9B59B6,  // 结束颜色：紫色
+        'sample_gradient.png'
+      )
+      
+      if (sampleImagePath) {
+        console.info('[NowViewModel] 示例图片生成成功: ' + sampleImagePath)
+      } else {
+        console.warn('[NowViewModel] 示例图片生成失败')
+      }
+    } catch (error) {
+      console.error('[NowViewModel] 生成示例图片异常: ' + JSON.stringify(error))
+    }
     
     const sampleRecords: LifeRecord[] = [
       {
@@ -111,27 +139,30 @@ export class NowViewModel {
       {
         id: this.generateId(),
         timestamp: now - oneDayMs,
-        content: '这是昨天的记录示例。你可以记录文字，也可以添加图片。'
+        content: '这是昨天的记录示例。你可以记录文字，也可以添加图片，还能添加对应的标签哦。',
+        tags:['life'],
+        imagePaths: sampleImagePath ? [sampleImagePath] : undefined  // 添加示例图片
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 3,
-        content: '三天前的记录，时间线会按年月日自动组织。'
+        content: '三天前的记录，时间线会按年月日自动组织。支持添加多张图片哦（最多9张）！',
+        imagePaths: sampleImagePath ? [sampleImagePath,sampleImagePath,sampleImagePath,sampleImagePath] : undefined  // 添加示例图片
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 35,
-        content: '一个月前的记录，可以看到时间线的层级结构。'
+        content: '一个月前的记录，可以看到时间线的层级结构。点击记录可以编辑或删除。'
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 365,
-        content: '一年前的记录，可以看到时间线的层级结构。'
+        content: '一年前的记录，时间线会自动显示年份，方便回顾历史。'
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 365 * 2,
-        content: '两年前的记录，可以看到时间线的层级结构。'
+        content: '两年前的记录，RecordLife 帮你珍藏每一个美好瞬间。'
       }
     ]
     
