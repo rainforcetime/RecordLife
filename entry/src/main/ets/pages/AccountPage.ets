@@ -53,6 +53,12 @@ export struct AccountPage {
   private context: common.UIAbilityContext | null = null
   private promptAction: PromptAction = this.getUIContext().getPromptAction()
   
+  // 标记是否首次显示（避免 aboutToAppear 和 onPageShow 双重加载）
+  private isFirstShow: boolean = true
+  
+  // 标记后台是否已通过 RefreshManager 刷新过数据
+  private hasBackgroundRefresh: boolean = false
+  
   // 编辑资料弹窗控制器
   private editProfileDialog: CustomDialogController = new CustomDialogController({
     builder: EditProfileDialog({
@@ -108,6 +114,7 @@ export struct AccountPage {
       // 注册全局刷新回调
       RefreshManager.getInstance().register('AccountPage', () => {
         console.info('[AccountPage] 收到全局刷新通知')
+        this.hasBackgroundRefresh = true
         this.loadDataStatistics()
       })
     } catch (error) {
@@ -122,18 +129,34 @@ export struct AccountPage {
     RefreshManager.getInstance().unregister('AccountPage')
   }
   
-  // 页面显示时刷新数据
+  // 页面显示时刷新数据（跳过首次，避免与 aboutToAppear 重复加载；
+  // 跳过已在后台通过 RefreshManager 刷新过的情况）
   onPageShow() {
-    console.info('[AccountPage] onPageShow')
+    if (this.isFirstShow) {
+      this.isFirstShow = false
+      console.info('[AccountPage] onPageShow 跳过首次加载（已在 aboutToAppear 中完成）')
+      return
+    }
+    if (this.hasBackgroundRefresh) {
+      this.hasBackgroundRefresh = false
+      console.info('[AccountPage] onPageShow 跳过加载（已在后台通过 RefreshManager 刷新）')
+      return
+    }
+    console.info('[AccountPage] onPageShow 刷新统计数据')
     this.loadDataStatistics()
   }
   
   // 加载用户资料
   private async loadUserProfile() {
     const profile = await this.viewModel.loadUserProfile()
-    this.userInfo.userName = profile.name
-    this.userInfo.userBirthday = profile.birthday
-    this.userInfo.userGender = profile.gender
+    // 必须替换整个对象才能触发子组件 @Prop 更新
+    this.userInfo = {
+      userName: profile.name,
+      userBirthday: profile.birthday,
+      userGender: profile.gender,
+      userAvatar: this.userInfo.userAvatar,
+      hasCustomAvatar: this.userInfo.hasCustomAvatar
+    }
   }
   
   // 加载主题设置
@@ -168,8 +191,14 @@ export struct AccountPage {
   // 加载保存的头像
   private async loadSavedAvatar() {
     const avatarInfo = await this.viewModel.loadSavedAvatar()
-    this.userInfo.userAvatar = avatarInfo.avatar
-    this.userInfo.hasCustomAvatar = avatarInfo.hasCustomAvatar
+    // 必须替换整个对象才能触发子组件 @Prop 更新
+    this.userInfo = {
+      userName: this.userInfo.userName,
+      userBirthday: this.userInfo.userBirthday,
+      userGender: this.userInfo.userGender,
+      userAvatar: avatarInfo.avatar,
+      hasCustomAvatar: avatarInfo.hasCustomAvatar
+    }
   }
   
   // 主题切换处理
@@ -196,13 +225,20 @@ export struct AccountPage {
     const success = await this.viewModel.saveProfile(name, birthday, gender, avatarPath)
     
     if (success) {
-      // 更新UI显示
-      this.userInfo.userName = name
-      this.userInfo.userBirthday = birthday
-      this.userInfo.userGender = gender
+      // 必须替换整个对象才能触发子组件 @Prop 更新
+      this.userInfo = {
+        userName: name,
+        userBirthday: birthday,
+        userGender: gender,
+        userAvatar: this.userInfo.userAvatar,
+        hasCustomAvatar: this.userInfo.hasCustomAvatar
+      }
       
       console.info('用户资料保存成功')
       AccountUtils.showToastSafely(this.promptAction, '保存成功')
+      
+      // 通知其他页面刷新（如 HomePage 的出生日期显示）
+      RefreshManager.getInstance().refresh()
     } else {
       console.error('用户资料保存失败')
       AccountUtils.showToastSafely(this.promptAction, '保存失败')
@@ -213,8 +249,14 @@ export struct AccountPage {
   private async onChangeAvatar() {
     const avatarUri = await this.viewModel.onChangeAvatar()
     if (avatarUri) {
-      this.userInfo.userAvatar = avatarUri
-      this.userInfo.hasCustomAvatar = true
+      // 必须替换整个对象才能触发子组件 @Prop 更新
+      this.userInfo = {
+        userName: this.userInfo.userName,
+        userBirthday: this.userInfo.userBirthday,
+        userGender: this.userInfo.userGender,
+        userAvatar: avatarUri,
+        hasCustomAvatar: true
+      }
       // 更新存储空间显示
       await this.loadDataStatistics()
     }

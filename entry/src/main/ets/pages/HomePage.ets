@@ -9,6 +9,7 @@ import { ThemeColors, ThemeConfig } from '../config/ThemeConfig';
 import { ShareHomeCard } from '../components/share/ShareHomeCard';
 import { ShareUtils } from '../utils/ShareUtils';
 import { common } from '@kit.AbilityKit';
+import { RefreshManager } from '../common/managers/RefreshManager';
 
 // 卡片颜色配置接口
 interface CardColors {
@@ -138,12 +139,25 @@ export struct HomePage {
     this.intervalId = setInterval(() => {
       this.calculateTime();
     }, 1000);
+    
+    // 注册全局刷新回调：当其他页面修改出生日期时同步更新
+    RefreshManager.getInstance().register('HomePage', () => {
+      console.info('[HomePage] 收到全局刷新通知，重新加载出生日期')
+      if (this.configManager) {
+        const newBirthDate = this.configManager.getBirthDate()
+        if (newBirthDate.getTime() !== this.birthDate.getTime()) {
+          this.birthDate = newBirthDate
+        }
+      }
+    })
   }
 
   aboutToDisappear() {
     if (this.intervalId !== -1) {
       clearInterval(this.intervalId);
     }
+    // 注销刷新回调
+    RefreshManager.getInstance().unregister('HomePage')
   }
 
   // 计算两个日期之间的精确年、月、日差（使用UTC+8时区）
