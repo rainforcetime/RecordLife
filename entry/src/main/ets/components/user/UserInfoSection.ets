@@ -56,11 +56,31 @@ export struct UserInfoSection {
       return '#F5F5F5'
     }
   }
+  
+  // 获取装饰元素颜色（深色模式使用蓝色）
+  private getAccentColor(): string {
+    if (this.isDarkMode()) {
+      // 深色模式：使用蓝色
+      return '#4A90E2'
+    } else {
+      // 浅色模式：使用主题色
+      return this.themeColors.primary
+    }
+  }
 
   build() {
     Column() {
       // 头像展示（可点击更换）
       Stack({ alignContent: Alignment.BottomEnd }) {
+        // 头像装饰外圈
+        Circle()
+          .width(100)
+          .height(100)
+          .fill('transparent')
+          .stroke(this.getAccentColor())
+          .strokeWidth(2)
+          .position({ x: -6, y: -6 })
+        
         // 头像
         if (this.userInfo.hasCustomAvatar && this.userInfo.userAvatar) {
           // 显示用户自定义头像
@@ -105,7 +125,7 @@ export struct UserInfoSection {
       }
       .width(88)
       .height(88)
-      .margin({ top: 20, bottom: 16 })
+      .margin({ bottom: 16 })
       .onClick(() => {
         if (this.onChangeAvatar) {
           this.onChangeAvatar()
@@ -117,7 +137,7 @@ export struct UserInfoSection {
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.themeColors.textPrimary)
-        .margin({ bottom: 12 })
+        .margin({ bottom: 16 })
 
       // 用户信息标签
       Row() {
@@ -152,18 +172,18 @@ export struct UserInfoSection {
         .borderRadius(12)
         .margin({ left: 8 })
       }
-      .margin({ bottom: 18 })
+      .margin({ bottom: 16 })
 
       // 编辑资料按钮
       Button() {
         Row() {
           SymbolGlyph($r('sys.symbol.square_and_pencil'))
             .fontSize(16)
-            .fontColor([this.themeColors.primary])
+            .fontColor([this.getAccentColor()])
             .margin({ right: 6 })
           Text('编辑资料')
             .fontSize(15)
-            .fontColor(this.themeColors.primary)
+            .fontColor(this.getAccentColor())
             .fontWeight(FontWeight.Medium)
         }
       }
@@ -171,7 +191,6 @@ export struct UserInfoSection {
       .borderRadius(22)
       .width(130)
       .height(42)
-      .border({ width: 1.5, color: this.themeColors.primary + '40' })
       .onClick(() => {
         if (this.onEditProfile) {
           this.onEditProfile()
