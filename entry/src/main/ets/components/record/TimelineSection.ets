@@ -24,16 +24,25 @@ export struct TimelineSection {
   @Watch('onSearchKeywordChange')
   @Prop searchKeywordVersion: number = 0
   
+  // 标签筛选
+  @Prop filterTagIds: string[] = []
+  @Watch('onFilterTagIdsChange')
+  @Prop filterTagIdsVersion: number = 0
+
   // 回调函数
   onEditRecord?: (record: LifeRecord) => void
   onDeleteRecord?: (record: LifeRecord) => void
-  
+  onTogglePin?: (record: LifeRecord) => void
+
   // 监听 timelineData 变化
   @Watch('onTimelineDataChange')
   @Prop timelineDataVersion: number = 0
   
   // 扁平化的日期分组数据
   @State private dateGroups: DateGroup[] = []
+
+  // 收藏的记录
+  @State private pinnedRecords: LifeRecord[] = []
   
   aboutToAppear() {
     this.buildDateGroups()
@@ -48,6 +57,12 @@ export struct TimelineSection {
   // 当搜索关键词改变时重新构建数据
   private onSearchKeywordChange() {
     console.info('[TimelineSection] searchKeyword 改变: ' + this.searchKeyword)
+    this.buildDateGroups()
+  }
+
+  // 当标签筛选改变时重新构建数据
+  private onFilterTagIdsChange() {
+    console.info('[TimelineSection] filterTagIds 改变: ' + JSON.stringify(this.filterTagIds))
     this.buildDateGroups()
   }
   
@@ -90,29 +105,62 @@ export struct TimelineSection {
     return tagMap[tagId] || null
   }
   
+  // 判断记录是否匹配任一筛选标签
+  private matchesAnyFilterTag(record: LifeRecord): boolean {
+    if (!record.tags || record.tags.length === 0) {
+      return false
+    }
+    for (const tagId of record.tags) {
+      if (this.filterTagIds.includes(tagId)) {
+        return true
+      }
+    }
+    return false
+  }
+
   // 构建扁平化的日期分组数据
   private buildDateGroups() {
     const groups: DateGroup[] = []
+    const pinned: LifeRecord[] = []
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    
+
     // 遍历所有年月日，收集记录
     for (const yearNode of this.timelineData.years) {
       for (const monthNode of yearNode.months) {
         for (const dayNode of monthNode.days) {
-          // 过滤记录（如果有搜索关键词）
+          // 过滤记录（搜索关键词）
           let filteredRecords = dayNode.records
           if (this.searchKeyword.length > 0) {
-            filteredRecords = dayNode.records.filter(record => 
+            filteredRecords = dayNode.records.filter(record =>
               this.matchRecord(record, this.searchKeyword)
             )
           }
-          
-          if (filteredRecords.length > 0) {
+
+          // 过滤记录（标签筛选）
+          if (this.filterTagIds.length > 0) {
+            filteredRecords = filteredRecords.filter(record =>
+              this.matchesAnyFilterTag(record)
+            )
+          }
+
+          // 分离收藏记录
+          if (this.searchKeyword.length === 0) {
+            for (const record of filteredRecords) {
+              if (record.isPinned) {
+                pinned.push(record)
+              }
+            }
+          }
+
+          // 从常规时间线中排除收藏记录
+          const nonPinnedRecords = filteredRecords.filter(r => !r.isPinned)
+
+          if (nonPinnedRecords.length > 0) {
             // 计算日期描述
             const recordDate = new Date(yearNode.year, monthNode.month - 1, dayNode.day)
             const diffDays = Math.floor((today.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24))
-            
+
             let dateStr = ''
             if (diffDays === 0) {
               dateStr = '今天'
@@ -130,35 +178,46 @@ export struct TimelineSection {
                 dateStr = `${monthNode.month}月${dayNode.day}日`
               }
             }
-            
+
             groups.push({
               year: yearNode.year,
               month: monthNode.month,
               day: dayNode.day,
               dateStr: dateStr,
-              records: filteredRecords
+              records: nonPinnedRecords
             })
           }
         }
       }
     }
-    
+
     // 按日期倒序排列（最新的在前）
     groups.sort((a, b) => {
       const dateA = new Date(a.year, a.month - 1, a.day)
       const dateB = new Date(b.year, b.month - 1, b.day)
       return dateB.getTime() - dateA.getTime()
     })
-    
+
+    // 收藏记录也按时间倒序排列
+    pinned.sort((a, b) => b.timestamp - a.timestamp)
+
     this.dateGroups = groups
-    console.info('[TimelineSection] 构建日期分组完成，共 ' + groups.length + ' 个日期组')
+    this.pinnedRecords = pinned
+    console.info('[TimelineSection] 构建日期分组完成，共 ' + groups.length + ' 个日期组，收藏记录: ' + pinned.length)
   }
   
   build() {
     Column() {
+      // 收藏记录专区
+      if (this.pinnedRecords.length > 0) {
+        this.PinnedSection()
+      }
+
       if (this.dateGroups.length === 0) {
-        // 空状态
-        this.EmptyState()
+        // 只有没有任何记录（含收藏）才显示空状态
+        if (this.pinnedRecords.length === 0) {
+          this.EmptyState()
+        }
       } else {
         // 时间线内容
         ForEach(this.dateGroups, (group: DateGroup, groupIndex: number) => {
@@ -223,6 +282,52 @@ export struct TimelineSection {
     .padding({ left: 40, right: 40 })
   }
   
+  // 收藏记录专区
+  @Builder
+  PinnedSection() {
+    Column() {
+      // 收藏专区标题
+      Row({ space: 6 }) {
+        SymbolGlyph($r('sys.symbol.pin_fill'))
+          .fontSize(18)
+          .fontColor([this.themeColors.primary])
+        Text('收藏')
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(this.themeColors.primary)
+
+        // 收藏数量
+        Row() {
+          Text(`${this.pinnedRecords.length}`)
+            .fontSize(12)
+            .fontColor(this.themeColors.primary)
+            .fontWeight(FontWeight.Medium)
+        }
+        .padding({ left: 8, right: 8, top: 2, bottom: 2 })
+        .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
+        .borderRadius(10)
+      }
+      .width('100%')
+      .margin({ bottom: 12 })
+
+      // 收藏记录卡片（每张独立，无日期分隔线）
+      ForEach(this.pinnedRecords, (record: LifeRecord, index: number) => {
+        RecordCard({
+          record: record,
+          showDate: true,  // 收藏区显示完整日期
+          searchKeyword: this.searchKeyword,
+          onEdit: this.onEditRecord,
+          onDelete: this.onDeleteRecord,
+          onTogglePin: this.onTogglePin
+        })
+        .margin({ top: index > 0 ? 12 : 0 })
+      }, (record: LifeRecord) => `pinned-${this.timelineDataVersion}-${record.id}`)
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
+    .padding({ top: 4, bottom: 16 })
+  }
+
   // 日期分组构建器
   @Builder
   DateGroupBuilder(group: DateGroup, groupIndex: number) {
@@ -237,7 +342,8 @@ export struct TimelineSection {
           showDate: false,  // 不显示日期，因为已经在分隔线显示了
           searchKeyword: this.searchKeyword,  // 传递搜索关键词
           onEdit: this.onEditRecord,
-          onDelete: this.onDeleteRecord
+          onDelete: this.onDeleteRecord,
+          onTogglePin: this.onTogglePin
         })
         .margin({ top: recordIndex > 0 ? 12 : 8 })
       }, (record: LifeRecord) => `${this.timelineDataVersion}-${record.id}`)

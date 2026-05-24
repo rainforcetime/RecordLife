@@ -7,6 +7,7 @@ import { TagDisplay } from '../common/TagSelector'
 import { ShareRecordCard } from '../share/ShareRecordCard'
 import { ShareUtils } from '../../utils/ShareUtils'
 import { common } from '@kit.AbilityKit'
+import { ColorUtils } from '../../common/ColorUtils'
 
 // 记录卡片操作回调
 interface RecordCardCallbacks {
@@ -34,6 +35,7 @@ export struct RecordCard {
   // 回调函数
   onEdit?: (record: LifeRecord) => void
   onDelete?: (record: LifeRecord) => void
+  onTogglePin?: (record: LifeRecord) => void
   
   // ViewModel
   private viewModel: NowViewModel | null = null
@@ -59,6 +61,23 @@ export struct RecordCard {
   build() {
     Column() {
       Column() {
+        // 收藏标识（如果已收藏）
+        if (this.record.isPinned) {
+          Row({ space: 4 }) {
+            SymbolGlyph($r('sys.symbol.pin_fill'))
+              .fontSize(14)
+              .fontColor([this.themeColors.primary])
+            Text('已收藏')
+              .fontSize(12)
+              .fontColor(this.themeColors.primary)
+              .fontWeight(FontWeight.Medium)
+          }
+          .padding({ left: 8, right: 12, top: 4, bottom: 4 })
+          .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
+          .borderRadius(12)
+          .margin({ bottom: 8 })
+        }
+
         // 标签显示（如果有）
         if (this.record.tags && this.record.tags.length > 0) {
           TagDisplay({ tagIds: this.record.tags })
@@ -252,6 +271,16 @@ export struct RecordCard {
   @Builder
   ActionButtons() {
     Row({ space: 24 }) {
+      // 收藏/置顶按钮
+      SymbolGlyph(this.record.isPinned ? $r('sys.symbol.pin_fill') : $r('sys.symbol.pin'))
+        .fontSize(20)
+        .fontColor([this.record.isPinned ? this.themeColors.primary : this.themeColors.iconColor])
+        .onClick(() => {
+          if (this.onTogglePin) {
+            this.onTogglePin(this.record)
+          }
+        })
+
       // 分享按钮
       Image($r('sys.media.ohos_ic_public_share'))
         .width(20)

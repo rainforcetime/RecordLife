@@ -46,6 +46,7 @@ export interface LifeRecord {
   content: string;               // 文字内容（可为空）
   imagePaths?: string[];         // 图片路径数组（可选，最多9张）
   tags?: string[];               // 标签ID数组（可选）
+  isPinned?: boolean;            // 是否收藏/置顶（可选）
 }
 
 // 时间线日期节点

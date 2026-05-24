@@ -6,6 +6,7 @@ import { TimelineSection } from '../components/record/TimelineSection'
 import { AddRecordSection } from '../components/record/AddRecordSection'
 import { EditRecordDialog } from '../components/dialog/EditRecordDialog'
 import { SearchBar } from '../components/common/SearchBar'
+import { TagFilterBar } from '../components/record/TagFilterBar'
 import { CalendarView } from '../components/calendar/CalendarView'
 import { RefreshManager } from '../common/managers/RefreshManager'
 import { ColorUtils } from '../common/ColorUtils'
@@ -28,10 +29,21 @@ struct NowPage {
   @State private isSearching: boolean = false
   @State private searchKeywordVersion: number = 0  // 搜索关键词版本号（用于强制刷新）
   
+  // 标签筛选状态
+  @Watch('onFilterTagIdsChange')
+  @State private filterTagIds: string[] = []
+  @State private filterTagIdsVersion: number = 0  // 标签筛选版本号
+  
   // 监听搜索关键词改变
   private onSearchTextChange() {
     this.searchKeywordVersion++
     console.info('[NowPage] searchText 改变: ' + this.searchText + ', version: ' + this.searchKeywordVersion)
+  }
+
+  // 监听标签筛选改变
+  private onFilterTagIdsChange() {
+    this.filterTagIdsVersion++
+    console.info('[NowPage] filterTagIds 改变: ' + JSON.stringify(this.filterTagIds) + ', version: ' + this.filterTagIdsVersion)
   }
   
   // 视图模式：'timeline' | 'calendar'
@@ -164,6 +176,12 @@ struct NowPage {
             })
             .margin({ bottom: 8 })
             
+            // 标签筛选栏
+            TagFilterBar({
+              selectedTagIds: $filterTagIds
+            })
+            .margin({ bottom: 8 })
+            
             // 搜索结果数量提示
             if (this.searchText.length > 0) {
               Row() {
@@ -200,11 +218,16 @@ struct NowPage {
               timelineDataVersion: this.refreshTrigger,
               searchKeyword: this.searchText,  // 传递搜索关键词
               searchKeywordVersion: this.searchKeywordVersion,  // 传递搜索关键词版本号
+              filterTagIds: this.filterTagIds,  // 传递标签筛选
+              filterTagIdsVersion: this.filterTagIdsVersion,  // 传递标签筛选版本号
               onEditRecord: (record: LifeRecord) => {
                 this.onEditRecord(record)
               },
               onDeleteRecord: (record: LifeRecord) => {
                 this.onDeleteRecord(record)
+              },
+              onTogglePin: (record: LifeRecord) => {
+                this.onTogglePin(record)
               }
             })
           } else {
@@ -526,6 +549,38 @@ struct NowPage {
   }
   
   
+  // 切换收藏状态
+  private async onTogglePin(record: LifeRecord) {
+    if (!this.viewModel || !this.promptAction) {
+      return
+    }
+
+    try {
+      const wasPinned = record.isPinned
+      const success = await this.viewModel.togglePin(record.id)
+      if (success) {
+        try {
+          this.promptAction.showToast({
+            message: wasPinned ? '已取消收藏' : '已添加收藏'
+          })
+        } catch (error) {
+          console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+        }
+        // 刷新时间线
+        this.refreshTimeline()
+      } else {
+        try {
+          this.promptAction.showToast({ message: '操作失败' })
+        } catch (error) {
+          console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+        }
+      }
+    } catch (error) {
+      console.error('[NowPage] 切换收藏失败: ' + JSON.stringify(error))
+    }
+  }
+
+
   // 删除记录
   private onDeleteRecord(record: LifeRecord) {
     this.getUIContext().showAlertDialog({
