@@ -136,10 +136,8 @@ export struct RecordCard {
       offsetY: 2
     })
     .width('100%')
-    .bindSheet($$this.showShareDialog, this.ShareDialogBuilder(), {
-      height: 'auto',
-      backgroundColor: 'transparent',
-      dragBar: false
+    .bindContentCover($$this.showShareDialog, this.ShareDialogBuilder(), {
+      modalTransition: ModalTransition.DEFAULT
     })
   }
   
@@ -291,52 +289,64 @@ export struct RecordCard {
   @Builder
   ShareDialogBuilder() {
     Column() {
-      // 分享卡片预览区域
+      // 遮罩层（点击关闭）
+      Column()
+        .width('100%')
+        .height('100%')
+        .position({ x: 0, y: 0 })
+        .backgroundColor('rgba(0, 0, 0, 0.5)')
+        .onClick(() => {
+          this.showShareDialog = false
+        })
+      
+      // 弹窗内容（居中显示）
       Column() {
-        // 分享卡片（固定宽度，居中显示）
+        // 分享卡片预览区域
         Column() {
           ShareRecordCard({ record: this.record })
-            .id(this.shareCardId)  // 设置组件ID用于截图
+            .id(this.shareCardId)
         }
-        .width(340)
-      }
-      .width('100%')
-      .padding(20)
-      
-      // 操作按钮
-      Row({ space: 12 }) {
-        // 取消按钮
-        Button('取消')
-          .layoutWeight(1)
-          .height(44)
-          .fontSize(16)
-          .fontColor(this.themeColors.textSecondary)
-          .backgroundColor(this.themeColors.cardBackground)
-          .borderRadius(22)
-          .enabled(!this.isSharing)
-          .onClick(() => {
-            this.showShareDialog = false
-          })
+        .width('100%')
+        .alignItems(HorizontalAlign.Center)
+        .padding({ top: 16, bottom: 16 })
         
-        // 分享按钮
-        Button(this.isSharing ? '分享中...' : '分享')
-          .layoutWeight(1)
-          .height(44)
-          .fontSize(16)
-          .fontColor('#FFFFFF')
-          .backgroundColor(this.isSharing ? this.themeColors.textTertiary : this.themeColors.primary)
-          .borderRadius(22)
-          .enabled(!this.isSharing)
-          .onClick(() => {
-            this.doShare()
-          })
+        // 操作按钮
+        Row({ space: 12 }) {
+          Button('取消')
+            .layoutWeight(1)
+            .height(44)
+            .fontSize(16)
+            .fontColor(this.themeColors.textSecondary)
+            .backgroundColor(this.themeColors.cardBackground)
+            .borderRadius(22)
+            .enabled(!this.isSharing)
+            .onClick(() => {
+              this.showShareDialog = false
+            })
+          
+          Button(this.isSharing ? '分享中...' : '分享')
+            .layoutWeight(1)
+            .height(44)
+            .fontSize(16)
+            .fontColor('#FFFFFF')
+            .backgroundColor(this.isSharing ? this.themeColors.textTertiary : this.themeColors.primary)
+            .borderRadius(22)
+            .enabled(!this.isSharing)
+            .onClick(() => {
+              this.doShare()
+            })
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, bottom: 16 })
       }
-      .width('100%')
-      .padding({ left: 20, right: 20, bottom: 20 })
+      .width(360)
+      .backgroundColor(this.themeColors.background)
+      .borderRadius(24)
     }
     .width('100%')
-    .backgroundColor(this.themeColors.background)
-    .borderRadius({ topLeft: 24, topRight: 24 })
+    .height('100%')
+    .justifyContent(FlexAlign.Center)
+    .alignItems(HorizontalAlign.Center)
   }
   
   // 执行分享

@@ -149,7 +149,7 @@ export struct ShareRecordCard {
     }
     .width(340)
     .backgroundColor('#FFFFFF')
-    .borderRadius(16)
+    .borderRadius(4)
     .shadow({
       radius: 20,
       color: 'rgba(0, 0, 0, 0.15)',
