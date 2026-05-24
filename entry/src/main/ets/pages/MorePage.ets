@@ -223,10 +223,9 @@ struct MorePage {
       // 页面标题
       Row() {
         // 返回按钮
-        Image($r('sys.media.ohos_ic_public_arrow_left'))
-          .width(24)
-          .height(24)
-          .fillColor(this.themeColors.iconColor)
+        SymbolGlyph($r('sys.symbol.chevron_left'))
+          .fontSize(24)
+          .fontColor([this.themeColors.iconColor])
           .onClick(() => {
             this.goBack()
           })
@@ -235,13 +234,12 @@ struct MorePage {
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
-          .margin({ left: 15 })
+          .margin({ left: 12 })
           .layoutWeight(1)
       }
       .width('100%')
       .height(56)
-      .padding({ left: 15, right: 15 })
-      .backgroundColor(this.themeColors.cardBackground)
+      .padding({ left: 16, right: 16 })
       
       Scroll() {
         Column() {
@@ -249,7 +247,7 @@ struct MorePage {
           this.FunctionsSection()
         }
         .width('100%')
-        .margin({ top: 15 })
+        .margin({ top: 12 })
         .align(Alignment.Top)
       }
       .width('100%')
@@ -278,7 +276,7 @@ struct MorePage {
       
       Divider()
         .color(this.themeColors.divider)
-        .margin({ left: 15 })
+        .height(0.5)
       
       // 导入
       SettingItemWithAction({
@@ -291,7 +289,7 @@ struct MorePage {
       
       Divider()
         .color(this.themeColors.divider)
-        .margin({ left: 15 })
+        .height(0.5)
       
       // 重置应用
       SettingItemWithAction({
@@ -303,10 +301,16 @@ struct MorePage {
         }
       })
     }
-    .width('100%')
+    .width('96%')
     .backgroundColor(this.themeColors.cardBackground)
-    .borderRadius(10)
-    .margin({ left: 15, right: 15 })
+    .borderRadius(16)
+    .padding(12)
+    .shadow({
+      radius: 12,
+      color: this.themeColors.shadow,
+      offsetX: 0,
+      offsetY: 4
+    })
   }
   
   // 显示导出选择对话框

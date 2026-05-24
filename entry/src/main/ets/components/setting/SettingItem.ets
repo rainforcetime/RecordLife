@@ -25,12 +25,11 @@ export struct SettingItem {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
-      Image($r('app.media.arrow_right'))
-        .width(20)
-        .height(20)
-        .fillColor(this.themeColors.iconColor)
+      SymbolGlyph($r('sys.symbol.chevron_right'))
+        .fontSize(20)
+        .fontColor([this.themeColors.iconColor])
     }
-    .padding(15)
+    .padding({ top: 16, bottom: 16, left: 16, right: 16 })
     .width('100%')
   }
 }

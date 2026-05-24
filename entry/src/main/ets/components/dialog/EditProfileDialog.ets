@@ -76,17 +76,23 @@ export struct EditProfileDialog {
           .width('100%')
           .margin({ bottom: 8 })
 
-        DatePicker({
-          selected: this.parseDate(this.editBirthday)
-        })
-          .lunar(false)
-          .onDateChange((value: Date) => {
-            // 格式化日期为 YYYY-MM-DD
-            const year = value.getFullYear()
-            const month = (value.getMonth() + 1).toString().padStart(2, '0')
-            const day = value.getDate().toString().padStart(2, '0')
-            this.editBirthday = `${year}-${month}-${day}`
+        Column() {
+          DatePicker({
+            selected: this.parseDate(this.editBirthday)
           })
+            .lunar(false)
+            .onDateChange((value: Date) => {
+              // 格式化日期为 YYYY-MM-DD
+              const year = value.getFullYear()
+              const month = (value.getMonth() + 1).toString().padStart(2, '0')
+              const day = value.getDate().toString().padStart(2, '0')
+              this.editBirthday = `${year}-${month}-${day}`
+            })
+        }
+        .width('100%')
+        .backgroundColor(this.themeColors.background)
+        .borderRadius(8)
+        .padding(8)
       }
       .width('100%')
       .margin({ bottom: 20 })
@@ -122,6 +128,9 @@ export struct EditProfileDialog {
           })
         }
         .width('100%')
+        .backgroundColor(this.themeColors.background)
+        .borderRadius(8)
+        .padding(12)
       }
       .width('100%')
       .margin({ bottom: 30 })

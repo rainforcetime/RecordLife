@@ -3,6 +3,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { ConfigManager } from '../config/ConfigManager';
 import { ThemeManager } from '../config/ThemeManager';
+import { ThemeColors } from '../config/ThemeConfig';
 
 const DOMAIN = 0x0000;
 
@@ -88,7 +89,37 @@ export default class EntryAbility extends UIAbility {
         return;
       }
       hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
+      
+      // 设置窗口系统栏颜色，与页面背景色保持一致
+      this.setWindowSystemBarColor(windowStage);
     });
+  }
+  
+  // 设置窗口系统栏颜色（状态栏和导航栏）
+  private async setWindowSystemBarColor(windowStage: window.WindowStage): Promise<void> {
+    try {
+      // 获取主窗口
+      const mainWindow = await windowStage.getMainWindow();
+      
+      // 从 AppStorage 获取当前主题颜色
+      const themeColors = AppStorage.get('themeColors') as ThemeColors | undefined;
+      
+      // 根据主题设置系统栏颜色
+      const backgroundColor = themeColors?.background || '#F5F5F5'; // 默认浅色模式背景
+      const textColor = themeColors?.textPrimary || '#000000'; // 默认浅色模式文字
+      
+      // 设置状态栏和导航栏属性
+      await mainWindow.setWindowSystemBarProperties({
+        statusBarColor: backgroundColor,
+        statusBarContentColor: textColor === '#FFFFFF' ? 'light' : 'dark',
+        navigationBarColor: backgroundColor,
+        navigationBarContentColor: textColor === '#FFFFFF' ? 'light' : 'dark'
+      });
+      
+      hilog.info(DOMAIN, 'testTag', 'Succeeded in setting system bar properties.');
+    } catch (err) {
+      hilog.error(DOMAIN, 'testTag', 'Failed to set system bar color. Cause: %{public}s', JSON.stringify(err));
+    }
   }
 
   onWindowStageDestroy(): void {

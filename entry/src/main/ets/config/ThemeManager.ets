@@ -5,7 +5,8 @@
  * 注意：主题数据源统一由 ConfigManager 管理，本类仅作为 AppStorage 的便捷访问层
  */
 
-import { ConfigurationConstant } from '@kit.AbilityKit'
+import { ConfigurationConstant, common } from '@kit.AbilityKit'
+import { window } from '@kit.ArkUI'
 import { ThemeColors, ThemeMode, ThemeConfig, LightTheme, DarkTheme } from './ThemeConfig'
 import { ConfigManager } from './ConfigManager'
 
@@ -78,6 +79,9 @@ export class ThemeManager {
       const colors = ThemeConfig.getColors(isDark)
       AppStorage.setOrCreate('themeColors', colors)
       
+      // 5. 更新窗口系统栏颜色
+      this.updateWindowSystemBarColor(colors)
+      
       console.info('ThemeManager: 主题已更新, theme=' + theme + ', isDark=' + isDark)
       return true
     } catch (error) {
@@ -118,7 +122,36 @@ export class ThemeManager {
       const colors = ThemeConfig.getColors(isDark)
       AppStorage.setOrCreate('themeColors', colors)
       
+      // 更新窗口系统栏颜色
+      this.updateWindowSystemBarColor(colors)
+      
       console.info('ThemeManager: 系统主题变化，已更新为 ' + (isDark ? '深色' : '浅色') + ' 模式')
+    }
+  }
+  
+  // 更新窗口系统栏颜色（状态栏和导航栏）
+  private async updateWindowSystemBarColor(colors: ThemeColors): Promise<void> {
+    try {
+      // 从 AppStorage 获取窗口实例
+      const uiContext = AppStorage.get('uiContext') as common.UIAbilityContext | undefined
+      if (!uiContext) {
+        console.warn('ThemeManager: uiContext 未初始化，无法更新系统栏颜色')
+        return
+      }
+      
+      // 获取窗口实例并设置系统栏颜色
+      const mainWindow = await window.getLastWindow(uiContext)
+      if (mainWindow) {
+        await mainWindow.setWindowSystemBarProperties({
+          statusBarColor: colors.background,
+          statusBarContentColor: colors.textPrimary === '#FFFFFF' ? 'light' : 'dark',
+          navigationBarColor: colors.background,
+          navigationBarContentColor: colors.textPrimary === '#FFFFFF' ? 'light' : 'dark'
+        })
+        console.info('ThemeManager: 系统栏颜色已更新')
+      }
+    } catch (error) {
+      console.error('ThemeManager: 更新窗口系统栏颜色异常: ' + JSON.stringify(error))
     }
   }
 }

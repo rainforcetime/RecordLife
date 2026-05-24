@@ -37,7 +37,7 @@ struct MainPage {
 
       TabContent() {
         NowPage()
-      }.tabBar(this.TabBarBuilder('现在', $r('sys.symbol.clock'), 1))
+      }.tabBar(this.TabBarBuilder('此刻', $r('sys.symbol.clock'), 1))
 
       TabContent() {
         AccountPage()

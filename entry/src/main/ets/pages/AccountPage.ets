@@ -253,22 +253,6 @@ export struct AccountPage {
   build() {
     Scroll() {
       Column() {
-        // 页面标题区域
-        Row() {
-          SymbolGlyph($r('sys.symbol.person_fill'))
-            .fontSize(28)
-            .fontColor([this.themeColors.primary])
-            .margin({ right: 12 })
-          
-          Text('账号设置')
-            .fontSize(26)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(this.themeColors.textPrimary)
-        }
-        .width('90%')
-        .margin({ top: 24, bottom: 20 })
-        .justifyContent(FlexAlign.Start)
-        
         // 用户信息区域
         UserInfoSection({
           themeColors: this.themeColors,
@@ -280,10 +264,11 @@ export struct AccountPage {
             this.onChangeAvatar()
           }
         })
-        
+          .margin({ top: 24 })
+
         // 设置项列表
         this.SettingsSection()
-        
+
         // 底部留白
         Column()
           .height(24)
@@ -296,6 +281,7 @@ export struct AccountPage {
     .backgroundColor(this.themeColors.background)
     .scrollBar(BarState.Off)
     .edgeEffect(EdgeEffect.Spring)
+    .align(Alignment.Top)
   }
   
   // 设置项列表组件

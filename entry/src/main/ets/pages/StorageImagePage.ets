@@ -1,6 +1,6 @@
 // 存储图片页面：pages/StorageImagePage.ets
 import { common } from '@kit.AbilityKit'
-import { fileIo as fs, fileUri } from '@kit.CoreFileKit'
+import { fileIo as fs, fileUri, storageStatistics } from '@kit.CoreFileKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { RefreshManager } from '../common/managers/RefreshManager'
 
@@ -24,6 +24,12 @@ struct StorageImagePage {
   
   // 加载状态
   @State isLoading: boolean = true
+  
+  // 图片总大小（字节）
+  @State totalImageSize: number = 0
+  
+  // 设备可用存储空间（字节）
+  @State freeStorageSize: number = 0
   
   // 应用上下文
   private context: common.UIAbilityContext | null = null
@@ -67,6 +73,7 @@ struct StorageImagePage {
     try {
       this.isLoading = true
       this.imageList = []
+      this.totalImageSize = 0
       
       if (!this.context) {
         console.error('[StorageImagePage] context为空')
@@ -82,6 +89,8 @@ struct StorageImagePage {
       if (!fs.accessSync(recordsPath)) {
         console.info('[StorageImagePage] 记录图片目录不存在')
         this.isLoading = false
+        // 仍然获取设备可用存储空间
+        await this.loadFreeStorageSize()
         return
       }
       
@@ -120,6 +129,9 @@ struct StorageImagePage {
             sizeBytes: stat.size,
             path: fullPath
           })
+          
+          // 累加图片总大小
+          this.totalImageSize += stat.size
         } catch (error) {
           console.error('[StorageImagePage] 处理文件失败: ' + filename + ', 错误: ' + JSON.stringify(error))
         }
@@ -128,10 +140,24 @@ struct StorageImagePage {
       // 按文件大小降序排序
       this.imageList.sort((a, b) => b.sizeBytes - a.sizeBytes)
       
+      // 获取设备可用存储空间
+      await this.loadFreeStorageSize()
+      
       this.isLoading = false
     } catch (error) {
       console.error('[StorageImagePage] 加载图片失败: ' + JSON.stringify(error))
       this.isLoading = false
+    }
+  }
+  
+  // 获取设备可用存储空间
+  private async loadFreeStorageSize() {
+    try {
+      const freeSize = await storageStatistics.getFreeSize()
+      this.freeStorageSize = freeSize
+    } catch (error) {
+      console.error('[StorageImagePage] 获取可用存储空间失败: ' + JSON.stringify(error))
+      this.freeStorageSize = 0
     }
   }
   
@@ -236,6 +262,18 @@ struct StorageImagePage {
         .scrollBar(BarState.Auto)
         .edgeEffect(EdgeEffect.Spring)
         .align(Alignment.Top)
+      }
+      
+      // 底部存储空间统计
+      if (!this.isLoading && this.freeStorageSize > 0) {
+        Row() {
+          Text(`已使用 ${this.formatFileSize(this.totalImageSize)} / 可用 ${this.formatFileSize(this.freeStorageSize)}`)
+            .fontSize(13)
+            .fontColor(this.themeColors.textSecondary)
+        }
+        .width('100%')
+        .justifyContent(FlexAlign.Center)
+        .padding({ top: 12, bottom: 16 })
       }
     }
     .width('100%')
