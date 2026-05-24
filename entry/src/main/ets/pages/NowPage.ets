@@ -10,6 +10,7 @@ import { CalendarView } from '../components/calendar/CalendarView'
 import { RefreshManager } from '../common/managers/RefreshManager'
 import { ColorUtils } from '../common/ColorUtils'
 import { PromptAction } from '@kit.ArkUI'
+import { componentUtils } from '@kit.ArkUI'
 
 @Entry
 @Component
@@ -36,6 +37,12 @@ struct NowPage {
   
   // 视图模式：'timeline' | 'calendar'
   @State private viewMode: string = 'timeline'
+  
+  // 滚动控制器
+  private scroller: Scroller = new Scroller()
+  
+  // 需要滚动到的日期 ID（用于从日历视图跳转）
+  @State private scrollToDateId: string = ''
   
   // 正在编辑的记录
   @State private editingRecord: LifeRecord | null = null
@@ -91,7 +98,7 @@ struct NowPage {
   build() {
     Stack({ alignContent: Alignment.BottomEnd }) {
       // 时间线展示区域（全屏）
-      Scroll() {
+      Scroll(this.scroller) {
         Column() {
           // 页面标题和视图切换
           Row() {
@@ -207,8 +214,34 @@ struct NowPage {
               timelineData: this.timelineData,
               onRecordsClick: (records: LifeRecord[], dateStr: string) => {
                 // 点击查看全部记录时，切换到时间线视图
-                // TODO: 可以滚动到对应日期
                 this.viewMode = 'timeline'
+              },
+              onRecordClick: (record: LifeRecord) => {
+                // 点击单条记录时，切换到时间线视图并滚动到对应日期
+                this.viewMode = 'timeline'
+                // 从记录中提取日期
+                if (record.timestamp) {
+                  const date = new Date(record.timestamp)
+                  const targetId = `date-${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+                  // 延迟执行滚动，等待视图切换完成
+                  setTimeout(() => {
+                    try {
+                      // 获取目标组件相对于父组件的位置
+                      const rect = componentUtils.getRectangleById(targetId)
+                      if (rect) {
+                        // 使用 localOffset.y 作为滚动目标位置（相对于父组件的 y 坐标）
+                        const targetOffset = Math.max(0, px2vp(rect.localOffset.y) - 100)
+                        this.scroller.scrollTo({
+                          xOffset: 0,
+                          yOffset: targetOffset,
+                          animation: { duration: 300, curve: Curve.EaseOut }
+                        })
+                      }
+                    } catch (e) {
+                      console.warn('[NowPage] 滚动到目标位置失败: ' + e)
+                    }
+                  }, 150)
+                }
               }
             })
           }

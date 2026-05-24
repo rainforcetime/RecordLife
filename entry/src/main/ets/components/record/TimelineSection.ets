@@ -240,6 +240,7 @@ export struct TimelineSection {
     .width('100%')
     .alignItems(HorizontalAlign.Start)
     .margin({ top: groupIndex > 0 ? 20 : 0 })
+    .id(`date-${group.year}-${group.month}-${group.day}`)  // 添加 id 用于滚动定位
   }
   
   // 日期分隔线

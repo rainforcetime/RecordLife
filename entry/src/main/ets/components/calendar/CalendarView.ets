@@ -32,8 +32,11 @@ export struct CalendarView {
   // 缓存选中日期的记录（避免重复计算）
   @State private selectedRecords: LifeRecord[] = []
   
-  // 记录点击回调
+  // 记录点击回调（查看全部）
   onRecordsClick?: (records: LifeRecord[], dateStr: string) => void
+  
+  // 单条记录点击回调
+  onRecordClick?: (record: LifeRecord) => void
   
   // 监听 timelineData 变化
   onTimelineDataChange() {
@@ -115,7 +118,8 @@ export struct CalendarView {
           selectedMonth: this.selectedMonth,
           selectedDay: this.selectedDay,
           selectedRecords: this.selectedRecords,
-          onRecordsClick: this.onRecordsClick
+          onRecordsClick: this.onRecordsClick,
+          onRecordClick: this.onRecordClick
         })
       }
     }

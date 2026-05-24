@@ -20,8 +20,11 @@ export struct CalendarSelectedRecords {
   // 选中的记录
   @Prop selectedRecords: LifeRecord[] = []
   
-  // 记录点击回调
+  // 记录点击回调（查看全部）
   onRecordsClick?: (records: LifeRecord[], dateStr: string) => void
+  
+  // 单条记录点击回调
+  onRecordClick?: (record: LifeRecord) => void
   
   build() {
     Column() {
@@ -162,6 +165,12 @@ export struct CalendarSelectedRecords {
       color: this.themeColors.shadow,
       offsetX: 0,
       offsetY: 1
+    })
+    .onClick(() => {
+      // 点击单条记录，跳转到时间线视图对应位置
+      if (this.onRecordClick) {
+        this.onRecordClick(record)
+      }
     })
   }
   
