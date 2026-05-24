@@ -122,6 +122,16 @@ export class NowViewModel {
         id: this.generateId(),
         timestamp: now - oneDayMs * 35,
         content: '一个月前的记录，可以看到时间线的层级结构。'
+      },
+      {
+        id: this.generateId(),
+        timestamp: now - oneDayMs * 365,
+        content: '一年前的记录，可以看到时间线的层级结构。'
+      },
+      {
+        id: this.generateId(),
+        timestamp: now - oneDayMs * 365 * 2,
+        content: '两年前的记录，可以看到时间线的层级结构。'
       }
     ]
     

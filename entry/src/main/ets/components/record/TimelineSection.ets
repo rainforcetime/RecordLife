@@ -123,7 +123,12 @@ export struct TimelineSection {
             } else if (diffDays < 7) {
               dateStr = `${diffDays}天前`
             } else {
-              dateStr = `${monthNode.month}月${dayNode.day}日`
+              // 非本年显示年份，本年只显示月日
+              if (yearNode.year !== now.getFullYear()) {
+                dateStr = `${yearNode.year}年${monthNode.month}月${dayNode.day}日`
+              } else {
+                dateStr = `${monthNode.month}月${dayNode.day}日`
+              }
             }
             
             groups.push({
