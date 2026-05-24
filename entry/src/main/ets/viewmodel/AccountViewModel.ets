@@ -63,9 +63,9 @@ export class AccountViewModel {
   // 加载用户资料
   async loadUserProfile(): Promise<UserProfile> {
     const defaultProfile: UserProfile = {
-      name: '张三',
+      name: '用户名',
       birthday: '1990-01-15',
-      gender: '男',
+      gender: '其他',
       avatar: '',
       hasCustomAvatar: false
     }
