@@ -301,14 +301,19 @@ export struct RecordCard {
       
       // 弹窗内容（居中显示）
       Column() {
-        // 分享卡片预览区域
-        Column() {
-          ShareRecordCard({ record: this.record })
-            .id(this.shareCardId)
+        // 分享卡片预览区域（可滚动）
+        Scroll() {
+          Column() {
+            ShareRecordCard({ record: this.record })
+              .id(this.shareCardId)
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Center)
+          .padding({ top: 16, bottom: 16 })
         }
         .width('100%')
-        .alignItems(HorizontalAlign.Center)
-        .padding({ top: 16, bottom: 16 })
+        .scrollBar(BarState.Off)
+        .constraintSize({ maxHeight: '60%' })
         
         // 操作按钮
         Row({ space: 12 }) {
