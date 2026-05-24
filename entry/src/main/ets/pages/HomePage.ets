@@ -30,8 +30,8 @@ export struct HomePage {
     minutes: 0,
     seconds: 0
   };
-  @State birthDate: Date = new Date('1990-01-01T00:00:00Z');
-  @State targetAge: number = 80; // 目标年龄，默认80岁
+  @State @Watch('onBirthDateChanged') birthDate: Date = new Date('1990-01-01T00:00:00Z');
+  @State @Watch('onTargetAgeChanged') targetAge: number = 80; // 目标年龄，默认80岁
   @State userConfig: UserConfig | null = null;
   @State isAccumulatedMode: boolean = true; // true: 累计模式, false: 非累计模式
   @State isRemainingMode: boolean = false; // true: 剩余模式, false: 已存活模式
@@ -128,6 +128,10 @@ export struct HomePage {
     // 加载保存的模式设置
     this.isAccumulatedMode = this.configManager.getIsAccumulatedMode();
     this.isRemainingMode = this.configManager.getIsRemainingMode();
+
+    // 加载目标年龄
+    const targetAge = this.configManager.getTargetAge();
+    this.targetAge = (targetAge !== undefined && !isNaN(targetAge) && targetAge > 0) ? targetAge : 80;
     
     // 开始计算时间
     this.calculateTime();
@@ -158,6 +162,16 @@ export struct HomePage {
   private handleShare() {
     console.info('[HomePage] 分享按钮被点击');
     this.showShareDialog = true;
+  }
+
+  // 出生日期变更时立即重新计算时间
+  private onBirthDateChanged(): void {
+    this.calculateTime();
+  }
+
+  // 目标年龄变更时立即重新计算时间
+  private onTargetAgeChanged(): void {
+    this.calculateTime();
   }
 
   // 计算存活时间（使用UTC+8时区）
@@ -230,9 +244,12 @@ export struct HomePage {
 
   // 计算剩余时间（使用UTC+8时区）
   private calculateRemainingTime(now: Date) {
+    // 防护：确保 targetAge 有效
+    const targetAge = (this.targetAge !== undefined && !isNaN(this.targetAge) && this.targetAge > 0) ? this.targetAge : 80;
+
     // 计算目标日期（出生日期 + 目标年龄），使用UTC+8时区
     const targetDate = new Date(this.birthDate);
-    TimeUtils.setFullYear(targetDate, TimeUtils.getFullYear(this.birthDate) + this.targetAge);
+    TimeUtils.setFullYear(targetDate, TimeUtils.getFullYear(this.birthDate) + targetAge);
 
     const diff = targetDate.getTime() - now.getTime();
 

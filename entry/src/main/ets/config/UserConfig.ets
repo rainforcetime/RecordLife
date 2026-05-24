@@ -30,6 +30,7 @@ export interface AppSettings {
   // HomePage 模式设置
   isAccumulatedMode: boolean; // true: 累计模式, false: 非累计模式
   isRemainingMode: boolean; // true: 剩余模式, false: 已存活模式
+  targetAge: number; // 目标年龄，默认80岁
 }
 
 // 备份配置
@@ -93,7 +94,8 @@ export async function createDefaultConfig(): Promise<UserConfig> {
     enableNotifications: false,
     timeFormat: 'standard',
     isAccumulatedMode: true,  // 默认累计模式
-    isRemainingMode: false    // 默认已存活模式
+    isRemainingMode: false,   // 默认已存活模式
+    targetAge: 80             // 默认目标年龄80岁
   };
   
   const backup: BackupConfig = {
@@ -146,7 +148,8 @@ export function createDefaultConfigSync(): UserConfig {
     enableNotifications: false,
     timeFormat: 'standard',
     isAccumulatedMode: true,  // 默认累计模式
-    isRemainingMode: false    // 默认已存活模式
+    isRemainingMode: false,   // 默认已存活模式
+    targetAge: 80             // 默认目标年龄80岁
   };
   
   const backup: BackupConfig = {

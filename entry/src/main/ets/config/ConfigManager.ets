@@ -436,4 +436,24 @@ export class ConfigManager {
     this.config.settings.isRemainingMode = isRemainingMode;
     return await this.saveConfig();
   }
+
+  // 获取目标年龄
+  getTargetAge(): number {
+    const config = this.getConfig();
+    const age = config.settings.targetAge;
+    // 防护：如果存储值为 undefined/null/NaN/非正数，返回默认值80
+    if (age === undefined || age === null || isNaN(age) || age <= 0) {
+      return 80;
+    }
+    return age;
+  }
+
+  // 设置目标年龄
+  async setTargetAge(targetAge: number): Promise<boolean> {
+    if (!this.config || !this.preferences) {
+      return false;
+    }
+    this.config.settings.targetAge = targetAge;
+    return await this.saveConfig();
+  }
 }

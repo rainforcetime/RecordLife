@@ -1,4 +1,5 @@
 // 目标年龄选择组件
+import { ConfigManager } from '../../config/ConfigManager';
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig';
 
 @Component
@@ -8,6 +9,14 @@ export struct TargetAgeRow {
   
   // 主题颜色配置
   @Prop themeColors: ThemeColors = ThemeConfig.getColors(false)
+
+  private configManager: ConfigManager | null = null;
+
+  aboutToAppear() {
+    ConfigManager.getInstance().then((manager: ConfigManager) => {
+      this.configManager = manager;
+    });
+  }
 
   build() {
     Row() {
@@ -109,6 +118,10 @@ export struct TargetAgeRow {
         .fontColor(Color.White)
         .margin({ top: 20 })
         .onClick(() => {
+          // 保存到配置
+          if (this.configManager) {
+            this.configManager.setTargetAge(this.targetAge);
+          }
           this.showAgePicker = false;
         })
     }
