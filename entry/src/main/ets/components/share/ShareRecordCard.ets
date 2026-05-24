@@ -85,41 +85,17 @@ export struct ShareRecordCard {
               .objectFit(ImageFit.Cover)
               .borderRadius(8)
               .constraintSize({ maxHeight: 400 })
-          } else if (this.record.imagePaths.length <= 3) {
-            // 2-3张图片：横向排列
-            Row({ space: 8 }) {
-              ForEach(this.record.imagePaths, (path: string) => {
-                Image(this.viewModel!.getImageUri(path))
-                  .layoutWeight(1)
-                  .aspectRatio(1)
-                  .objectFit(ImageFit.Cover)
-                  .borderRadius(8)
-              }, (path: string, index: number) => `img-${index}`)
-            }
-            .width('100%')
           } else {
-            // 多张图片：网格布局
-            Column() {
-              Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
-                ForEach(this.record.imagePaths.slice(0, 9), (path: string, index: number) => {
-                  Column() {
-                    Image(this.viewModel!.getImageUri(path))
-                      .width('100%')
-                      .height('100%')
-                      .objectFit(ImageFit.Cover)
-                      .borderRadius(6)
-                  }
-                  .width((this.record.imagePaths!.length === 4 || this.record.imagePaths!.length === 2) ? '48%' : '31%')
-                  .aspectRatio(1)
-                  .margin({ 
-                    right: (this.record.imagePaths!.length === 4 || this.record.imagePaths!.length === 2) 
-                      ? (index % 2 === 0 ? '4%' : 0) 
-                      : ((index + 1) % 3 === 0 ? 0 : '3.5%'), 
-                    bottom: index < this.record.imagePaths!.length - 3 ? 8 : 0 
-                  })
-                }, (path: string, index: number) => `img-${index}`)
-              }
-              .width('100%')
+            // 多张图片：网格布局（一行三张，正方形）
+            Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
+              ForEach(this.record.imagePaths, (path: string, index: number) => {
+                Image(this.viewModel!.getImageUri(path))
+                  .width('32%')
+                  .aspectRatio(1)  // 正方形
+                  .objectFit(ImageFit.Cover)
+                  .borderRadius(4)
+                  .margin({ right: index % 3 === 2 ? 0 : '2%', bottom: index < this.record.imagePaths!.length - 3 ? 4 : 0 })
+              }, (path: string, index: number) => `img-${index}`)
             }
             .width('100%')
           }
