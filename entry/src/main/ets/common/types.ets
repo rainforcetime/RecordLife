@@ -38,9 +38,47 @@ export const DEFAULT_TAGS: Tag[] = [
 ];
 
 // 根据标签ID获取标签名称（共享工具函数）
-export function getTagNameById(tagId: string): string | null {
-  const tag = DEFAULT_TAGS.find(t => t.id === tagId)
-  return tag ? tag.name : null
+// customTags: 可选的用户自定义标签列表，用于扩展查找范围
+export function getTagNameById(tagId: string, customTags?: Tag[]): string | null {
+  // 先在预设标签中查找
+  let tag = DEFAULT_TAGS.find(t => t.id === tagId)
+  if (tag) {
+    return tag.name
+  }
+  // 再在自定义标签中查找
+  if (customTags && customTags.length > 0) {
+    tag = customTags.find(t => t.id === tagId)
+    if (tag) {
+      return tag.name
+    }
+  }
+  return null
+}
+
+// 获取所有可用标签（预设标签 + 自定义标签）
+// customTags: 用户自定义标签列表
+export function getAllTags(customTags?: Tag[]): Tag[] {
+  if (customTags && customTags.length > 0) {
+    return [...DEFAULT_TAGS, ...customTags]
+  }
+  return [...DEFAULT_TAGS]
+}
+
+// 根据标签ID获取标签对象
+export function getTagById(tagId: string, customTags?: Tag[]): Tag | null {
+  // 先在预设标签中查找
+  let tag = DEFAULT_TAGS.find(t => t.id === tagId)
+  if (tag) {
+    return tag
+  }
+  // 再在自定义标签中查找
+  if (customTags && customTags.length > 0) {
+    tag = customTags.find(t => t.id === tagId)
+    if (tag) {
+      return tag
+    }
+  }
+  return null
 }
 
 // ==================== NowPage 类型定义 ====================

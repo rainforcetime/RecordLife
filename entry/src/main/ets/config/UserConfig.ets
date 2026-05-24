@@ -4,6 +4,7 @@
  */
 
 import { TimeUtils } from '../common/utils/TimeUtils';
+import { Tag } from '../common/types';
 
 // 云备份配置
 export interface CloudBackupConfig {
@@ -31,6 +32,8 @@ export interface AppSettings {
   isAccumulatedMode: boolean; // true: 累计模式, false: 非累计模式
   isRemainingMode: boolean; // true: 剩余模式, false: 已存活模式
   targetAge: number; // 目标年龄，默认80岁
+  // 自定义标签
+  customTags: Tag[]; // 用户自定义的标签列表
 }
 
 // 备份配置
@@ -95,7 +98,8 @@ export async function createDefaultConfig(): Promise<UserConfig> {
     timeFormat: 'standard',
     isAccumulatedMode: true,  // 默认累计模式
     isRemainingMode: false,   // 默认已存活模式
-    targetAge: 80             // 默认目标年龄80岁
+    targetAge: 80,            // 默认目标年龄80岁
+    customTags: []            // 默认无自定义标签
   };
   
   const backup: BackupConfig = {
@@ -149,7 +153,8 @@ export function createDefaultConfigSync(): UserConfig {
     timeFormat: 'standard',
     isAccumulatedMode: true,  // 默认累计模式
     isRemainingMode: false,   // 默认已存活模式
-    targetAge: 80             // 默认目标年龄80岁
+    targetAge: 80,            // 默认目标年龄80岁
+    customTags: []            // 默认无自定义标签
   };
   
   const backup: BackupConfig = {

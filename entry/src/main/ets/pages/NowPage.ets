@@ -1,6 +1,6 @@
 // 现在页面：pages/NowPage.ets
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
-import { TimelineData, LifeRecord, getTagNameById } from '../common/types'
+import { TimelineData, LifeRecord, getTagNameById, Tag } from '../common/types'
 import { NowViewModel } from '../viewmodel/NowViewModel'
 import { TimelineSection } from '../components/record/TimelineSection'
 import { AddRecordSection } from '../components/record/AddRecordSection'
@@ -11,6 +11,7 @@ import { CalendarView } from '../components/calendar/CalendarView'
 import { RefreshManager } from '../common/managers/RefreshManager'
 import { ColorUtils } from '../common/ColorUtils'
 import { PromptAction } from '@kit.ArkUI'
+import { ConfigManager } from '../config/ConfigManager'
 
 @Entry
 @Component
@@ -71,6 +72,10 @@ struct NowPage {
   
   // ViewModel（普通成员变量，不需要 @State）
   private viewModel: NowViewModel | null = null
+
+  // 自定义标签（用于搜索时标签名称查找）
+  @State private customTags: Tag[] = []
+  @State private tagVersion: number = 0  // 标签版本号，变化时触发 TagFilterBar 重载
   
   // PromptAction（用于显示 Toast）
   private promptAction: PromptAction | null = null
@@ -87,8 +92,17 @@ struct NowPage {
     // 注册全局刷新回调
     RefreshManager.getInstance().register('NowPage', () => {
       console.info('[NowPage] 收到全局刷新通知')
+      this.reloadCustomTags()
       this.refreshTimeline()
     })
+    
+    // 加载自定义标签（用于搜索时标签名称匹配）
+    try {
+      const cm = await ConfigManager.getInstance()
+      this.customTags = cm.getCustomTags()
+    } catch (error) {
+      console.error('[NowPage] 加载自定义标签失败: ' + JSON.stringify(error))
+    }
     
     // 加载时间线数据
     this.refreshTimeline()
@@ -103,6 +117,8 @@ struct NowPage {
   // 页面显示时刷新数据
   onPageShow() {
     console.info('[NowPage] onPageShow')
+    // 重新加载自定义标签
+    this.reloadCustomTags()
     this.refreshTimeline()
   }
   
@@ -178,7 +194,8 @@ struct NowPage {
             
             // 标签筛选栏
             TagFilterBar({
-              selectedTagIds: $filterTagIds
+              selectedTagIds: $filterTagIds,
+              tagVersion: this.tagVersion
             })
             .margin({ bottom: 8 })
             
@@ -379,6 +396,17 @@ struct NowPage {
     })
   }
   
+  // 重新加载自定义标签
+  private async reloadCustomTags() {
+    try {
+      const cm = await ConfigManager.getInstance()
+      this.customTags = cm.getCustomTags()
+      this.tagVersion++  // 触发子组件重载标签
+    } catch (error) {
+      console.error('[NowPage] 重新加载自定义标签失败: ' + JSON.stringify(error))
+    }
+  }
+
   // 刷新时间线
   private refreshTimeline() {
     if (this.viewModel) {
@@ -446,7 +474,7 @@ struct NowPage {
     // 2. 搜索标签名称
     if (record.tags && record.tags.length > 0) {
       for (const tagId of record.tags) {
-        const tagName = getTagNameById(tagId)
+        const tagName = getTagNameById(tagId, this.customTags)
         if (tagName && tagName.toLowerCase().includes(keyword)) {
           return true
         }

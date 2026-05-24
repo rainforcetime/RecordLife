@@ -198,7 +198,7 @@ struct MorePage {
     autoCancel: true,
     customStyle: true
   })
-  
+
   // 页面初始化
   async aboutToAppear() {
     try {

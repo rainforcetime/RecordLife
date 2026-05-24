@@ -7,6 +7,7 @@ import { SettingItemWithSelector } from '../components/setting/SettingItemWithSe
 import { SettingItemWithInfo } from '../components/setting/SettingItemWithInfo'
 import { EditProfileDialog } from '../components/dialog/EditProfileDialog'
 import { AboutAppDialog } from '../components/dialog/AboutAppDialog'
+import { TagManagementDialog } from '../components/dialog/TagManagementDialog'
 import { UserInfoSection, UserInfo } from '../components/user/UserInfoSection'
 import { AccountViewModel, DataStatistics } from '../viewmodel/AccountViewModel'
 import { AccountUtils } from '../common/utils/AccountUtils'
@@ -85,6 +86,14 @@ export struct AccountPage {
     autoCancel: true,
     alignment: DialogAlignment.Center,
     customStyle: true
+  })
+
+  // 标签管理弹窗控制器
+  private tagManagementDialogController: CustomDialogController = new CustomDialogController({
+    builder: TagManagementDialog({}),
+    autoCancel: true,
+    customStyle: true,
+    maskColor: 'rgba(0, 0, 0, 0.5)'
   })
   
   // 页面初始化
@@ -381,6 +390,20 @@ export struct AccountPage {
       })
       .onClick(() => {
         this.onAboutApp()
+      })
+      
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
+        .height(0.5)
+      
+      // 标签管理
+      SettingItem({
+        label: '标签管理',
+        summary: '管理自定义标签，添加或编辑个人标签'
+      })
+      .onClick(() => {
+        this.tagManagementDialogController.open()
       })
       
       Divider()

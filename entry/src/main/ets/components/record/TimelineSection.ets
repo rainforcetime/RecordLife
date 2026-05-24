@@ -1,8 +1,9 @@
 // 时间线区域组件：components/TimelineSection.ets
-import { TimelineData, TimelineYear, TimelineMonth, TimelineDay, LifeRecord, getTagNameById } from '../../common/types'
+import { TimelineData, TimelineYear, TimelineMonth, TimelineDay, LifeRecord, getTagNameById, Tag } from '../../common/types'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { RecordCard } from './RecordCard'
 import { ColorUtils } from '../../common/ColorUtils'
+import { ConfigManager } from '../../config/ConfigManager'
 
 // 日期分组数据结构
 interface DateGroup {
@@ -43,8 +44,20 @@ export struct TimelineSection {
 
   // 收藏的记录
   @State private pinnedRecords: LifeRecord[] = []
+
+  // 自定义标签（用于标签名称查找）
+  @State private customTags: Tag[] = []
+
+  // ConfigManager
+  private configManager: ConfigManager | null = null
   
-  aboutToAppear() {
+  async aboutToAppear() {
+    try {
+      this.configManager = await ConfigManager.getInstance()
+      this.customTags = this.configManager.getCustomTags()
+    } catch (error) {
+      console.error('[TimelineSection] 初始化失败: ' + JSON.stringify(error))
+    }
     this.buildDateGroups()
   }
   
@@ -78,8 +91,8 @@ export struct TimelineSection {
     // 2. 搜索标签名称
     if (record.tags && record.tags.length > 0) {
       for (const tagId of record.tags) {
-        // 根据标签ID获取标签名称
-        const tagName = getTagNameById(tagId)
+        // 根据标签ID获取标签名称（支持自定义标签）
+        const tagName = getTagNameById(tagId, this.customTags)
         if (tagName && tagName.toLowerCase().includes(lowerKeyword)) {
           return true
         }

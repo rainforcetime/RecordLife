@@ -1,6 +1,7 @@
 // 标签选择组件：components/TagSelector.ets
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
-import { Tag, DEFAULT_TAGS } from '../../common/types'
+import { Tag, DEFAULT_TAGS, getAllTags } from '../../common/types'
+import { ConfigManager } from '../../config/ConfigManager'
 
 @Component
 export struct TagSelector {
@@ -9,11 +10,30 @@ export struct TagSelector {
   // 已选中的标签ID列表（双向绑定）
   @Link selectedTagIds: string[]
   
-  // 可用的标签列表
-  @Prop availableTags: Tag[] = DEFAULT_TAGS
+  // 可用的标签列表（内部动态加载）
+  @State availableTags: Tag[] = DEFAULT_TAGS
   
   // 是否为编辑模式（紧凑显示）
   @Prop isCompact: boolean = false
+
+  // ConfigManager
+  private configManager: ConfigManager | null = null
+
+  async aboutToAppear() {
+    try {
+      this.configManager = await ConfigManager.getInstance()
+      this.loadTags()
+    } catch (error) {
+      console.error('[TagSelector] 初始化失败: ' + JSON.stringify(error))
+    }
+  }
+
+  private loadTags() {
+    if (this.configManager) {
+      const customTags = this.configManager.getCustomTags()
+      this.availableTags = getAllTags(customTags)
+    }
+  }
   
   // 判断是否深色模式
   private isDarkMode(): boolean {
@@ -134,8 +154,27 @@ export struct TagDisplay {
   // 标签ID列表
   @Prop tagIds: string[] = []
   
-  // 可用的标签列表
-  @Prop availableTags: Tag[] = DEFAULT_TAGS
+  // 可用的标签列表（内部动态加载）
+  @State availableTags: Tag[] = DEFAULT_TAGS
+
+  // ConfigManager
+  private configManager: ConfigManager | null = null
+
+  async aboutToAppear() {
+    try {
+      this.configManager = await ConfigManager.getInstance()
+      this.loadTags()
+    } catch (error) {
+      console.error('[TagDisplay] 初始化失败: ' + JSON.stringify(error))
+    }
+  }
+
+  private loadTags() {
+    if (this.configManager) {
+      const customTags = this.configManager.getCustomTags()
+      this.availableTags = getAllTags(customTags)
+    }
+  }
   
   // 判断是否深色模式
   private isDarkMode(): boolean {
