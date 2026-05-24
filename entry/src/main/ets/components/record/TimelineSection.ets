@@ -1,5 +1,5 @@
 // 时间线区域组件：components/TimelineSection.ets
-import { TimelineData, TimelineYear, TimelineMonth, TimelineDay, LifeRecord } from '../../common/types'
+import { TimelineData, TimelineYear, TimelineMonth, TimelineDay, LifeRecord, getTagNameById } from '../../common/types'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { RecordCard } from './RecordCard'
 import { ColorUtils } from '../../common/ColorUtils'
@@ -79,7 +79,7 @@ export struct TimelineSection {
     if (record.tags && record.tags.length > 0) {
       for (const tagId of record.tags) {
         // 根据标签ID获取标签名称
-        const tagName = this.getTagNameById(tagId)
+        const tagName = getTagNameById(tagId)
         if (tagName && tagName.toLowerCase().includes(lowerKeyword)) {
           return true
         }
@@ -88,23 +88,7 @@ export struct TimelineSection {
     
     return false
   }
-  
-  // 根据标签ID获取标签名称
-  private getTagNameById(tagId: string): string | null {
-    // 标签ID到名称的映射
-    const tagMap: Record<string, string> = {
-      'work': '工作',
-      'life': '生活',
-      'travel': '旅行',
-      'food': '美食',
-      'health': '健康',
-      'study': '学习',
-      'entertainment': '娱乐',
-      'family': '家庭'
-    }
-    return tagMap[tagId] || null
-  }
-  
+
   // 判断记录是否匹配任一筛选标签
   private matchesAnyFilterTag(record: LifeRecord): boolean {
     if (!record.tags || record.tags.length === 0) {

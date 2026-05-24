@@ -1,6 +1,6 @@
 // 现在页面：pages/NowPage.ets
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
-import { TimelineData, LifeRecord } from '../common/types'
+import { TimelineData, LifeRecord, getTagNameById } from '../common/types'
 import { NowViewModel } from '../viewmodel/NowViewModel'
 import { TimelineSection } from '../components/record/TimelineSection'
 import { AddRecordSection } from '../components/record/AddRecordSection'
@@ -332,7 +332,7 @@ struct NowPage {
         onSaveSuccess: () => {
           console.info('[NowPage] AddRecordSection onSaveSuccess 回调被调用')
           this.showAddRecordDialog = false
-          this.refreshTimeline()
+          // RefreshManager 会自动触发 refreshTimeline（NowPage 已注册回调）
         }
       })
     }
@@ -383,18 +383,18 @@ struct NowPage {
   private refreshTimeline() {
     if (this.viewModel) {
       console.info('[NowPage] 开始刷新时间线')
-      
+
       // 构建新的时间线数据
       const newTimelineData = this.viewModel.buildTimeline()
-      
-      // 深拷贝确保触发 @State 更新
-      this.timelineData = JSON.parse(JSON.stringify(newTimelineData))
-      
-      // 增加刷新触发器
+
+      // 先递增刷新触发器（让子组件感知变更），再更新数据（确保一次状态变更中完成响应）
       this.refreshTrigger++
-      
-      console.info('[NowPage] 时间线刷新完成，年份数: ' + this.timelineData.years.length + 
-        ', 总记录数: ' + this.getTotalRecordCount() + 
+
+      // 深拷贝确保触发 @State 更新
+      this.timelineData = JSON.parse(JSON.stringify(newTimelineData)) as TimelineData
+
+      console.info('[NowPage] 时间线刷新完成，年份数: ' + this.timelineData.years.length +
+        ', 总记录数: ' + this.getTotalRecordCount() +
         ', trigger: ' + this.refreshTrigger)
     } else {
       console.warn('[NowPage] viewModel 未初始化，无法刷新')
@@ -446,7 +446,7 @@ struct NowPage {
     // 2. 搜索标签名称
     if (record.tags && record.tags.length > 0) {
       for (const tagId of record.tags) {
-        const tagName = this.getTagNameById(tagId)
+        const tagName = getTagNameById(tagId)
         if (tagName && tagName.toLowerCase().includes(keyword)) {
           return true
         }
@@ -454,21 +454,6 @@ struct NowPage {
     }
     
     return false
-  }
-  
-  // 根据标签ID获取标签名称
-  private getTagNameById(tagId: string): string | null {
-    const tagMap: Record<string, string> = {
-      'work': '工作',
-      'life': '生活',
-      'travel': '旅行',
-      'food': '美食',
-      'health': '健康',
-      'study': '学习',
-      'entertainment': '娱乐',
-      'family': '家庭'
-    }
-    return tagMap[tagId] || null
   }
   
   // 编辑记录
@@ -528,9 +513,9 @@ struct NowPage {
         this.editingRecord = null as LifeRecord | null
         this.editImagePaths = []
         this.editTags = []
-        // 触发全局刷新
+        // 通过 RefreshManager 统一刷新（NowPage 已注册回调，会自动触发 refreshTimeline；
+        // 同时通知其他注册页面同步刷新）
         RefreshManager.getInstance().refresh()
-        this.refreshTimeline()
       } else {
         try {
           this.promptAction.showToast({ message: '修改失败' })
@@ -609,9 +594,8 @@ struct NowPage {
               } catch (error) {
                 console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
               }
-              // 触发全局刷新
+              // 通过 RefreshManager 统一刷新（已注册回调，自动触发 refreshTimeline）
               RefreshManager.getInstance().refresh()
-              this.refreshTimeline()
             } else {
               try {
                 this.promptAction.showToast({ message: '删除失败' })

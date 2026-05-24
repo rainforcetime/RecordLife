@@ -37,6 +37,12 @@ export const DEFAULT_TAGS: Tag[] = [
   { id: 'family', name: '家庭', color: '#00BCD4', icon: '👨‍👩‍👧‍👦' }
 ];
 
+// 根据标签ID获取标签名称（共享工具函数）
+export function getTagNameById(tagId: string): string | null {
+  const tag = DEFAULT_TAGS.find(t => t.id === tagId)
+  return tag ? tag.name : null
+}
+
 // ==================== NowPage 类型定义 ====================
 
 // 生活记录条目（统一类型，图片为可选项）
