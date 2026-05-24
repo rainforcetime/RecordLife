@@ -1,6 +1,6 @@
 
 
-# Record Life (瞬间气象记录)
+# Record Life (记录)
 
 一款基于 HarmonyOS 开发的生活记录应用，帮助用户记录生活中的重要时刻和日常点滴。
 
