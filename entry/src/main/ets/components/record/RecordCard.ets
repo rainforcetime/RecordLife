@@ -346,7 +346,7 @@ export struct RecordCard {
       }
       .width(360)
       .backgroundColor(this.themeColors.background)
-      .borderRadius(24)
+      .borderRadius(4)
     }
     .width('100%')
     .height('100%')
