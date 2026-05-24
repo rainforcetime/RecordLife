@@ -64,13 +64,13 @@ export struct RecordCard {
           TagDisplay({ tagIds: this.record.tags })
             .margin({ bottom: 8 })
         }
-        
+
         // 文字内容（如果有）
         if (this.record.content && this.record.content.length > 0) {
           // 使用高亮文本显示
           this.HighlightText(this.record.content, this.searchKeyword)
         }
-        
+
         // 图片网格（如果有）
         if (this.record.imagePaths && this.record.imagePaths.length > 0 && this.viewModel) {
           // 单张图片：大图展示
@@ -104,16 +104,16 @@ export struct RecordCard {
             .margin({ top: this.record.content ? 12 : 0 })
           }
         }
-        
+
         // 底部信息栏：时间 + 操作按钮
         Row() {
           // 时间戳
           Text(this.formatTime(this.record.timestamp))
             .fontSize(13)
             .fontColor(this.themeColors.textSecondary)
-          
+
           Blank()
-          
+
           // 操作按钮
           this.ActionButtons()
         }
@@ -298,7 +298,8 @@ export struct RecordCard {
         .onClick(() => {
           this.showShareDialog = false
         })
-      
+        .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
+
       // 弹窗内容（居中显示）
       Column() {
         // 分享卡片预览区域（可滚动）
@@ -314,7 +315,7 @@ export struct RecordCard {
         .width('100%')
         .scrollBar(BarState.Off)
         .constraintSize({ maxHeight: '60%' })
-        
+
         // 操作按钮
         Row({ space: 12 }) {
           Button('取消')
@@ -328,7 +329,7 @@ export struct RecordCard {
             .onClick(() => {
               this.showShareDialog = false
             })
-          
+
           Button(this.isSharing ? '分享中...' : '分享')
             .layoutWeight(1)
             .height(44)
@@ -347,6 +348,11 @@ export struct RecordCard {
       .width(360)
       .backgroundColor(this.themeColors.background)
       .borderRadius(4)
+      .transition(
+        TransitionEffect.OPACITY
+          .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
+          .animation({ duration: 300, curve: Curve.EaseOut })
+      )
     }
     .width('100%')
     .height('100%')

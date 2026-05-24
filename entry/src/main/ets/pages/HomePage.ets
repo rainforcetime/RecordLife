@@ -6,6 +6,9 @@ import { TimeData, DateDifference } from '../common/types';
 import { TimeCard } from '../components/record/TimeCard';
 import { BirthDateSelector } from '../components/user/BirthDateSelector';
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig';
+import { ShareHomeCard } from '../components/share/ShareHomeCard';
+import { ShareUtils } from '../utils/ShareUtils';
+import { common } from '@kit.AbilityKit';
 
 // 卡片颜色配置接口
 interface CardColors {
@@ -32,6 +35,8 @@ export struct HomePage {
   @State userConfig: UserConfig | null = null;
   @State isAccumulatedMode: boolean = true; // true: 累计模式, false: 非累计模式
   @State isRemainingMode: boolean = false; // true: 剩余模式, false: 已存活模式
+  @State showShareDialog: boolean = false; // 控制分享对话框显示
+  @State isSharing: boolean = false; // 分享进行中标志
   
   private configManager: ConfigManager | null = null;
   private intervalId: number = -1;
@@ -147,6 +152,12 @@ export struct HomePage {
     const digitCount = value.toString().length;
     // 基硈权重1.0，每增加一位增加0.15权重
     return 1.0 + (digitCount - 1) * 0.15;
+  }
+  
+  // 处理分享操作
+  private handleShare() {
+    console.info('[HomePage] 分享按钮被点击');
+    this.showShareDialog = true;
   }
 
   // 计算存活时间（使用UTC+8时区）
@@ -278,20 +289,21 @@ export struct HomePage {
   }
 
   build() {
-    Scroll() {
-      Column() {
-        // 标题区域
+    Stack() {
+      Scroll() {
         Column() {
-          Text('活着')
-            .fontSize(32)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(this.themeColors.textPrimary)
-            .letterSpacing(2)
+          // 标题区域
+          Column() {
+            Text('活着')
+              .fontSize(32)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(this.themeColors.textPrimary)
+              .letterSpacing(2)
 
-          Text('记录生命的每一刻')
-            .fontSize(14)
-            .fontColor(this.themeColors.textSecondary)
-            .margin({ top: 6 })
+            Text('记录生命的每一刻')
+              .fontSize(14)
+              .fontColor(this.themeColors.textSecondary)
+              .margin({ top: 6 })
         }
         .width('100%')
         .alignItems(HorizontalAlign.Center)
@@ -308,6 +320,20 @@ export struct HomePage {
               .fontSize(16)
               .fontWeight(FontWeight.Medium)
               .fontColor(this.themeColors.textPrimary)
+            
+            // 分享按钮
+            Button({ type: ButtonType.Circle }) {
+              Text('📤')
+                .fontSize(16)
+            }
+            .width(32)
+            .height(32)
+            .backgroundColor(this.themeColors.background)
+            .onClick(() => {
+              console.info('[HomePage] 分享按钮被点击');
+              this.handleShare();
+            })
+            .margin({ left: 8 })
             
             Blank()
             
@@ -523,7 +549,6 @@ export struct HomePage {
           offsetX: 0,
           offsetY: 4
         })
-
       }
       .width('100%')
       .backgroundColor(this.themeColors.background)
@@ -534,5 +559,128 @@ export struct HomePage {
     .backgroundColor(this.themeColors.background)
     .scrollBar(BarState.Off)
     .edgeEffect(EdgeEffect.Spring)
+    
+    // 分享弹窗
+    if (this.showShareDialog) {
+      // 遮罩层
+      Column()
+        .width('100%')
+        .height('100%')
+        .backgroundColor('rgba(0, 0, 0, 0.5)')
+        .onClick(() => {
+          if (!this.isSharing) {
+            this.showShareDialog = false;
+          }
+        })
+        .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
+      
+      // 弹窗内容
+      Column() {
+        // 分享卡片预览区域
+        Scroll() {
+          Column() {
+            ShareHomeCard({
+              birthDate: this.birthDate,
+              targetAge: this.targetAge,
+              timeData: this.timeData,
+              isRemainingMode: this.isRemainingMode,
+              isAccumulatedMode: this.isAccumulatedMode
+            })
+              .id('share-home-card')
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Center)
+          .padding({ top: 16, bottom: 16 })
+        }
+        .width('100%')
+        .scrollBar(BarState.Off)
+        .constraintSize({ maxHeight: '60%' })
+        
+        // 操作按钮
+        Row({ space: 12 }) {
+          Button('取消')
+            .layoutWeight(1)
+            .height(44)
+            .fontSize(16)
+            .fontColor(this.themeColors.textSecondary)
+            .backgroundColor(this.themeColors.cardBackground)
+            .borderRadius(22)
+            .enabled(!this.isSharing)
+            .onClick(() => {
+              this.showShareDialog = false;
+            })
+          
+          Button(this.isSharing ? '分享中...' : '分享')
+            .layoutWeight(1)
+            .height(44)
+            .fontSize(16)
+            .fontColor('#FFFFFF')
+            .backgroundColor(this.isSharing ? this.themeColors.textSecondary : this.getPassedColor())
+            .borderRadius(22)
+            .enabled(!this.isSharing)
+            .onClick(() => {
+              this.doShare();
+            })
+        }
+        .width('100%')
+        .padding({ left: 20, right: 20, top: 16, bottom: 20 })
+      }
+      .width('90%')
+      .backgroundColor(this.themeColors.cardBackground)
+      .borderRadius(20)
+      .shadow({
+        radius: 20,
+        color: 'rgba(0, 0, 0, 0.3)',
+        offsetX: 0,
+        offsetY: 10
+      })
+      .position({ x: '5%', y: '50%' })
+      .translate({ y: '-50%' })
+      .transition(
+        TransitionEffect.OPACITY
+          .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
+          .animation({ duration: 300, curve: Curve.EaseOut })
+      )
+    }
+  }
+  .width('100%')
+  .height('100%')
+  }
+  
+  // 执行分享
+  private async doShare() {
+    if (this.isSharing) {
+      return;
+    }
+    
+    this.isSharing = true;
+    console.info('[HomePage] 开始分享');
+    
+    try {
+      const context = getContext(this) as common.UIAbilityContext;
+      
+      // 执行分享
+      const success = await ShareUtils.shareComponent(
+        this.getUIContext(),
+        'share-home-card',
+        context,
+        '生命时间分享',
+        '来自 RecordLife 的生命时间记录'
+      );
+      
+      if (success) {
+        console.info('[HomePage] 分享成功');
+        setTimeout(() => {
+          this.showShareDialog = false;
+          this.isSharing = false;
+        }, 500);
+      } else {
+        console.error('[HomePage] 分享失败');
+        this.isSharing = false;
+      }
+    } catch (error) {
+      console.error('[HomePage] 分享异常: ' + JSON.stringify(error));
+      this.isSharing = false;
+    }
   }
 }
