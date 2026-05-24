@@ -370,7 +370,7 @@ export struct RecordCard {
     console.info('[RecordCard] 开始分享，记录ID: ' + this.record.id)
     
     try {
-      const context = getContext(this) as common.UIAbilityContext
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext
       const success = await ShareUtils.shareComponent(
         this.getUIContext(),
         this.shareCardId,

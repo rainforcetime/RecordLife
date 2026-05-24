@@ -69,7 +69,7 @@ export class ImageGenerator {
         quality: 100
       };
       
-      const packData = await imagePackerApi.packing(pixelMap, packOpts);
+      const packData = await imagePackerApi.packToData(pixelMap, packOpts);
       
       // 6. 写入文件
       const file = fs.openSync(filePath, fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
@@ -169,7 +169,7 @@ export class ImageGenerator {
         quality: 100
       };
       
-      const packData = await imagePackerApi.packing(pixelMap, packOpts);
+      const packData = await imagePackerApi.packToData(pixelMap, packOpts);
       
       const file = fs.openSync(filePath, fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
       fs.writeSync(file.fd, packData);

@@ -657,7 +657,7 @@ export struct HomePage {
     console.info('[HomePage] 开始分享');
     
     try {
-      const context = getContext(this) as common.UIAbilityContext;
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
       
       // 执行分享
       const success = await ShareUtils.shareComponent(

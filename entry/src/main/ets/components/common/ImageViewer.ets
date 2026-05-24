@@ -25,7 +25,7 @@ export struct ImageViewer {
     }
     
     try {
-      const context = getContext(this) as common.UIAbilityContext
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext
       const helper = photoAccessHelper.getPhotoAccessHelper(context)
       
       // 获取当前图片URI
@@ -54,16 +54,20 @@ export struct ImageViewer {
       await fs.close(targetFile.fd)
       
       console.info('[ImageViewer] 图片保存成功')
-      promptAction.showToast({
+      this.getUIContext().getPromptAction().showToast({
         message: '已保存到图库',
         duration: 2000
       })
     } catch (error) {
       console.error('[ImageViewer] 保存图片失败: ' + JSON.stringify(error))
-      promptAction.showToast({
-        message: '保存失败',
-        duration: 2000
-      })
+      try {
+        this.getUIContext().getPromptAction().showToast({
+          message: '保存失败',
+          duration: 2000
+        })
+      } catch (e) {
+        console.error('[ImageViewer] 显示Toast失败: ' + JSON.stringify(e))
+      }
     }
   }
   
@@ -147,7 +151,7 @@ export struct ImageViewer {
               if (result === SaveButtonOnClickResult.SUCCESS) {
                 await this.saveImageToGallery()
               } else {
-                promptAction.showToast({
+                this.getUIContext().getPromptAction().showToast({
                   message: '授权失败',
                   duration: 2000
                 })

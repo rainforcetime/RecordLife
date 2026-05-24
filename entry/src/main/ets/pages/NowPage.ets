@@ -10,7 +10,6 @@ import { CalendarView } from '../components/calendar/CalendarView'
 import { RefreshManager } from '../common/managers/RefreshManager'
 import { ColorUtils } from '../common/ColorUtils'
 import { PromptAction } from '@kit.ArkUI'
-import { componentUtils } from '@kit.ArkUI'
 
 @Entry
 @Component
@@ -227,10 +226,10 @@ struct NowPage {
                   setTimeout(() => {
                     try {
                       // 获取目标组件相对于父组件的位置
-                      const rect = componentUtils.getRectangleById(targetId)
+                      const rect = this.getUIContext().getComponentUtils().getRectangleById(targetId)
                       if (rect) {
                         // 使用 localOffset.y 作为滚动目标位置（相对于父组件的 y 坐标）
-                        const targetOffset = Math.max(0, px2vp(rect.localOffset.y) - 100)
+                        const targetOffset = Math.max(0, this.getUIContext().px2vp(rect.localOffset.y) - 100)
                         this.scroller.scrollTo({
                           xOffset: 0,
                           yOffset: targetOffset,

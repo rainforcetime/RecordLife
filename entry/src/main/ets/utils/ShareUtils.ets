@@ -65,22 +65,20 @@ export class ShareUtils {
    * 将PixelMap转换为ArrayBuffer
    */
   private static async pixelMapToBuffer(pixelMap: image.PixelMap): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-      const packOpts: image.PackingOption = {
-        format: 'image/jpeg',
-        quality: 95
-      }
-      
-      const imagePackerApi = image.createImagePacker()
-      imagePackerApi.packing(pixelMap, packOpts)
-        .then((buffer: ArrayBuffer) => {
-          resolve(buffer)
-        })
-        .catch((err: BusinessError) => {
-          console.error('[ShareUtils] 图片打包失败: ' + JSON.stringify(err))
-          reject(err)
-        })
-    })
+    const packOpts: image.PackingOption = {
+      format: 'image/jpeg',
+      quality: 95
+    }
+    
+    const imagePackerApi = image.createImagePacker()
+    try {
+      const buffer = await imagePackerApi.packToData(pixelMap, packOpts)
+      return buffer
+    } catch (err) {
+      const error = err as BusinessError
+      console.error('[ShareUtils] 图片打包失败: ' + JSON.stringify(error))
+      throw error as Error
+    }
   }
   
   /**
@@ -96,9 +94,14 @@ export class ShareUtils {
     const imagePath = context.cacheDir + '/' + fileName
     
     // 写入文件
-    const file = fs.openSync(imagePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE)
-    fs.writeSync(file.fd, imageBuffer)
-    fs.closeSync(file)
+    try {
+      const file = fs.openSync(imagePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE)
+      fs.writeSync(file.fd, imageBuffer)
+      fs.closeSync(file)
+    } catch (err) {
+      console.error('[ShareUtils] 保存图片到沙箱失败: ' + JSON.stringify(err))
+      throw err as Error
+    }
     
     return imagePath
   }
