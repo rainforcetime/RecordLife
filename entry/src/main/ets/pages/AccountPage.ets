@@ -215,6 +215,8 @@ export struct AccountPage {
     if (avatarUri) {
       this.userInfo.userAvatar = avatarUri
       this.userInfo.hasCustomAvatar = true
+      // 更新存储空间显示
+      await this.loadDataStatistics()
     }
   }
   

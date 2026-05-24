@@ -410,6 +410,32 @@ export class AccountViewModel {
     }
   }
 
+  // 删除旧的头像缓存文件
+  private deleteOldAvatarCache(): void {
+    if (!this.context) {
+      return
+    }
+    try {
+      const filesDir = this.context.filesDir
+      // 列出目录下的所有文件（返回的是文件名数组，不是完整路径）
+      const fileNames = fileIo.listFileSync(filesDir)
+      for (const fileName of fileNames) {
+        // 删除以 avatar 开头的文件
+        if (fileName.startsWith('avatar')) {
+          const filePath = `${filesDir}/${fileName}`
+          try {
+            fileIo.unlinkSync(filePath)
+            console.info('删除旧头像缓存: ' + filePath)
+          } catch (e) {
+            console.error('删除旧头像缓存失败: ' + filePath + ', 错误: ' + JSON.stringify(e))
+          }
+        }
+      }
+    } catch (error) {
+      console.error('列出头像目录失败: ' + JSON.stringify(error))
+    }
+  }
+
   // 复制图片到沙箱目录
   private async copyImageToSandbox(sourceUri: string): Promise<string | null> {
     if (!this.context) {
@@ -419,6 +445,9 @@ export class AccountViewModel {
 
     let sourceFile: fileIo.File | null = null
     try {
+      // 删除旧的头像缓存文件
+      this.deleteOldAvatarCache()
+
       // 打开源图片文件
       sourceFile = fileIo.openSync(sourceUri, fileIo.OpenMode.READ_ONLY)
 
