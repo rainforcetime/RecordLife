@@ -15,6 +15,10 @@
     {
       "name": "camera_reason",
       "value": "用于拍摄照片记录生活"
+    },
+    {
+      "name": "write_image_reason",
+      "value": "用于保存图片到图库"
     }
   ]
 }
