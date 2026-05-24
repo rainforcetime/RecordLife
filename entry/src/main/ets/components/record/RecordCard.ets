@@ -251,11 +251,11 @@ export struct RecordCard {
   // 操作按钮
   @Builder
   ActionButtons() {
-    Row({ space: 16 }) {
+    Row({ space: 24 }) {
       // 分享按钮
       Image($r('sys.media.ohos_ic_public_share'))
-        .width(18)
-        .height(18)
+        .width(20)
+        .height(20)
         .fillColor(this.themeColors.iconColor)
         .onClick(() => {
           this.showShareDialog = true
@@ -263,8 +263,8 @@ export struct RecordCard {
       
       // 编辑按钮
       Image($r('sys.media.ohos_ic_public_edit'))
-        .width(18)
-        .height(18)
+        .width(20)
+        .height(20)
         .fillColor(this.themeColors.iconColor)
         .onClick(() => {
           if (this.onEdit) {
@@ -274,8 +274,8 @@ export struct RecordCard {
       
       // 删除按钮
       Image($r('sys.media.ohos_ic_public_remove'))
-        .width(18)
-        .height(18)
+        .width(20)
+        .height(20)
         .fillColor(this.themeColors.error)
         .onClick(() => {
           if (this.onDelete) {
