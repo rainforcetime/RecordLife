@@ -103,14 +103,19 @@ export struct ImageViewer {
       Column() {
         // 顶部工具栏（添加安全区域顶部避让）
         Row() {
-          // 关闭按钮
-          Image($r('sys.media.ohos_ic_public_arrow_left'))
-            .width(24)
-            .height(24)
-            .fillColor('#FFFFFF')
-            .onClick(() => {
-              this.closeViewer()
-            })
+          // 关闭按钮（增大点击区域）
+          Column() {
+            Image($r('sys.media.ohos_ic_public_arrow_left'))
+              .width(28)
+              .height(28)
+              .fillColor('#FFFFFF')
+          }
+          .width(48)
+          .height(48)
+          .justifyContent(FlexAlign.Center)
+          .onClick(() => {
+            this.closeViewer()
+          })
           
           Blank()
           
@@ -134,10 +139,10 @@ export struct ImageViewer {
           
           // 使用SaveButton安全控件保存图片
           SaveButton({ text: SaveDescription.SAVE_IMAGE, buttonType: ButtonType.Normal })
-            .width(100)
-            .height(36)
-            .borderRadius(18)
-            .backgroundColor('rgba(255, 255, 255, 0.2)')
+            .width(120)
+            .height(44)
+            .borderRadius(22)
+            .backgroundColor('rgba(255, 255, 255, 0.3)')
             .onClick(async (event: ClickEvent, result: SaveButtonOnClickResult) => {
               if (result === SaveButtonOnClickResult.SUCCESS) {
                 await this.saveImageToGallery()
