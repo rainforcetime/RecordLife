@@ -146,18 +146,18 @@ export class NowViewModel {
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 3,
-        content: '三天前的记录，时间线会按年月日自动组织。支持添加多张图片哦（最多9张）！',
+        content: '三天前的记录，记录会按时间近到远自动组织。支持添加多张图片哦（最多9张）！',
         imagePaths: sampleImagePath ? [sampleImagePath,sampleImagePath,sampleImagePath,sampleImagePath] : undefined  // 添加示例图片
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 35,
-        content: '一个月前的记录，可以看到时间线的层级结构。点击记录可以编辑或删除。'
+        content: '一个月前的记录，点击记录可以编辑或删除。'
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 365,
-        content: '一年前的记录，时间线会自动显示年份，方便回顾历史。'
+        content: '一年前的记录，记录会自动显示今天、昨天、N天前、月份、年份，方便回顾历史。'
       },
       {
         id: this.generateId(),
