@@ -301,11 +301,17 @@ export struct TagManagementDialog {
   }
 
   build() {
-    if (this.isEditing) {
-      this.TagEditView()
-    } else {
-      this.TagListView()
+    // 整体可滚动（输入法弹出时表单不被遮挡，更新计划三期模板表单）
+    Scroll() {
+      if (this.isEditing) {
+        this.TagEditView()
+      } else {
+        this.TagListView()
+      }
     }
+    .scrollBar(BarState.Off)
+    .width('100%')
+    .constraintSize({ maxHeight: '85%' })
   }
 
   // 标签列表视图
