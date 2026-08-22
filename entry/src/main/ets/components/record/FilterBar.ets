@@ -11,6 +11,7 @@ import { MoodService } from '../../service/MoodService'
 import { Mood } from '../../model/RecordModel'
 import { common } from '@kit.AbilityKit'
 import { promptAction } from '@kit.ArkUI'
+import { ColorUtils } from '../../common/ColorUtils'
 import { Logger } from '../../common/utils/Logger'
 
 // 筛选 chip（独立组件：@Prop isSelected 随父状态响应式更新）
@@ -86,6 +87,9 @@ export struct FilterBar {
 
   // 筛选变化回调
   onChange?: () => void
+
+  // 筛选弹窗开关（更新计划五期）
+  @State private showFilterSheet: boolean = false
 
   // 可用标签（内部动态加载）
   @State availableTags: Tag[] = DEFAULT_TAGS
@@ -194,25 +198,102 @@ export struct FilterBar {
   }
 
   build() {
-    Scroll() {
-      Row({ space: 0 }) {
-        // "全部" 按钮（清除标签 + 心情筛选）
-        FilterChip({
-          label: $r('app.string.all'),
-          color: '#909399',
-          isSelected: this.isNoFilter(),
-          onChipClick: () => {
-            this.clearAll()
-          }
-        })
+    // 筛选入口按钮（点击打开筛选弹窗，替代长距离横向滑动，更新计划五期）
+    Row() {
+      SymbolGlyph($r('sys.symbol.slider_horizontal_3'))
+        .fontSize(15)
+        .fontColor(this.themeColors.primary)
 
-        // 心情分组头（区分心情与标签，更新计划五期）
-        Text($r('app.string.mood_tab'))
+      Text(this.getFilterSummary())
+        .fontSize(14)
+        .fontColor(this.themeColors.primary)
+        .fontWeight(FontWeight.Medium)
+        .margin({ left: 6 })
+
+      // 筛选计数徽标（有筛选时显示）
+      if (this.getFilterCount() > 0) {
+        Text(this.getFilterCount().toString())
           .fontSize(11)
-          .fontColor(this.themeColors.textTertiary)
-          .margin({ right: 6 })
+          .fontColor('#FFFFFF')
+          .textAlign(TextAlign.Center)
+          .width(18)
+          .height(18)
+          .borderRadius(9)
+          .backgroundColor(this.themeColors.primary)
+          .margin({ left: 4 })
+      }
+    }
+    .padding({ left: 14, right: 14, top: 7, bottom: 7 })
+    .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
+    .borderRadius(16)
+    .onClick(() => {
+      this.showFilterSheet = true
+    })
+    .bindSheet($$this.showFilterSheet, this.FilterSheetBuilder(), {
+      height: '65%',
+      backgroundColor: this.themeColors.cardBackground,
+      dragBar: true
+    })
+    .alignSelf(ItemAlign.Start)
+    .margin({ left: 4 })
+  }
 
-        // 心情筛选（更新计划二期）
+  // 筛选入口摘要（无筛选显示「筛选」）
+  private getFilterSummary(): string {
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    const title = rm ? rm.getStringByNameSync('filter_title') : ''
+    if (this.filterMood.length > 0) {
+      return MoodUtils.getMoodEmoji(this.filterMood, this.moods) + ' ' + title
+    }
+    if (this.selectedTagIds.length > 0) {
+      const tag = this.availableTags.find(t => t.id === this.selectedTagIds[0])
+      return (tag ? tag.name : '') + ' · ' + title
+    }
+    return title
+  }
+
+  // 当前筛选项数量（心情 1 项 + 标签数量）
+  private getFilterCount(): number {
+    let count = this.selectedTagIds.length
+    if (this.filterMood.length > 0) {
+      count++
+    }
+    return count
+  }
+
+  // 筛选弹窗（心情单选 + 标签单选 + 清除全部）
+  @Builder
+  FilterSheetBuilder() {
+    Column() {
+      // 标题行
+      Row() {
+        Text($r('app.string.filter_title'))
+          .fontSize(18)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(this.themeColors.textPrimary)
+
+        Blank()
+
+        // 清除全部
+        Text($r('app.string.filter_clear'))
+          .fontSize(14)
+          .fontColor(this.themeColors.primary)
+          .fontWeight(FontWeight.Medium)
+          .onClick(() => {
+            this.clearAll()
+          })
+      }
+      .width('100%')
+      .margin({ top: 12, bottom: 16 })
+
+      // 心情分组
+      Text($r('app.string.mood_tab'))
+        .fontSize(13)
+        .fontColor(this.themeColors.textSecondary)
+        .width('100%')
+        .margin({ bottom: 10 })
+
+      Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
         ForEach(this.moods, (mood: Mood) => {
           FilterChip({
             label: mood.emoji,
@@ -223,25 +304,18 @@ export struct FilterBar {
             }
           })
         }, (mood: Mood) => `mood-${mood.id}`)
+      }
+      .width('100%')
+      .margin({ bottom: 20 })
 
-        // 心情与标签分隔线
-        if (this.availableTags.length > 0) {
-          Column()
-            .width(1)
-            .height(18)
-            .backgroundColor(this.themeColors.divider)
-            .margin({ left: 6, right: 8 })
-        }
+      // 标签分组
+      Text($r('app.string.tag_tab'))
+        .fontSize(13)
+        .fontColor(this.themeColors.textSecondary)
+        .width('100%')
+        .margin({ bottom: 10 })
 
-        // 标签分组头（区分心情与标签，更新计划五期）
-        if (this.availableTags.length > 0) {
-          Text($r('app.string.tag_tab'))
-            .fontSize(11)
-            .fontColor(this.themeColors.textTertiary)
-            .margin({ right: 6 })
-        }
-
-        // 标签列表
+      Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
         ForEach(this.availableTags, (tag: Tag) => {
           FilterChip({
             label: (tag.icon ? tag.icon + ' ' : '') + tag.name,
@@ -253,10 +327,13 @@ export struct FilterBar {
           })
         }, (tag: Tag) => `filter-${tag.id}`)
       }
-      .padding({ left: 4, right: 4 })
+      .width('100%')
+
+      Blank()
     }
-    .scrollable(ScrollDirection.Horizontal)
-    .scrollBar(BarState.Off)
     .width('100%')
+    .height('100%')
+    .padding({ left: 20, right: 20, top: 4, bottom: 24 })
+    .backgroundColor(this.themeColors.cardBackground)
   }
 }

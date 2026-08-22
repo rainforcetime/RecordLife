@@ -1345,6 +1345,14 @@
       "value": "All"
     },
     {
+      "name": "filter_title",
+      "value": "Filter"
+    },
+    {
+      "name": "filter_clear",
+      "value": "Clear all"
+    },
+    {
       "name": "mood_selected",
       "value": "Mood selected: %s"
     },

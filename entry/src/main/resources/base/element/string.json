@@ -1345,6 +1345,14 @@
       "value": "全部"
     },
     {
+      "name": "filter_title",
+      "value": "筛选"
+    },
+    {
+      "name": "filter_clear",
+      "value": "清除全部"
+    },
+    {
       "name": "mood_selected",
       "value": "已选择心情 %s"
     },
