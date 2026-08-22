@@ -5,6 +5,8 @@ import { TagService } from '../../service/TagService'
 import { MoodService } from '../../service/MoodService'
 import { MoodUtils } from '../../common/utils/MoodUtils'
 import { Mood } from '../../model/RecordModel'
+import { TemplateService } from '../../service/TemplateService'
+import { RecordTemplate } from '../../model/UserConfigModel'
 import { common } from '@kit.AbilityKit'
 import { RefreshManager } from '../../common/managers/RefreshManager'
 import { Logger } from '../../common/utils/Logger'
@@ -52,6 +54,15 @@ export struct TagManagementDialog {
   @State private showMoodPicker: boolean = false
   private moodService: MoodService | null = null
 
+  // 记录模板（更新计划三期）
+  @State private templates: RecordTemplate[] = []
+  @State private showTemplateForm: boolean = false
+  @State private isNewTemplate: boolean = true
+  @State private editingTemplate: RecordTemplate = { id: '', name: '', content: '' }
+  @State private editTemplateName: string = ''
+  @State private editTemplateContent: string = ''
+  private templateService: TemplateService | null = null
+
   async aboutToAppear() {
     Logger.info('[TagMgmtDialog] aboutToAppear 开始')
     this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
@@ -64,6 +75,13 @@ export struct TagManagementDialog {
       this.loadMoods()
     } catch (error) {
       Logger.error('[TagMgmtDialog] 加载心情失败: ' + JSON.stringify(error))
+    }
+    // 加载记录模板（更新计划三期）
+    try {
+      this.templateService = await TemplateService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
+      this.loadTemplates()
+    } catch (error) {
+      Logger.error('[TagMgmtDialog] 加载模板失败: ' + JSON.stringify(error))
     }
   }
 
@@ -210,6 +228,75 @@ export struct TagManagementDialog {
     }
     await this.moodService.deleteCustomMood(mood.id)
     this.loadMoods()
+    RefreshManager.getInstance().refresh()
+  }
+
+  // ==================== 记录模板（更新计划三期） ====================
+
+  private loadTemplates() {
+    if (this.templateService) {
+      this.templates = [...this.templateService.getTemplates()]
+    }
+  }
+
+  // 开始添加新模板
+  private startAddTemplate() {
+    this.editingTemplate = { id: '', name: '', content: '' }
+    this.editTemplateName = ''
+    this.editTemplateContent = ''
+    this.isNewTemplate = true
+    this.showTemplateForm = true
+  }
+
+  // 开始编辑模板
+  private startEditTemplate(template: RecordTemplate) {
+    this.editingTemplate = {
+      id: template.id,
+      name: template.name,
+      content: template.content
+    }
+    this.editTemplateName = template.name
+    this.editTemplateContent = template.content
+    this.isNewTemplate = false
+    this.showTemplateForm = true
+  }
+
+  // 取消模板编辑
+  private cancelTemplateEdit() {
+    this.showTemplateForm = false
+  }
+
+  // 保存模板
+  private async saveTemplate() {
+    if (!this.templateService) {
+      return
+    }
+    const name = this.editTemplateName.trim()
+    const content = this.editTemplateContent.trim()
+    if (name.length === 0) {
+      return
+    }
+    if (this.isNewTemplate) {
+      await this.templateService.addTemplate(name, content)
+    } else {
+      await this.templateService.updateTemplate({
+        id: this.editingTemplate.id,
+        name: name,
+        content: content
+      })
+    }
+    this.showTemplateForm = false
+    this.loadTemplates()
+    RefreshManager.getInstance().refresh()
+  }
+
+  // 删除模板
+  private async deleteTemplate(template: RecordTemplate) {
+    if (!this.templateService) {
+      return
+    }
+    await this.templateService.deleteTemplate(template.id)
+    this.loadTemplates()
     RefreshManager.getInstance().refresh()
   }
 
@@ -448,6 +535,152 @@ export struct TagManagementDialog {
         }
         .width('100%')
         .margin({ bottom: 8 })
+      }
+
+      // ==================== 记录模板（更新计划三期） ====================
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ top: 8, bottom: 16 })
+
+      Row() {
+        Text($r('app.string.record_template'))
+          .fontSize(16)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(this.themeColors.textPrimary)
+          .layoutWeight(1)
+
+        // 添加模板按钮
+        SymbolGlyph($r('sys.symbol.plus'))
+          .fontSize(18)
+          .fontColor([this.themeColors.primary])
+          .onClick(() => {
+            this.startAddTemplate()
+          })
+      }
+      .width('100%')
+      .margin({ bottom: 8 })
+
+      Text($r('app.string.template_hint'))
+        .fontSize(12)
+        .fontColor(this.themeColors.textSecondary)
+        .width('100%')
+        .margin({ bottom: 12 })
+
+      // 模板编辑表单（添加/编辑）
+      if (this.showTemplateForm) {
+        Column() {
+          TextInput({ text: $$this.editTemplateName, placeholder: $r('app.string.template_name_hint') })
+            .width('100%')
+            .height(40)
+            .backgroundColor(this.themeColors.background)
+            .borderRadius(8)
+            .border({ width: 1, color: this.themeColors.border })
+            .fontColor(this.themeColors.textPrimary)
+            .placeholderColor(this.themeColors.textTertiary)
+            .padding({ left: 12, right: 12 })
+            .margin({ bottom: 8 })
+
+          TextArea({ text: $$this.editTemplateContent, placeholder: $r('app.string.template_content_hint') })
+            .width('100%')
+            .height(70)
+            .backgroundColor(this.themeColors.background)
+            .borderRadius(8)
+            .border({ width: 1, color: this.themeColors.border })
+            .fontColor(this.themeColors.textPrimary)
+            .placeholderColor(this.themeColors.textTertiary)
+            .padding(10)
+
+          Row() {
+            Button($r('app.string.cancel'))
+              .layoutWeight(1)
+              .height(36)
+              .fontSize(14)
+              .fontColor(this.themeColors.textSecondary)
+              .backgroundColor(this.themeColors.background)
+              .borderRadius(8)
+              .onClick(() => {
+                this.cancelTemplateEdit()
+              })
+
+            Button($r('app.string.save'))
+              .layoutWeight(1)
+              .height(36)
+              .fontSize(14)
+              .fontColor('#FFFFFF')
+              .backgroundColor(this.themeColors.primary)
+              .borderRadius(8)
+              .margin({ left: 10 })
+              .onClick(() => {
+                this.saveTemplate()
+              })
+          }
+          .width('100%')
+          .margin({ top: 10, bottom: 12 })
+        }
+        .width('100%')
+      }
+
+      // 模板列表
+      if (this.templates.length > 0) {
+        List() {
+          ForEach(this.templates, (template: RecordTemplate) => {
+            ListItem() {
+              Row() {
+                Column() {
+                  Text(template.name)
+                    .fontSize(15)
+                    .fontColor(this.themeColors.textPrimary)
+                    .fontWeight(FontWeight.Medium)
+                    .width('100%')
+
+                  if (template.content.length > 0) {
+                    Text(template.content)
+                      .fontSize(12)
+                      .fontColor(this.themeColors.textSecondary)
+                      .maxLines(1)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      .width('100%')
+                      .margin({ top: 2 })
+                  }
+                }
+                .layoutWeight(1)
+                .alignItems(HorizontalAlign.Start)
+
+                SymbolGlyph($r('sys.symbol.square_and_pencil'))
+                  .fontSize(18)
+                  .fontColor([this.themeColors.iconColor])
+                  .margin({ right: 12 })
+                  .onClick(() => {
+                    this.startEditTemplate(template)
+                  })
+
+                SymbolGlyph($r('sys.symbol.trash'))
+                  .fontSize(18)
+                  .fontColor([this.themeColors.error])
+                  .onClick(() => {
+                    this.deleteTemplate(template)
+                  })
+              }
+              .width('100%')
+              .height(48)
+              .alignItems(VerticalAlign.Center)
+            }
+          }, (template: RecordTemplate) => template.id)
+        }
+        .width('100%')
+        .scrollBar(BarState.Off)
+        .constraintSize({ maxHeight: 180 })
+        .divider({ strokeWidth: 0.5, color: this.themeColors.border, startMargin: 12, endMargin: 12 })
+        .edgeEffect(EdgeEffect.None)
+      } else if (!this.showTemplateForm) {
+        // 空状态
+        Column() {
+          Text($r('app.string.template_empty'))
+            .fontSize(13)
+            .fontColor(this.themeColors.textSecondary)
+        }
+        .width('100%')
+        .padding({ top: 12, bottom: 12 })
       }
     }
     .width('100%')

@@ -7,6 +7,13 @@ import { TimeUtils } from '../common/utils/TimeUtils';
 import { Tag } from './TagModel';
 import { Mood } from './RecordModel';
 
+// 记录模板（更新计划三期：预设常用记录，一键填充）
+export interface RecordTemplate {
+  id: string;               // 模板唯一标识
+  name: string;             // 模板名称
+  content: string;          // 模板内容
+}
+
 // 云备份配置
 export interface CloudBackupConfig {
   enabled: boolean;
@@ -39,6 +46,7 @@ export interface AppSettings {
   fontSize?: string; // 'small' | 'medium' | 'large'（可选，默认 'medium'，更新计划一期）
   customMoods?: Mood[]; // 用户自定义的心情列表（可选，更新计划二期）
   privacyMode?: boolean; // 隐私模式（可选，默认 false，更新计划三期：隐藏首页出生日期等敏感信息）
+  recordTemplates?: RecordTemplate[]; // 记录模板列表（可选，更新计划三期）
 }
 
 // 备份配置
@@ -108,7 +116,8 @@ export async function createDefaultConfig(): Promise<UserConfig> {
     customTags: [],           // 默认无自定义标签
     fontSize: 'medium',       // 默认字体大小
     customMoods: [],          // 默认无自定义心情
-    privacyMode: false        // 默认关闭隐私模式
+    privacyMode: false,       // 默认关闭隐私模式
+    recordTemplates: []       // 默认无记录模板
   };
 
   const backup: BackupConfig = {
@@ -167,7 +176,8 @@ export function createDefaultConfigSync(): UserConfig {
     customTags: [],           // 默认无自定义标签
     fontSize: 'medium',       // 默认字体大小
     customMoods: [],          // 默认无自定义心情
-    privacyMode: false        // 默认关闭隐私模式
+    privacyMode: false,       // 默认关闭隐私模式
+    recordTemplates: []       // 默认无记录模板
   };
 
   const backup: BackupConfig = {

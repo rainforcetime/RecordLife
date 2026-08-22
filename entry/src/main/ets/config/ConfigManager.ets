@@ -90,6 +90,10 @@ export class ConfigManager {
           if (!this.config.settings.customMoods) {
             this.config.settings.customMoods = [];
           }
+          // 兼容旧配置：确保 recordTemplates 字段存在（更新计划三期）
+          if (!this.config.settings.recordTemplates) {
+            this.config.settings.recordTemplates = [];
+          }
         } else {
           Logger.warn('Invalid config, using default');
           this.config = await createDefaultConfig();

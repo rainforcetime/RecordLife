@@ -1403,6 +1403,30 @@
     {
       "name": "cache_nothing",
       "value": "Nothing to clean"
+    },
+    {
+      "name": "record_template",
+      "value": "Record templates"
+    },
+    {
+      "name": "template_hint",
+      "value": "Predefined records, one-tap fill"
+    },
+    {
+      "name": "template_name_hint",
+      "value": "Template name"
+    },
+    {
+      "name": "template_content_hint",
+      "value": "Template content"
+    },
+    {
+      "name": "template_use",
+      "value": "Templates"
+    },
+    {
+      "name": "template_empty",
+      "value": "No templates yet, add in settings"
     }
   ]
 }

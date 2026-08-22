@@ -8,6 +8,8 @@ import { PromptAction } from '@kit.ArkUI'
 import { ImagePickerUtils, ImagePickMode } from '../../common/utils/ImagePickerUtils'
 import { TagSelector } from '../common/TagSelector'
 import { MoodSelector } from './MoodSelector'
+import { TemplateService } from '../../service/TemplateService'
+import { RecordTemplate } from '../../model/UserConfigModel'
 import { Logger } from '../../common/utils/Logger'
 
 @Component
@@ -25,6 +27,10 @@ export struct AddRecordSection {
   
   // 选中的心情（更新计划二期；'' = 未选择）
   @State private selectedMood: string = ''
+  
+  // 记录模板（更新计划三期：一键填充）
+  @State private templates: RecordTemplate[] = []
+  @State private showTemplatePicker: boolean = false
   
   // 是否正在保存
   @State private isSaving: boolean = false
@@ -50,18 +56,43 @@ export struct AddRecordSection {
       this.viewModel = vm
       Logger.info('[AddRecordSection] ViewModel 获取成功')
     })
+    // 加载记录模板（更新计划三期）
+    TemplateService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext).then((ts) => {
+      this.templates = ts.getTemplates()
+    }).catch((error) => {
+      Logger.error('[AddRecordSection] 加载模板失败: ' + JSON.stringify(error))
+    })
   }
   
   build() {
     Scroll() {
       Column() {
-        // 标题
-        Text($r('app.string.record_now'))
-          .fontSize(18)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.themeColors.textPrimary)
-          .width('100%')
-          .margin({ bottom: 16 })
+        // 标题行（含模板按钮，更新计划三期）
+        Row() {
+          Text($r('app.string.record_now'))
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(this.themeColors.textPrimary)
+            .layoutWeight(1)
+
+          // 模板快捷按钮
+          Text($r('app.string.template_use'))
+            .fontSize(14)
+            .fontColor(this.templates.length > 0 ? this.themeColors.primary : this.themeColors.textTertiary)
+            .fontWeight(FontWeight.Medium)
+            .onClick(() => {
+              if (this.templates.length > 0) {
+                this.showTemplatePicker = true
+              }
+            })
+        }
+        .width('100%')
+        .margin({ bottom: 16 })
+        .bindSheet($$this.showTemplatePicker, this.TemplatePickerBuilder(), {
+          height: '45%',
+          backgroundColor: this.themeColors.cardBackground,
+          dragBar: true
+        })
         
         // 文字输入区域
         TextArea({ placeholder: $r('app.string.record_now_placeholder'), text: $$this.textContent })
@@ -121,6 +152,71 @@ export struct AddRecordSection {
     .align(Alignment.Top)
   }
   
+  // 模板选择弹层（更新计划三期：一键填充）
+  @Builder
+  TemplatePickerBuilder() {
+    Column() {
+      Text($r('app.string.template_use'))
+        .fontSize(18)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(this.themeColors.textPrimary)
+        .width('100%')
+        .margin({ top: 16, bottom: 12 })
+
+      if (this.templates.length === 0) {
+        Column() {
+          Text($r('app.string.template_empty'))
+            .fontSize(14)
+            .fontColor(this.themeColors.textSecondary)
+        }
+        .width('100%')
+        .padding({ top: 24, bottom: 24 })
+      } else {
+        List() {
+          ForEach(this.templates, (template: RecordTemplate) => {
+            ListItem() {
+              Column() {
+                Text(template.name)
+                  .fontSize(15)
+                  .fontColor(this.themeColors.textPrimary)
+                  .fontWeight(FontWeight.Medium)
+                  .width('100%')
+
+                if (template.content.length > 0) {
+                  Text(template.content)
+                    .fontSize(13)
+                    .fontColor(this.themeColors.textSecondary)
+                    .maxLines(2)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    .width('100%')
+                    .margin({ top: 4 })
+                }
+              }
+              .width('100%')
+              .padding({ top: 12, bottom: 12, left: 16, right: 16 })
+              .backgroundColor(this.themeColors.background)
+              .borderRadius(10)
+              .onClick(() => {
+                // 一键填充内容
+                this.textContent = template.content
+                this.showTemplatePicker = false
+              })
+            }
+          }, (template: RecordTemplate) => template.id)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .scrollBar(BarState.Off)
+        .divider({ strokeWidth: 0.5, color: this.themeColors.border })
+        .edgeEffect(EdgeEffect.Spring)
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .padding({ left: 16, right: 16 })
+    .backgroundColor(this.themeColors.cardBackground)
+  }
+
   // 图片网格构建器
   @Builder
   ImageGridBuilder() {

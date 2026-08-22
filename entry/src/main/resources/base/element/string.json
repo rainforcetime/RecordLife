@@ -1403,6 +1403,30 @@
     {
       "name": "cache_nothing",
       "value": "没有可清理的缓存"
+    },
+    {
+      "name": "record_template",
+      "value": "记录模板"
+    },
+    {
+      "name": "template_hint",
+      "value": "预设常用记录，一键填充"
+    },
+    {
+      "name": "template_name_hint",
+      "value": "输入模板名称"
+    },
+    {
+      "name": "template_content_hint",
+      "value": "输入模板内容"
+    },
+    {
+      "name": "template_use",
+      "value": "模板"
+    },
+    {
+      "name": "template_empty",
+      "value": "暂无模板，可在设置中添加"
     }
   ]
 }
