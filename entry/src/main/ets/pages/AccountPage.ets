@@ -363,6 +363,18 @@ export struct AccountPage {
     }
   }
   
+  // 数据看板处理（更新计划五期）
+  private onDashboardClick() {
+    Logger.info('数据看板')
+    try {
+      this.getUIContext().getRouter().pushUrl({
+        url: 'pages/DashboardPage'
+      })
+    } catch (error) {
+      Logger.error('页面跳转失败: ' + JSON.stringify(error))
+    }
+  }
+  
   // 存储空间点击处理
   private onStorageClick() {
     Logger.info('存储空间')
@@ -490,6 +502,20 @@ export struct AccountPage {
         .color(this.themeColors.divider)
         .margin({ left: 15 })
         .height(0.5)
+      
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
+        .height(0.5)
+      
+      // 数据看板（更新计划五期）
+      SettingItem({
+        label: $r('app.string.dashboard_title'),
+        summary: $r('app.string.dashboard_summary')
+      })
+      .onClick(() => {
+        this.onDashboardClick()
+      })
       
       Divider()
         .color(this.themeColors.divider)

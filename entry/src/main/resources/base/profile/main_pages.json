@@ -3,6 +3,7 @@
     "pages/Index",
     "pages/MorePage",
     "pages/StorageImagePage",
-    "pages/GuidePage"
+    "pages/GuidePage",
+    "pages/DashboardPage"
   ]
 }

@@ -1487,6 +1487,62 @@
     {
       "name": "guide_skip",
       "value": "Skip"
+    },
+    {
+      "name": "dashboard_title",
+      "value": "Dashboard"
+    },
+    {
+      "name": "dashboard_summary",
+      "value": "Records stats & life progress"
+    },
+    {
+      "name": "life_progress",
+      "value": "Life progress"
+    },
+    {
+      "name": "life_progress_label",
+      "value": "Life journey completed"
+    },
+    {
+      "name": "life_progress_detail",
+      "value": "Target age %d"
+    },
+    {
+      "name": "stat_total_records",
+      "value": "Total records"
+    },
+    {
+      "name": "stat_active_days",
+      "value": "Active days"
+    },
+    {
+      "name": "stat_avg_per_day",
+      "value": "Avg per day"
+    },
+    {
+      "name": "stat_longest_streak",
+      "value": "Longest streak"
+    },
+    {
+      "name": "stat_total_chars",
+      "value": "Total chars"
+    },
+    {
+      "name": "stat_first_date",
+      "value": "First record"
+    },
+    {
+      "name": "stat_last_date",
+      "value": "Latest record"
+    },
+    {
+      "name": "stat_target_age",
+      "value": "Target age"
+    },
+    {
+      "name": "stat_days",
+      "value": "days"
     }
   ]
 }

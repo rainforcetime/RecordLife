@@ -1487,6 +1487,62 @@
     {
       "name": "guide_skip",
       "value": "跳过"
+    },
+    {
+      "name": "dashboard_title",
+      "value": "数据看板"
+    },
+    {
+      "name": "dashboard_summary",
+      "value": "记录统计与生命进度"
+    },
+    {
+      "name": "life_progress",
+      "value": "生命进度"
+    },
+    {
+      "name": "life_progress_label",
+      "value": "已度过生命进程"
+    },
+    {
+      "name": "life_progress_detail",
+      "value": "目标年龄 %d 岁"
+    },
+    {
+      "name": "stat_total_records",
+      "value": "记录总数"
+    },
+    {
+      "name": "stat_active_days",
+      "value": "活跃天数"
+    },
+    {
+      "name": "stat_avg_per_day",
+      "value": "日均记录"
+    },
+    {
+      "name": "stat_longest_streak",
+      "value": "最长连续"
+    },
+    {
+      "name": "stat_total_chars",
+      "value": "累计字数"
+    },
+    {
+      "name": "stat_first_date",
+      "value": "最早记录"
+    },
+    {
+      "name": "stat_last_date",
+      "value": "最近记录"
+    },
+    {
+      "name": "stat_target_age",
+      "value": "目标年龄"
+    },
+    {
+      "name": "stat_days",
+      "value": "天"
     }
   ]
 }

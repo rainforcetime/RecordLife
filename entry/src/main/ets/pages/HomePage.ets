@@ -9,6 +9,7 @@ import { ThemeColors, ThemeConfig } from '../config/ThemeConfig';
 import { ShareHomeCard } from '../components/share/ShareHomeCard';
 import { AccumulatedModeToggle } from '../components/home/AccumulatedModeToggle';
 import { ShareUtils } from '../common/utils/ShareUtils';
+import { StatisticsUtils } from '../model/StatisticsModel';
 import { common } from '@kit.AbilityKit';
 import { RefreshManager } from '../common/managers/RefreshManager';
 import { Logger } from '../common/utils/Logger'
@@ -38,6 +39,7 @@ export struct HomePage {
   @State @Watch('onTargetAgeChanged') targetAge: number = 80; // 目标年龄，默认80岁
   @State signature: string = ''; // 签名/座右铭（更新计划一期）
   @State privacyMode: boolean = false; // 隐私模式（更新计划三期）
+  @State lifePercent: number = 0; // 生命进度百分比（更新计划五期）
   @State userConfig: UserConfig | null = null;
   @State isAccumulatedMode: boolean = true; // true: 累计模式, false: 非累计模式
   @State isRemainingMode: boolean = false; // true: 剩余模式, false: 已存活模式
@@ -215,6 +217,9 @@ export struct HomePage {
     this.dayOfLife = TimeUtils.getDayOfLife(this.birthDate, now);
     this.weekOfLife = TimeUtils.getWeekOfLife(this.birthDate, now);
     this.daysUntilBirthday = TimeUtils.getDaysUntilNextBirthday(this.birthDate, now);
+    
+    // 生命进度（更新计划五期）
+    this.lifePercent = StatisticsUtils.getLifeProgress(this.birthDate, this.targetAge, now).percent;
     
     if (this.isRemainingMode) {
       // 剩余模式：计算距离目标年龄的剩余时间
@@ -485,6 +490,33 @@ export struct HomePage {
               this.calculateTime()
             }
           })
+
+          // 生命进度环形（更新计划五期）
+          Row() {
+            Stack() {
+              Progress({ value: this.lifePercent, total: 100, type: ProgressType.Ring })
+                .width(52)
+                .height(52)
+                .color(this.themeColors.primary)
+                .backgroundColor(this.themeColors.divider)
+                .style({ strokeWidth: 6 })
+
+              Text(this.lifePercent.toFixed(1) + '%')
+                .fontSize(12)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(this.themeColors.primary)
+            }
+            .width(52)
+            .height(52)
+
+            Text($r('app.string.life_progress_label'))
+              .fontSize(13)
+              .fontColor(this.themeColors.textSecondary)
+              .margin({ left: 10 })
+          }
+          .width('100%')
+          .justifyContent(FlexAlign.Center)
+          .margin({ bottom: 12 })
 
           // 时间卡片布局
           Column() {

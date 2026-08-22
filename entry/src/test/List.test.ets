@@ -4,6 +4,7 @@ import storageServiceTest from './StorageService.test';
 import configModelTest from './ConfigModel.test';
 import timeUtilsLifeTest from './TimeUtilsLife.test';
 import moodUtilsTest from './MoodUtils.test';
+import statisticsTest from './StatisticsModel.test';
 
 export default function testsuite() {
   localUnitTest();
@@ -12,4 +13,5 @@ export default function testsuite() {
   configModelTest();
   timeUtilsLifeTest();
   moodUtilsTest();
+  statisticsTest();
 }
