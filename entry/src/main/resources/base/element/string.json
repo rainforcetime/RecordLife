@@ -1545,14 +1545,6 @@
       "value": "天"
     },
     {
-      "name": "calendar_lunar",
-      "value": "农历"
-    },
-    {
-      "name": "calendar_solar",
-      "value": "公历"
-    },
-    {
       "name": "life_breakdown",
       "value": "已度过时间"
     },

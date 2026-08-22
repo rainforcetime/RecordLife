@@ -33,7 +33,6 @@ struct DashboardPage {
   // 生命统计面板（更新计划五期）
   @State breakdown: LifeBreakdown = { years: 0, months: 0, days: 0 }
   @State milestones: LifeMilestone[] = []
-  @State birthdayCalendar: string = 'lunar'  // 生日历法（更新计划五期）
 
   async aboutToAppear() {
     try {
@@ -48,8 +47,7 @@ struct DashboardPage {
       this.statistics = StatisticsUtils.calculateStatistics(records)
       this.lifeProgress = StatisticsUtils.getLifeProgress(configManager.getBirthDate(), this.targetAge, TimeUtils.now())
       this.breakdown = StatisticsUtils.getLifeBreakdown(configManager.getBirthDate(), TimeUtils.now())
-      this.birthdayCalendar = configManager.getBirthdayCalendar()
-      this.reloadMilestones(configManager.getBirthDate())
+      this.milestones = StatisticsUtils.getLifeMilestones(configManager.getBirthDate(), this.targetAge, TimeUtils.now())
       Logger.info('[DashboardPage] 统计完成: ' + this.statistics.totalRecords + ' 条 / ' + this.statistics.activeDays + ' 天')
     } catch (error) {
       Logger.error('[DashboardPage] 加载统计失败: ' + JSON.stringify(error))
@@ -188,41 +186,12 @@ struct DashboardPage {
             .margin({ bottom: 16 })
 
             // 生命里程碑
-            Row() {
-              Text($r('app.string.milestone_title'))
-                .fontSize(16)
-                .fontWeight(FontWeight.Bold)
-                .fontColor(this.themeColors.textPrimary)
-                .layoutWeight(1)
-
-              // 生日历法切换（更新计划五期）
-              Row({ space: 6 }) {
-                Text($r('app.string.calendar_lunar'))
-                  .fontSize(12)
-                  .fontColor(this.birthdayCalendar === 'lunar' ? '#FFFFFF' : this.themeColors.textSecondary)
-                  .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                  .backgroundColor(this.birthdayCalendar === 'lunar' ? this.themeColors.primary : 'transparent')
-                  .borderRadius(10)
-                  .onClick(() => {
-                    this.changeBirthdayCalendar('lunar')
-                  })
-
-                Text($r('app.string.calendar_solar'))
-                  .fontSize(12)
-                  .fontColor(this.birthdayCalendar === 'solar' ? '#FFFFFF' : this.themeColors.textSecondary)
-                  .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                  .backgroundColor(this.birthdayCalendar === 'solar' ? this.themeColors.primary : 'transparent')
-                  .borderRadius(10)
-                  .onClick(() => {
-                    this.changeBirthdayCalendar('solar')
-                  })
-              }
-              .padding({ left: 2, right: 2, top: 2, bottom: 2 })
-              .backgroundColor(this.themeColors.background)
-              .borderRadius(12)
-            }
-            .width('100%')
-            .margin({ bottom: 8 })
+            Text($r('app.string.milestone_title'))
+              .fontSize(16)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(this.themeColors.textPrimary)
+              .width('100%')
+              .margin({ bottom: 8 })
 
             ForEach(this.milestones, (milestone: LifeMilestone) => {
               Row() {
@@ -278,27 +247,6 @@ struct DashboardPage {
     .width('100%')
     .height('100%')
     .backgroundColor(this.themeColors.background)
-  }
-
-  // 重新计算里程碑（生日历法切换时，更新计划五期）
-  private reloadMilestones(birthDate: Date) {
-    this.milestones = StatisticsUtils.getLifeMilestones(birthDate, this.targetAge, TimeUtils.now(), this.birthdayCalendar)
-  }
-
-  // 切换生日历法
-  private async changeBirthdayCalendar(calendar: string) {
-    if (this.birthdayCalendar === calendar) {
-      return
-    }
-    this.birthdayCalendar = calendar
-    try {
-      const context = this.getUIContext().getHostContext() as common.UIAbilityContext
-      const configManager = await ConfigManager.getInstance(context)
-      await configManager.setBirthdayCalendar(calendar)
-      this.reloadMilestones(configManager.getBirthDate())
-    } catch (error) {
-      Logger.error('[DashboardPage] 切换生日历法失败: ' + JSON.stringify(error))
-    }
   }
 
   // 数字格式化（ArkTS 兼容：不用 toLocaleString）

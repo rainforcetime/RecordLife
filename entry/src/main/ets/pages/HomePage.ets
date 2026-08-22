@@ -40,7 +40,6 @@ export struct HomePage {
   @State signature: string = ''; // 签名/座右铭（更新计划一期）
   @State privacyMode: boolean = false; // 隐私模式（更新计划三期）
   @State lifePercent: number = 0; // 生命进度百分比（更新计划五期）
-  @State birthdayCalendar: string = 'lunar'; // 生日历法（更新计划五期：'solar'|'lunar'）
   @State userConfig: UserConfig | null = null;
   @State isAccumulatedMode: boolean = true; // true: 累计模式, false: 非累计模式
   @State isRemainingMode: boolean = false; // true: 剩余模式, false: 已存活模式
@@ -141,9 +140,6 @@ export struct HomePage {
     // 加载隐私模式（更新计划三期）
     this.privacyMode = this.configManager.getPrivacyMode();
     
-    // 加载生日历法（更新计划五期）
-    this.birthdayCalendar = this.configManager.getBirthdayCalendar();
-    
     // 加载出生日期
     this.birthDate = this.configManager.getBirthDate();
     
@@ -173,8 +169,6 @@ export struct HomePage {
         this.signature = this.configManager.getConfig()?.profile?.signature ?? ''
         // 同步刷新隐私模式（我的页切换后）
         this.privacyMode = this.configManager.getPrivacyMode()
-        // 同步刷新生日历法（更新计划五期）
-        this.birthdayCalendar = this.configManager.getBirthdayCalendar()
       }
     })
   }
@@ -222,7 +216,7 @@ export struct HomePage {
     // 生命里程碑（与已存活/剩余模式无关，始终展示）
     this.dayOfLife = TimeUtils.getDayOfLife(this.birthDate, now);
     this.weekOfLife = TimeUtils.getWeekOfLife(this.birthDate, now);
-    this.daysUntilBirthday = TimeUtils.getDaysUntilNextBirthday(this.birthDate, now, this.birthdayCalendar);
+    this.daysUntilBirthday = TimeUtils.getDaysUntilNextBirthday(this.birthDate, now);
     
     // 生命进度（更新计划五期）
     this.lifePercent = StatisticsUtils.getLifeProgress(this.birthDate, this.targetAge, now).percent;
@@ -519,38 +513,9 @@ export struct HomePage {
               .fontSize(13)
               .fontColor(this.themeColors.textSecondary)
               .margin({ left: 10 })
-
-            Blank()
-
-            // 生日历法切换（更新计划五期：公历/农历）
-            Row({ space: 6 }) {
-              Text($r('app.string.calendar_lunar'))
-                .fontSize(12)
-                .fontColor(this.birthdayCalendar === 'lunar' ? '#FFFFFF' : this.themeColors.textSecondary)
-                .fontWeight(this.birthdayCalendar === 'lunar' ? FontWeight.Medium : FontWeight.Normal)
-                .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                .backgroundColor(this.birthdayCalendar === 'lunar' ? this.themeColors.primary : 'transparent')
-                .borderRadius(10)
-                .onClick(() => {
-                  this.changeBirthdayCalendar('lunar')
-                })
-
-              Text($r('app.string.calendar_solar'))
-                .fontSize(12)
-                .fontColor(this.birthdayCalendar === 'solar' ? '#FFFFFF' : this.themeColors.textSecondary)
-                .fontWeight(this.birthdayCalendar === 'solar' ? FontWeight.Medium : FontWeight.Normal)
-                .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                .backgroundColor(this.birthdayCalendar === 'solar' ? this.themeColors.primary : 'transparent')
-                .borderRadius(10)
-                .onClick(() => {
-                  this.changeBirthdayCalendar('solar')
-                })
-            }
-            .padding({ left: 2, right: 2, top: 2, bottom: 2 })
-            .backgroundColor(this.themeColors.background)
-            .borderRadius(12)
           }
           .width('100%')
+          .justifyContent(FlexAlign.Center)
           .margin({ bottom: 12 })
 
           // 时间卡片布局
@@ -802,18 +767,6 @@ export struct HomePage {
   .height('100%')
   }
   
-  // 切换生日历法（更新计划五期）
-  private async changeBirthdayCalendar(calendar: string) {
-    if (this.birthdayCalendar === calendar) {
-      return
-    }
-    this.birthdayCalendar = calendar
-    if (this.configManager) {
-      await this.configManager.setBirthdayCalendar(calendar)
-    }
-    this.calculateTime()
-  }
-
   // 保存累计/剩余模式设置（AccumulatedModeToggle 回调，P5；两值幂等写入）
   private async saveModeSettings() {
     if (this.configManager) {

@@ -4,12 +4,9 @@
  */
 import { LifeRecord } from './RecordModel'
 import { TimeUtils } from '../common/utils/TimeUtils'
-import { LunarUtils } from '../common/utils/LunarUtils'
 
 // 一天的毫秒数
 const DAY_MS = 24 * 60 * 60 * 1000
-// UTC+8 偏移（毫秒）
-const TZ_OFFSET_MS = 8 * 60 * 60 * 1000
 
 // 数据看板统计结果
 export interface LifeStatistics {
@@ -142,23 +139,16 @@ export class StatisticsUtils {
   }
 
   /**
-   * 生命里程碑列表（按达成日期升序去重；type 供 UI 层映射文案）
-   * 天数里程碑：1000 / 1 万 / 2 万 / 3 万天（出生日 + N 天）
-   * 年龄里程碑：18 / 30 / 50 岁（按生日历法：'lunar'=农历生日，'solar'=公历生日）
-   * 目标比例：1/4 / 1/2 / 3/4 / 目标年龄（天数比例）
-   * 说明：同日去重（保留先出现者）；农历年龄里程碑超出数据范围时回退天数计算
+   * 生命里程碑列表（按距出生天数升序去重；type 供 UI 层映射文案）
+   * 天数里程碑：1000 / 1 万 / 2 万 / 3 万天
+   * 年龄里程碑：18 / 30 / 50 岁
+   * 目标比例：1/4 / 1/2 / 3/4 / 目标年龄
+   * 说明：不同 targetAge 下年龄与比例可能同日，按出现顺序去重（保留先出现者）
    */
-  static getLifeMilestones(birthDate: Date, targetAge: number, now?: Date, calendar?: string): LifeMilestone[] {
+  static getLifeMilestones(birthDate: Date, targetAge: number, now?: Date): LifeMilestone[] {
     const safeTarget = targetAge > 0 ? targetAge : 80
+    const livedDays = TimeUtils.getDayOfLife(birthDate, now)
     const base = birthDate.getTime()
-    const today0 = TimeUtils.parseDate(TimeUtils.formatDate(now ?? TimeUtils.now()))
-
-    // 出生日期的农历信息（农历生日计算用）
-    const birthLunar = LunarUtils.solarToLunar(birthDate)
-    // 出生日期的公历月日分量（UTC+8，公历生日计算用）
-    const birthSolarYear = TimeUtils.getFullYear(birthDate)
-    const birthSolarMonth = TimeUtils.getMonth(birthDate)
-    const birthSolarDay = TimeUtils.getDate(birthDate)
 
     const candidates: Array<[string, number]> = [
       ['days_1000', 1000],
@@ -174,52 +164,33 @@ export class StatisticsUtils {
       ['target', safeTarget * 365]
     ]
 
-    const milestones: LifeMilestone[] = []
-    const seenDates = new Set<number>()
+    // 按天数去重（同日保留先出现者）并升序
+    const seen = new Set<number>()
+    const sorted: Array<[string, number]> = []
     for (const candidate of candidates) {
+      if (!seen.has(candidate[1])) {
+        seen.add(candidate[1])
+        sorted.push(candidate)
+      }
+    }
+    sorted.sort((a, b) => a[1] - b[1])
+
+    const milestones: LifeMilestone[] = []
+    for (const candidate of sorted) {
       // ArkTS 不支持解构声明，改用索引访问
       const type = candidate[0]
-      const approxDays = candidate[1]
-      let date: Date
-      if (type.startsWith('age_')) {
-        // 年龄里程碑：按生日历法计算
-        const age = parseInt(type.substring(4))
-        if (calendar === 'solar') {
-          // 公历生日：出生月日 + N 年（2/29 平年由 Date.UTC 溢出滚到 3/1）
-          date = new Date(Date.UTC(birthSolarYear + age, birthSolarMonth, birthSolarDay) - TZ_OFFSET_MS)
-        } else {
-          // 农历生日（默认）：出生农历年 + N 年 → 同农历月日
-          const lunarYear = birthLunar.year + age
-          if (lunarYear <= 2100 && lunarYear >= 1900) {
-            date = LunarUtils.lunarToSolar(lunarYear, birthLunar.month, birthLunar.day, birthLunar.isLeapMonth)
-          } else {
-            // 超出农历数据范围，回退天数计算
-            date = new Date(base + approxDays * DAY_MS)
-          }
-        }
-      } else {
-        // 天数/比例里程碑：出生日 + N 天
-        date = new Date(base + approxDays * DAY_MS)
-      }
-
-      const dateKey = TimeUtils.parseDate(TimeUtils.formatDate(date)).getTime()
-      if (seenDates.has(dateKey)) {
-        continue  // 同日去重（保留先出现者）
-      }
-      seenDates.add(dateKey)
-
-      const reached = dateKey <= today0.getTime()
+      const daysFromBirth = candidate[1]
+      // 达成日期 = 出生 + daysFromBirth 天（UTC+8）
+      const date = TimeUtils.formatDate(new Date(base + daysFromBirth * DAY_MS))
+      const reached = livedDays >= daysFromBirth
       milestones.push({
         type: type,
-        daysFromBirth: approxDays,
+        daysFromBirth: daysFromBirth,
         reached: reached,
-        daysLeft: reached ? 0 : Math.round((dateKey - today0.getTime()) / DAY_MS),
-        date: TimeUtils.formatDate(date)
+        daysLeft: reached ? 0 : daysFromBirth - livedDays,
+        date: date
       })
     }
-
-    // 按达成日期升序
-    milestones.sort((a, b) => TimeUtils.parseDate(a.date).getTime() - TimeUtils.parseDate(b.date).getTime())
     return milestones
   }
 }

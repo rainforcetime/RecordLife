@@ -85,28 +85,17 @@ export default function statisticsTest() {
   });
 
   describe('getLifeMilestones', () => {
-    it('已达成与未来里程碑正确（农历年龄里程碑）', 0, () => {
+    it('已达成与未来里程碑正确', 0, () => {
       const birth = TimeUtils.parseDate('1990-06-15');
       const ms = StatisticsUtils.getLifeMilestones(birth, 80, TimeUtils.parseDate('2025-06-15'));
       expect(ms.length).assertEqual(11);
-      // 升序：第 1000 天最早，目标年龄最后（农历版实际日期）
+      // 升序：第 1000 天最早，目标年龄最后
       expect(ms[0].type).assertEqual('days_1000');
       expect(ms[0].reached).assertTrue();
       expect(ms[0].date).assertEqual('1993-03-11');
       expect(ms[10].type).assertEqual('target');
       expect(ms[10].reached).assertFalse();
-      expect(ms[10].date).assertEqual('2070-05-26');
-      // 18 岁农历生日（1990 农历五月廿三 → 2008 年同日）
-      expect(ms[1].type).assertEqual('age_18');
-      expect(ms[1].date).assertEqual('2008-06-10');
-    });
-
-    it('公历日历法：18 岁 = 2008-06-15（阳历生日）', 0, () => {
-      const birth = TimeUtils.parseDate('1990-06-15');
-      const ms = StatisticsUtils.getLifeMilestones(birth, 80, TimeUtils.parseDate('2025-06-15'), 'solar');
-      const age18 = ms.find(m => m.type === 'age_18');
-      expect(age18 !== undefined).assertTrue();
-      expect(age18!.date).assertEqual('2008-06-15');
+      expect(ms[10].daysLeft).assertEqual(80 * 365 - 12785);
     });
 
     it('出生当天全部未达成', 0, () => {

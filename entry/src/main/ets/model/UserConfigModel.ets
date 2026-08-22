@@ -47,7 +47,6 @@ export interface AppSettings {
   customMoods?: Mood[]; // 用户自定义的心情列表（可选，更新计划二期）
   privacyMode?: boolean; // 隐私模式（可选，默认 false，更新计划三期：隐藏首页出生日期等敏感信息）
   recordTemplates?: RecordTemplate[]; // 记录模板列表（可选，更新计划三期）
-  birthdayCalendar?: string; // 生日历法（可选，'solar' | 'lunar'，默认 'lunar'，更新计划五期：距生日/年龄里程碑）
 }
 
 // 备份配置

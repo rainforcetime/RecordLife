@@ -47,36 +47,25 @@ export default function timeUtilsLifeTest() {
     });
   });
 
-  describe('getDaysUntilNextBirthday（农历生日）', () => {
-    // 1990-06-15 出生 = 农历五月廿三；2025 农历生日 2025-06-18、2026 农历生日 2026-07-07（2026 有闰月）
-    it('今天农历生日返回0', 0, () => {
-      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-18'))).assertEqual(0);
+  describe('getDaysUntilNextBirthday', () => {
+    it('今天生日返回0', 0, () => {
+      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-15'))).assertEqual(0);
     });
 
-    it('农历生日3天后（阳历生日 6/15 已过，农历 6/18 未到）', 0, () => {
-      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-15'))).assertEqual(3);
+    it('生日10天后返回10', 0, () => {
+      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-05'))).assertEqual(10);
     });
 
-    it('农历生日13天后', 0, () => {
-      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-05'))).assertEqual(13);
+    it('生日昨天刚过（平年）返回364', 0, () => {
+      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-16'))).assertEqual(364);
     });
 
-    it('明天农历生日返回1', 0, () => {
-      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-17'))).assertEqual(1);
+    it('跨年场景：1月1日距12月31日生日364天', 0, () => {
+      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-12-31'), TimeUtils.parseDate('2025-01-01'))).assertEqual(364);
     });
 
-    it('跨年：2025-12-31 距 2026 农历生日（07-07）158 天', 0, () => {
-      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-12-31'))).assertEqual(158);
-    });
-  });
-
-  describe('getDaysUntilNextBirthday（公历生日）', () => {
-    it('公历生日当天返回0', 0, () => {
-      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-15'), 'solar')).assertEqual(0);
-    });
-
-    it('公历生日已过3天 → 明年生日362天', 0, () => {
-      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-18'), 'solar')).assertEqual(362);
+    it('生日前天（明天生日）返回1', 0, () => {
+      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-14'))).assertEqual(1);
     });
   });
 }
