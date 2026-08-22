@@ -234,7 +234,7 @@ export struct FilterBar {
         this.FilterSheetBuilder()
       },
       placement: Placement.Bottom,
-      offsetY: 6,
+      offset: { x: 0, y: 6 },
       enableArrow: true,
       arrowPointPosition: ArrowPointPosition.START,
       maskColor: '#00000000',
