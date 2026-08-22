@@ -308,6 +308,7 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | P4 | ViewModel 瘦身（IO 职责下沉） | ✅ | 2026-08-22 | AccountViewModel 19.1KB → 13.9KB（存储统计下沉 `StorageService`、`[StorageDebug]` 日志清零，轮次 8）；NowViewModel.buildTimeline 抽为 `model/RecordModel.buildTimelineData` 纯函数（可单测，轮次 9）；Preferences/fileIo 直接引用已消除（P2/P3）；细节清理并入 P6 |
 | P5 | Page 层清理（`@Entry` 标注、路由注册） | ✅ | 2026-08-22 | NowPage 去 `@Entry` + `main_pages.json` 3 页（A4）；顶层 `utils/` 并入 `common/utils/`（C1）；HomePage 累计模式切换抽 `AccumulatedModeToggle` 组件（C3）；NowPage 深拷贝替换（B6）；见轮次 10 |
 | P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
+| — | 可测试性提升（阶段 6，hypium 单测） | ✅ | 2026-08-22 | 15 个单测覆盖 `buildTimelineData` / `formatStorageSize` / `calcUsageDays` / `validateConfig` / `TimeUtils`（见轮次 11）；⚠️ 构造器注入（A5，去除 AppStorage 硬依赖）为渐进项未全量改造 |
 | P7 | `@kit.*` 统一 & 依赖整理 | ⬜ | — | 11 处旧式 `@ohos.*` import 分布在 7 个文件 |
 | P8 | 全量回归 + 旧备份导入冒烟 | ⬜ | — | 最终验收 |
 
@@ -643,6 +644,30 @@ entry/src/main/ets/
 - `common/utils/ShareUtils` 属业务分享能力，后续可评估迁 `service/`（C1 遗留说明）
 
 **下一轮计划**：P6 — 可测试性提升（为 `buildTimelineData` / `StorageService.formatStorageSize|calcUsageDays` / `validateConfig` 补单元测试，hypium 接入）
+
+### 轮次 11 — 2026-08-22（可测试性提升：hypium 单测接入）
+
+> 前置：用户实机验证 P5 轮次 10 改动 ✅ 通过。
+
+**本轮目标**：为 P3/P4 抽取的纯函数补 hypium 单元测试（C2），建立业务单测基线。
+
+**涉及文件**：
+- `entry/src/test/RecordModel.test.ets`（新增）— `buildTimelineData` 4 用例（空记录 / 年月日分组降序 / 同日合并 / 当前年月展开）
+- `entry/src/test/StorageService.test.ets`（新增）— `formatStorageSize` 4 用例（B/KB/MB/GB）+ `calcUsageDays` 3 用例
+- `entry/src/test/ConfigModel.test.ets`（新增）— `validateConfig` 6 用例（默认/格式错/未来日期/早于1900/频率越界/合法）+ `TimeUtils` 2 用例
+- `entry/src/test/List.test.ets`（修改）— 注册三个新测试套件（保留模板 localUnitTest）
+
+**已完成**：
+- [x] 15 个业务单测（覆盖时间线构建、存储格式化/天数、配置校验、UTC+8 时间工具）
+- [x] 被测对象均为纯函数/纯逻辑（无系统 API 运行时依赖：`StorageService.getAppStorageSize` 未测，其依赖 storageStatistics 运行时能力）
+- [x] 静态验证通过（import 路径 / 被测符号存在 / hypium API 用法）
+
+**遗留问题**：
+- ⚠️ 本机无法运行测试，需用户在 DevEco 执行 `hvigorw test`（或 IDE 运行本地单测）确认 15 用例全绿
+- 构造器注入（A5，去除 AppStorage 硬依赖）未做——涉及全工程单例改造，风险高，标记为渐进项
+- `StorageService.getAppStorageSize` / repository 层 / TagService 等依赖系统 API 或单例的模块未纳入单测（可后续用 hamock）
+
+**下一轮计划**：P7 — `@kit.*` 统一 & 依赖整理（11 处旧式 `@ohos.*` import 分布在 7 个文件）
 
 ### 10.3 数据兼容性验证记录
 

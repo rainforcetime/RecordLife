@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 RecordLife 项目的**现状实现快照**，供不同窗口/会话的 AI 重构任务作为唯一参考，避免每次从头通读全部源码。
 > **配套文档**：`docs/refactoring-plan.md` 是重构方案与进度跟踪；本文档只描述**当前代码实际怎么实现**，两者配合使用。
-> **最后更新**：2026-08-22（P5 page 层清理完成；基于当前工作区源码逐文件核对）
+> **最后更新**：2026-08-22（可测试性提升完成，业务单测接入；基于当前工作区源码逐文件核对）
 > **阅读方式**：全文关键结论均附 `file:line` 引用，可快速定位源码；改动任何涉及数据模型 / 持久化 / 备份导入导出的代码前，**必须先读 §5 与 §6**。
 
 ---
@@ -523,7 +523,9 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | entrybackupability/EntryBackupAbility.ets | 继承 `BackupExtensionAbility`，`onBackup`/`onRestore` 均为**空实现占位**（仅 hilog），实际备份走系统默认机制 |
 
 ### 测试现状
-- `entry/src/ohosTest/ets/test/Ability.test.ets`、`List.test.ets`（仪器测试）与 `entry/src/test/LocalUnit.test.ets`、`List.test.ets`（本地单测）均存在，但**全部是 hypium 模板示例（assertContain），无业务用例**（重构 C2）。
+- `entry/src/ohosTest/ets/test/Ability.test.ets`、`List.test.ets`（仪器测试）与 `entry/src/test/LocalUnit.test.ets`、`List.test.ets`（本地单测）。
+- **业务单测已接入**（P6 轮次 11）：`entry/src/test/` 下 `RecordModel.test.ets`（buildTimelineData 4 用例）、`StorageService.test.ets`（formatStorageSize/calcUsageDays 7 用例）、`ConfigModel.test.ets`（validateConfig/TimeUtils 8 用例），由 `List.test.ets` 注册，共 15 个用例。
+- 被测对象均为纯函数；依赖系统 API 的 `StorageService.getAppStorageSize` 未测（可用 hamock 后续补）。
 - 依赖已配：`@ohos/hypium@1.0.25`、`@ohos/hamock@1.0.0`。
 
 ---
@@ -540,7 +542,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | 6 | 调试日志泛滥（`console.info` 100+，含 `>>>`/`[StorageDebug]`/`[ConfigManager]` 等） | 全工程 | B3（`[StorageDebug]` 已清零，P4 轮次 8；其余待收敛） |
 | 7 | `uiContext` 获取失败时 `getPromptAction` 等生命周期初始化风险 | NowPage.ets:82 等 | B7 |
 | 8 | ~~`uriToSandboxPath` 三处重复实现~~ ✅ 已收敛 | 统一至 `common/utils/ImagePathUtils.ets`（P3 轮次 4）；MorePageHelper 保留委托兼容 | C1 已解决 |
-| 9 | 无业务单测；~~ViewModel 直接 import fileIo~~ ✅ 已部分解决 | NowViewModel 的 fileIo 已下沉至 `service/ImageFileService`（P3 轮次 4）；AccountViewModel 仍直接 import fileIo（loadSavedAvatar 用）；单测未补 | A3/C2/P4 |
+| 9 | ~~无业务单测~~ ✅ 已解决（15 用例）；ViewModel fileIo 已下沉 | NowViewModel 的 fileIo 已下沉至 `service/ImageFileService`（P3 轮次 4）；AccountViewModel 仍直接 import fileIo（loadSavedAvatar 用）；单测见 `entry/src/test/`（P6 轮次 11） | A3/C2/P4 |
 | 10 | 页面/组件硬依赖单例 + AppStorage，不可注入 | 全工程 | A5/P6 |
 | 11 | `imagePaths` 存在「URI」与「沙箱路径」两种历史格式 | §4.3 | 重构注意 |
 | 12 | 示例数据含预设表外标签 id（`entertainment`/`family`） | NowViewModel.ets:139/165 | 显示回退 |
