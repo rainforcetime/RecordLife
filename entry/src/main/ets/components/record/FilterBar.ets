@@ -1,18 +1,24 @@
-// 标签筛选栏组件：components/record/TagFilterBar.ets
+// 统一筛选栏组件：components/record/FilterBar.ets
+// 合并标签筛选 + 心情筛选（更新计划二期）：单行横向滚动，视觉统一
+// 交互：心情单选（再点取消）、标签单选（再点取消）、"全部"清除所有筛选；心情与标签可叠加过滤
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { Tag, DEFAULT_TAGS } from '../../common/types'
 import { buildDisplayTags } from '../../common/utils/TagDisplayUtils'
+import { MoodUtils } from '../../common/utils/MoodUtils'
 import { TagService } from '../../service/TagService'
 import { common } from '@kit.AbilityKit'
 import { promptAction } from '@kit.ArkUI'
 import { Logger } from '../../common/utils/Logger'
 
 @Component
-export struct TagFilterBar {
+export struct FilterBar {
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
 
-  // 已选中的标签ID列表（双向绑定）
+  // 已选中的标签ID列表（双向绑定，单选）
   @Link selectedTagIds: string[]
+
+  // 选中的心情（双向绑定，'' = 全部；更新计划二期）
+  @Link filterMood: string
 
   // 筛选变化回调
   onChange?: () => void
@@ -27,17 +33,22 @@ export struct TagFilterBar {
   // TagService
   private tagService: TagService | null = null
 
+  // 是否无任何筛选（"全部"选中态）
+  private isNoFilter(): boolean {
+    return this.selectedTagIds.length === 0 && this.filterMood.length === 0
+  }
+
   async aboutToAppear() {
     try {
       this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.loadTags()
     } catch (error) {
-      Logger.error('[TagFilterBar] 初始化失败: ' + JSON.stringify(error))
+      Logger.error('[FilterBar] 初始化失败: ' + JSON.stringify(error))
     }
   }
 
   private onTagVersionChange() {
-    Logger.info('[TagFilterBar] tagVersion 改变，重新加载标签')
+    Logger.info('[FilterBar] tagVersion 改变，重新加载标签')
     this.loadTags()
   }
 
@@ -97,10 +108,19 @@ export struct TagFilterBar {
     }
   }
 
-  // 清除所有筛选
+  // 切换心情（单选，再点取消；不影响标签筛选）
+  private toggleMood(mood: string) {
+    this.filterMood = this.filterMood === mood ? '' : mood
+    if (this.onChange) {
+      this.onChange()
+    }
+  }
+
+  // 清除所有筛选（标签 + 心情）
   private clearAll() {
-    if (this.selectedTagIds.length > 0) {
+    if (this.selectedTagIds.length > 0 || this.filterMood.length > 0) {
       this.selectedTagIds = []
+      this.filterMood = ''
       if (this.onChange) {
         this.onChange()
       }
@@ -110,15 +130,36 @@ export struct TagFilterBar {
   build() {
     Scroll() {
       Row({ space: 0 }) {
-        // "全部" 按钮
+        // "全部" 按钮（清除标签 + 心情筛选）
         this.ChipItem(
           $r('app.string.all'),
           '#909399',
-          this.selectedTagIds.length === 0,
+          this.isNoFilter(),
           () => {
             this.clearAll()
           }
         )
+
+        // 心情筛选（更新计划二期）
+        ForEach(MoodUtils.MOODS, (mood: string) => {
+          this.ChipItem(
+            MoodUtils.getMoodEmoji(mood),
+            this.themeColors.primary,
+            this.filterMood === mood,
+            () => {
+              this.toggleMood(mood)
+            }
+          )
+        }, (mood: string) => `mood-${mood}`)
+
+        // 心情与标签分隔线
+        if (this.availableTags.length > 0) {
+          Column()
+            .width(1)
+            .height(18)
+            .backgroundColor(this.themeColors.divider)
+            .margin({ right: 8 })
+        }
 
         // 标签列表
         ForEach(this.availableTags, (tag: Tag) => {

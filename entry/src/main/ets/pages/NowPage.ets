@@ -8,8 +8,7 @@ import { TimelineSection } from '../components/record/TimelineSection'
 import { AddRecordSection } from '../components/record/AddRecordSection'
 import { EditRecordDialog } from '../components/dialog/EditRecordDialog'
 import { SearchBar } from '../components/common/SearchBar'
-import { TagFilterBar } from '../components/record/TagFilterBar'
-import { MoodFilterBar } from '../components/record/MoodFilterBar'
+import { FilterBar } from '../components/record/FilterBar'
 import { CalendarView } from '../components/calendar/CalendarView'
 import { RefreshManager } from '../common/managers/RefreshManager'
 import { ColorUtils } from '../common/ColorUtils'
@@ -92,7 +91,7 @@ struct NowPage {
 
   // 自定义标签（用于搜索时标签名称查找）
   @State private customTags: Tag[] = []
-  @State private tagVersion: number = 0  // 标签版本号，变化时触发 TagFilterBar 重载
+  @State private tagVersion: number = 0  // 标签版本号，变化时触发 FilterBar 重载
   
   // PromptAction（用于显示 Toast）
   private promptAction: PromptAction | null = null
@@ -209,16 +208,11 @@ struct NowPage {
             })
             .margin({ bottom: 8 })
             
-            // 标签筛选栏
-            TagFilterBar({
+            // 统一筛选栏（标签 + 心情，更新计划二期）
+            FilterBar({
               selectedTagIds: $filterTagIds,
+              filterMood: $filterMood,
               tagVersion: this.tagVersion
-            })
-            .margin({ bottom: 8 })
-            
-            // 心情筛选栏（更新计划二期）
-            MoodFilterBar({
-              filterMood: $filterMood
             })
             .margin({ bottom: 8 })
             
