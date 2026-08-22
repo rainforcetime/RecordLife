@@ -34,17 +34,23 @@
 
 ```
 entry/src/main/ets/
-├── common/           # 公共工具类和类型定义
-├── components/       # 可复用UI组件
+├── common/           # 公共工具、管理器与事件处理器
+│   ├── handlers/    # 页面事件处理器
+│   ├── managers/    # 跨页管理器
+│   └── utils/       # 工具类（时间/图片/分享/日志等）
+├── components/       # 可复用 UI 组件
 │   ├── calendar/    # 日历相关组件
 │   ├── dialog/      # 对话框组件
+│   ├── home/        # 首页组件
 │   ├── record/      # 记录卡片组件
 │   ├── setting/     # 设置项组件
 │   ├── share/       # 分享组件
 │   └── user/        # 用户信息组件
 ├── config/          # 应用配置管理
+├── model/           # 领域模型
 ├── pages/           # 页面入口文件
-├── utils/           # 工具函数
+├── repository/      # 数据仓库层
+├── service/         # 服务层（图片/标签/备份/导入导出/存储）
 └── viewmodel/       # 数据模型与业务逻辑
 ```
 
@@ -66,7 +72,7 @@ MIT License
 
 ### 🚀 更新计划
 
-以下是按难度和重要性排序的功能规划，已实现的功能标记为 ✅。
+以下是按难度和重要性排序的功能规划，已实现的功能标记为 ✅。**详细分期路线（含依赖分析、数据兼容性、每期验收清单）见 [`docs/update-plan.md`](docs/update-plan.md)。**
 
 #### ⭐ 低难度
 

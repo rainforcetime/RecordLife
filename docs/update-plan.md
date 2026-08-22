@@ -1,0 +1,164 @@
+# RecordLife 更新计划（重构后 v2.x 功能路线）
+
+> **状态**：规划中（2026-08-22），随开发滚动更新
+> **前置**：架构重构已完成（git 2.2.19，P0~P8 + A5 + 国际化 + 日志收敛 + 15 单测）；本文档基于 `README.md`「AI 对新增功能的分析」中**未实现**的功能清单规划。
+> **配套文档**：`docs/refactoring-plan.md`（重构历史）、`docs/technical-reference.md`（当前实现参考，改动涉及数据模型/持久化/备份必须先读 §5 与 §6）。
+> **版本说明**：文中「一期/二期…」为发布规划代号；落地时同步 bump `AppScope/app.json5` 的 `versionName/versionCode`（当前 2.0.0/20000）。git 提交标题沿用 `2.x.y` 前缀递增（与 versionName 解耦）。
+
+---
+
+## 1. 规划原则（稳扎稳打）
+
+1. **小步快跑**：每期 2~4 个内聚功能，完成即发版，不做大版本捆绑。
+2. **先易后难、风险递增**：纯计算/纯 UI 先行 → 数据模型扩展 → 系统能力（权限/通知/后台）。
+3. **数据兼容红线（延续 C1~C6）**：任何数据模型改动**只允许新增可选字段**，且必须提供默认值；涉及持久化/备份的期次必须做**旧备份导入回归**。
+4. **架构一致**：新功能遵循 `model / repository / service / viewmodel / components / pages` 分层；可复用能力（TimeUtils 纯函数、StorageService、ImageFileService、TagFilterBar 等）优先扩展而非新造。
+5. **可验证闭环**：每期结束 = DevEco 编译零错误 + 新增纯函数单测 + 实机回归（记录增删改查 / 备份导出导入）+ 中英文资源回归。
+6. **国际化延续（B2 红线）**：新 UI 文本一律 `$r()` 资源化，禁止硬编码中文。
+
+---
+
+## 2. 功能依赖与风险矩阵
+
+> 难度/推荐标记沿用 README；「数据影响」为兼容性评估（✅ 无持久化改动 / ⚠️ 新增可选字段 / 🔴 结构级改动需评审）。
+
+| 功能 | 难度 | 依赖 | 数据影响 | 关键风险 / 前置验证 |
+| --- | --- | --- | --- | --- |
+| 周数/总天数 | ⭐ | TimeUtils | ✅ 纯计算 | 无（纯函数可单测） |
+| 每年生日提醒 | ⭐ | TimeUtils | ✅ 纯计算 | 无 |
+| 签名/座右铭 | ⭐ | UserProfile | ⚠️ `signature?` | 旧备份缺字段走默认值 |
+| 字体大小设置 | ⭐ | AppSettings | ⚠️ `fontSize?` | 全局样式需统一入口 |
+| 心情标记 | ⭐🔥 | LifeRecord | ⚠️ `mood?` | 编辑 UI + 筛选器扩展 |
+| 撤销删除 | ⭐ | RecordRepository | ✅ 内存暂存 | 软删除 3s 窗口，不落盘 |
+| 缓存清理 | ⭐ | StorageService / ImageFileService | ✅ | 清理白名单需谨慎 |
+| 隐私模式 | ⭐ | AppSettings | ⚠️ `privacyMode?` | 首页敏感字段联动 |
+| 记录模板 | ⭐ | 新 preferences key | ⚠️ 新 key | 模板数据模型 |
+| 每日提醒通知 | ⭐⭐🔥 | `enableNotifications`（已有） | ✅ | **前置验证**：`@kit.NotificationKit` 本地通知 + 权限弹窗可行性 |
+| 批量删除 | ⭐⭐ | RecordViewModel 删除流程 | ✅ | 多选 UI 复杂度 |
+| 时间线快速跳转 | ⭐⭐ | NowPage 时间线 | ✅ | 侧边索引定位逻辑 |
+| 多倒计时 | ⭐⭐ | AppSettings | ⚠️ `countdowns?`（数组） | 数组字段序列化兼容 |
+| 生命进度可视化 | ⭐⭐ | TimeUtils | ✅ 纯计算 | 环形进度 UI |
+| 生命统计面板 | ⭐⭐ | RecordRepository 聚合 | ✅ | 统计口径定义 |
+| 数据看板 | ⭐⭐⭐🔥 | RecordRepository 聚合 | ✅ | 聚合查询性能（记录量大时） |
+| 日记月历统计（热力图） | ⭐⭐⭐ | CalendarView | ✅ | 日历组件扩展 |
+| 图片压缩 | ⭐⭐ | ImageFileService | ⚠️ 元数据不变，图片文件替换 | **质量风险**：需压缩率/质量对照；替换后引用一致性 |
+| 引导页 | ⭐⭐ | EntryAbility 路由 | ⚠️ 新 preferences key | 首装判定 |
+| 记录连续打卡 | ⭐⭐ | RecordRepository | ✅ | 连续天数算法（可单测） |
+| 剪贴板识别 | ⭐⭐ | 剪贴板 API | ✅ | **前置验证**：API 可用性 + 隐私提示 |
+| 位置标记 | ⭐⭐⭐ | LifeRecord | ⚠️ `location?` | **前置验证**：定位权限（敏感）+ 逆地理编码能力 |
+| 导出 Markdown/PDF | ⭐⭐⭐ | ZipTransferService 模式复用 | ✅ | 文件生成 + 分享链路 |
+| 应用锁 | ⭐⭐⭐ | 全局生命周期 | ✅ 纯前端 | 安全敏感，防绕过需评审 |
+| 快捷方式 | ⭐⭐⭐ | 桌面快捷方式 API | ✅ | **前置验证**：API 可用性 |
+| 语音记录 | ⭐⭐⭐⭐ | 本地语音识别 | ⚠️ `voicePath?`/文本 | **前置验证**：HarmonyOS 本地识别 SDK 可用性（不确定，风险最高） |
+| 桌面小组件 | ⭐⭐⭐⭐ | FormExtensionAbility | ✅ | 架构级扩展（新增 extension 模块），独立评估 |
+
+---
+
+## 3. 分期计划
+
+### 一期 —— 轻量增强（建议 versionName 2.1）
+
+**目标**：零持久化风险的第一批功能，建立「纯函数 + 单测」的正反馈。
+
+- [ ] ⭐ **周数/总天数** — `TimeUtils` 新增纯函数（出生日期 → 第几周/第几天），NowPage 展示
+- [ ] ⭐ **每年生日提醒** — `TimeUtils` 新增纯函数（距下次生日天数），NowPage/我的页展示
+- [ ] ⭐ **签名/座右铭** — `UserProfile.signature?`（可选字段），我的页编辑 + 首页展示
+- [ ] ⭐ **字体大小设置** — `AppSettings.fontSize?`（'small'|'medium'|'large'），我的页设置项 + 全局样式入口
+
+**涉及模块**：`common/utils/TimeUtils`、`model/UserConfigModel`、`pages/NowPage`、`pages/AccountPage`、`components/`
+**数据影响**：✅/⚠️ 仅新增可选字段（旧备份导入自动走默认值，无迁移逻辑）
+**验证清单**：单测（3 个新纯函数）+ 实机回归 + 备份导入（保险起见仍跑一遍）
+
+### 二期 —— 记录体验（建议 versionName 2.2）
+
+**目标**：核心记录链路增强，涉及 `LifeRecord` 扩展。
+
+- [ ] ⭐🔥 **心情标记** — `LifeRecord.mood?`（可选 enum：happy/calm/sad 等 + 资源图标），记录编辑 UI + 时间线展示 + 按心情筛选（复用 TagFilterBar 模式）
+- [ ] ⭐ **撤销删除** — `RecordViewModel` 删除改为暂存（内存 3s 可撤销，超时落盘），不改变存储格式
+
+**涉及模块**：`model/RecordModel`、`repository/RecordRepository`、`viewmodel/NowViewModel`、`components/record/`
+**数据影响**：⚠️ `LifeRecord.mood?` 可选字段（备份导出自动携带，旧备份导入无影响）
+**验证清单**：单测（mood 序列化）+ **旧备份导入实机验证**（必做）+ 编辑/删除/筛选回归
+
+### 三期 —— 效率与隐私（建议 versionName 2.3）
+
+**目标**：工具化能力 + 隐私保护。
+
+- [ ] ⭐ **缓存清理** — 复用 `StorageService` 统计 + `ImageFileService`/分享缓存目录清理（白名单：`cacheDir/share_*`、`filesDir/records` 孤儿图等），我的页一键清理
+- [ ] ⭐ **隐私模式** — `AppSettings.privacyMode?`，我的页开关，首页/我的页敏感数据（出生日期、倒计时）模糊显示
+- [ ] ⭐ **记录模板** — 模板列表持久化（新 preferences key，结构仿 customTags），记录编辑页「一键使用」
+
+**涉及模块**：`service/StorageService`、`model/UserConfigModel`、`config/ConfigManager`、`components/record/`
+**数据影响**：⚠️ 新增可选字段 + 新 preferences key（各自独立，互不影响备份兼容）
+**验证清单**：缓存清理误删检查（重要）+ 隐私开关回归 + 模板 CRUD
+
+### 四期 —— 提醒与引导（建议 versionName 2.4）
+
+**目标**：系统能力接入（本地通知），需要**先做能力验证再排期**。
+
+- [ ] ⭐⭐🔥 **每日提醒通知** — 新建 `service/NotificationService`（`@kit.NotificationKit`：权限请求 + 每日定时本地通知），复用已有 `AppSettings.enableNotifications` 开关，我的页设置入口
+- [ ] ⭐⭐ **引导页** — 首装标记（新 preferences key），EntryAbility 首帧路由到引导页，3~4 页滑动介绍
+
+**涉及模块**：`service/NotificationService`（新）、`entryability/EntryAbility`、`pages/`
+**数据影响**：✅（通知不落业务数据）
+**前置验证**：`notificationManager.requestEnableNotification` 权限流程 + 定时通知在 HarmonyOS 的机制（是否需后台/重复调度）
+**验证清单**：真机通知接收 + 权限拒绝路径 + 引导页首装/再次启动
+
+### 五期 —— 数据价值（建议 versionName 2.5）
+
+**目标**：统计与可视化，聚合逻辑全部纯函数化。
+
+- [ ] ⭐⭐⭐🔥 **数据看板** — `RecordRepository` 聚合查询 + 纯函数统计（总数/活跃天数/日均/最长连续），新增看板页或首页区块
+- [ ] ⭐⭐ **生命进度可视化** — 环形进度条（已活/目标年龄比例，纯计算），首页卡片
+- [ ] ⭐⭐ **生命统计面板** — 已度过时间百分比、里程碑事件（延续数据看板统计口径）
+
+**涉及模块**：`repository/RecordRepository`、`model/RecordModel`（统计纯函数）、`components/home/`
+**数据影响**：✅
+**验证清单**：统计纯函数单测（边界：0 记录/单日/跨年）+ 大记录量性能抽查
+
+### 六期 —— 批量与导航（建议 versionName 2.6）
+
+**目标**：时间线体验补强。
+
+- [ ] ⭐⭐ **批量删除** — 时间线长按进入多选模式，批量删除（复用二期撤销删除）
+- [ ] ⭐⭐ **时间线快速跳转** — 侧边年份/月份索引，点击滚动定位（复用 TimelineYear/Month 结构）
+- [ ] ⭐⭐ **多倒计时** — `AppSettings.countdowns?`（数组：名称/目标时间），首页卡片切换
+
+**涉及模块**：`pages/NowPage`、`components/record/`、`model/UserConfigModel`
+**数据影响**：⚠️ `countdowns?` 数组字段（序列化走现有 JSON 管道，旧备份无此字段）
+**验证清单**：批量删除与撤销联动 + 跳转定位准确 + 倒计时持久化
+
+### 远期 v3.x —— 逐项评估（不承诺排期）
+
+> 以下功能各有**前置验证/风险点**（见 §2 矩阵），单独立项、验证通过才进版本：
+
+- 图片压缩（质量对照 + 文件引用一致性）
+- 位置标记（定位权限 + 逆地理编码能力验证）
+- 导出 Markdown/PDF（生成 + 分享链路，可复用 ZipTransferService 模式）
+- 应用锁（安全评审）
+- 桌面快捷方式（API 验证）
+- 日记月历热力图（CalendarView 扩展）
+- 记录连续打卡（算法纯函数化）
+- 剪贴板识别（API + 隐私提示）
+- 语音记录（HarmonyOS 本地识别能力验证，**风险最高**）
+- 桌面小组件（FormExtensionAbility，架构级评估）
+
+---
+
+## 4. 每期通用验收清单
+
+1. DevEco 编译零错误、零警告新增
+2. 新增纯函数均有 hypium 单测（边界用例）
+3. 实机回归：记录增删改查、时间线/日历、分享、主题切换
+4. **涉及数据模型/备份的期次**：旧备份 `RecordLife_all_*.zip` 导入无损（§0 红线）
+5. 中英文切换回归（新文本全部 `$r()` 资源化）
+6. `docs/technical-reference.md` 同步（工具清单、数据模型、§12 现状）
+7. 提交注明实机验证结果
+
+---
+
+## 5. 版本节奏建议
+
+- 每期独立发版（2.1 → 2.2 → …），单期工作量控制在 1~2 周
+- 一期~三期不依赖系统能力，可稳定推进；四期前先做通知能力验证
+- 任一功能若前置验证失败（如语音识别无可用 SDK），降级为「记录语音附件」或移出计划，不阻塞主线
