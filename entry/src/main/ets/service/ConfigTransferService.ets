@@ -9,6 +9,7 @@ import { ConfigManager } from '../config/ConfigManager'
 import { AppInfoManager } from '../config/AppInfoConfig'
 import { ImageBase64Utils } from '../common/utils/ImageBase64Utils'
 import { MorePageHelper } from '../common/utils/MorePageHelper'
+import { Logger } from '../common/utils/Logger'
 
 // 导出数据接口（头像 base64 数据很长，放在最后）
 interface ExportData {
@@ -32,7 +33,7 @@ export class ConfigTransferService {
       const appInfoManager = await AppInfoManager.getInstance();
       appVersion = appInfoManager.getAppVersion();
     } catch (error) {
-      console.error('[ConfigTransferService] 获取应用版本失败: ' + JSON.stringify(error));
+      Logger.error('[ConfigTransferService] 获取应用版本失败: ' + JSON.stringify(error));
     }
 
     // 处理头像：将图片转换为 base64
@@ -49,13 +50,13 @@ export class ConfigTransferService {
           if (base64Str && base64Str.length > 0) {
             profileAvatar = base64Str;
           } else {
-            console.warn('[ConfigTransferService] 头像转换 base64 失败，保留原始路径');
+            Logger.warn('[ConfigTransferService] 头像转换 base64 失败，保留原始路径');
           }
         } else {
-          console.warn('[ConfigTransferService] 头像文件不存在: ' + avatarPath);
+          Logger.warn('[ConfigTransferService] 头像文件不存在: ' + avatarPath);
         }
       } catch (error) {
-        console.error('[ConfigTransferService] 处理头像失败: ' + JSON.stringify(error));
+        Logger.error('[ConfigTransferService] 处理头像失败: ' + JSON.stringify(error));
       }
     }
 
@@ -85,7 +86,7 @@ export class ConfigTransferService {
 
       // 验证配置
       if (!validateConfig(importedConfig)) {
-        console.error('[ConfigTransferService] Invalid imported config');
+        Logger.error('[ConfigTransferService] Invalid imported config');
         return false;
       }
 
@@ -117,13 +118,13 @@ export class ConfigTransferService {
                 // 将 avatar 更新为文件路径
                 profileAvatar = avatarPath;
               } else {
-                console.warn('[ConfigTransferService] base64 转图片失败，保留原始数据');
+                Logger.warn('[ConfigTransferService] base64 转图片失败，保留原始数据');
               }
             } else {
-              console.warn('[ConfigTransferService] 无法获取 context，跳过头像转换');
+              Logger.warn('[ConfigTransferService] 无法获取 context，跳过头像转换');
             }
           } catch (error) {
-            console.error('[ConfigTransferService] 处理头像失败: ' + JSON.stringify(error));
+            Logger.error('[ConfigTransferService] 处理头像失败: ' + JSON.stringify(error));
           }
         }
       }
@@ -145,7 +146,7 @@ export class ConfigTransferService {
 
       return await configManager.saveConfig();
     } catch (error) {
-      console.error('[ConfigTransferService] Import config failed:', error);
+      Logger.error('[ConfigTransferService] Import config failed: ' + JSON.stringify(error));
       return false;
     }
   }

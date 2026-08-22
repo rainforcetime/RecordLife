@@ -6,6 +6,7 @@ import { common } from '@kit.AbilityKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { image } from '@kit.ImageKit'
 import { util } from '@kit.ArkTS'
+import { Logger } from './Logger'
 
 export class ImageBase64Utils {
   /**
@@ -17,7 +18,7 @@ export class ImageBase64Utils {
     try {
       // 检查文件是否存在
       if (!fileIo.accessSync(imagePath)) {
-        console.error('[ImageBase64Utils] 图片文件不存在: ' + imagePath)
+        Logger.error('[ImageBase64Utils] 图片文件不存在: ' + imagePath)
         return ''
       }
 
@@ -34,10 +35,10 @@ export class ImageBase64Utils {
       const uint8Array = new Uint8Array(buffer)
       const base64Str = base64Helper.encodeToStringSync(uint8Array)
 
-      console.info('[ImageBase64Utils] 图片转Base64成功，大小: ' + fileSize + ' bytes')
+      Logger.info('[ImageBase64Utils] 图片转Base64成功，大小: ' + fileSize + ' bytes')
       return base64Str
     } catch (error) {
-      console.error('[ImageBase64Utils] 图片转Base64失败: ' + JSON.stringify(error))
+      Logger.error('[ImageBase64Utils] 图片转Base64失败: ' + JSON.stringify(error))
       return ''
     }
   }
@@ -51,7 +52,7 @@ export class ImageBase64Utils {
   static base64ToImage(base64Str: string, outputPath: string): boolean {
     try {
       if (!base64Str || base64Str.length === 0) {
-        console.error('[ImageBase64Utils] Base64字符串为空')
+        Logger.error('[ImageBase64Utils] Base64字符串为空')
         return false
       }
 
@@ -65,10 +66,10 @@ export class ImageBase64Utils {
       fileIo.writeSync(file.fd, buffer)
       fileIo.closeSync(file)
 
-      console.info('[ImageBase64Utils] Base64转图片成功，大小: ' + buffer.byteLength + ' bytes')
+      Logger.info('[ImageBase64Utils] Base64转图片成功，大小: ' + buffer.byteLength + ' bytes')
       return true
     } catch (error) {
-      console.error('[ImageBase64Utils] Base64转图片失败: ' + JSON.stringify(error))
+      Logger.error('[ImageBase64Utils] Base64转图片失败: ' + JSON.stringify(error))
       return false
     }
   }

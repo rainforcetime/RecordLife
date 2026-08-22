@@ -13,6 +13,7 @@ import { RefreshManager } from '../common/managers/RefreshManager'
 import { ColorUtils } from '../common/ColorUtils'
 import { PromptAction } from '@kit.ArkUI'
 import { TagService } from '../service/TagService'
+import { Logger } from '../common/utils/Logger'
 
 @Component
 struct NowPage {
@@ -38,13 +39,13 @@ struct NowPage {
   // 监听搜索关键词改变
   private onSearchTextChange() {
     this.searchKeywordVersion++
-    console.info('[NowPage] searchText 改变: ' + this.searchText + ', version: ' + this.searchKeywordVersion)
+    Logger.info('[NowPage] searchText 改变: ' + this.searchText + ', version: ' + this.searchKeywordVersion)
   }
 
   // 监听标签筛选改变
   private onFilterTagIdsChange() {
     this.filterTagIdsVersion++
-    console.info('[NowPage] filterTagIds 改变: ' + JSON.stringify(this.filterTagIds) + ', version: ' + this.filterTagIdsVersion)
+    Logger.info('[NowPage] filterTagIds 改变: ' + JSON.stringify(this.filterTagIds) + ', version: ' + this.filterTagIdsVersion)
   }
   
   // 视图模式：'timeline' | 'calendar'
@@ -81,7 +82,7 @@ struct NowPage {
   private promptAction: PromptAction | null = null
   
   async aboutToAppear() {
-    console.info('[NowPage] aboutToAppear')
+    Logger.info('[NowPage] aboutToAppear')
     
     // 获取 PromptAction
     this.promptAction = this.getUIContext().getPromptAction()
@@ -91,7 +92,7 @@ struct NowPage {
     
     // 注册全局刷新回调
     RefreshManager.getInstance().register('NowPage', () => {
-      console.info('[NowPage] 收到全局刷新通知')
+      Logger.info('[NowPage] 收到全局刷新通知')
       this.reloadCustomTags()
       this.refreshTimeline()
     })
@@ -101,7 +102,7 @@ struct NowPage {
       const ts = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.customTags = ts.getCustomTags()
     } catch (error) {
-      console.error('[NowPage] 加载自定义标签失败: ' + JSON.stringify(error))
+      Logger.error('[NowPage] 加载自定义标签失败: ' + JSON.stringify(error))
     }
     
     // 加载时间线数据
@@ -109,14 +110,14 @@ struct NowPage {
   }
   
   aboutToDisappear() {
-    console.info('[NowPage] aboutToDisappear')
+    Logger.info('[NowPage] aboutToDisappear')
     // 注销刷新回调
     RefreshManager.getInstance().unregister('NowPage')
   }
   
   // 页面显示时刷新数据
   onPageShow() {
-    console.info('[NowPage] onPageShow')
+    Logger.info('[NowPage] onPageShow')
     // 重新加载自定义标签
     this.reloadCustomTags()
     this.refreshTimeline()
@@ -277,7 +278,7 @@ struct NowPage {
                         })
                       }
                     } catch (e) {
-                      console.warn('[NowPage] 滚动到目标位置失败: ' + e)
+                      Logger.warn('[NowPage] 滚动到目标位置失败: ' + e)
                     }
                   }, 150)
                 }
@@ -320,9 +321,9 @@ struct NowPage {
       })
       .margin({ right: 20, bottom: 24 })
       .onClick(() => {
-        console.info('[NowPage] 点击加号按钮，showAddRecordDialog 设置为 true')
+        Logger.info('[NowPage] 点击加号按钮，showAddRecordDialog 设置为 true')
         this.showAddRecordDialog = true
-        console.info('[NowPage] showAddRecordDialog 当前值: ' + this.showAddRecordDialog)
+        Logger.info('[NowPage] showAddRecordDialog 当前值: ' + this.showAddRecordDialog)
       })
       .bindSheet($$this.showAddRecordDialog, this.AddRecordDialogBuilder(), {
         height: '80%',
@@ -347,7 +348,7 @@ struct NowPage {
     Column() {
       AddRecordSection({
         onSaveSuccess: () => {
-          console.info('[NowPage] AddRecordSection onSaveSuccess 回调被调用')
+          Logger.info('[NowPage] AddRecordSection onSaveSuccess 回调被调用')
           this.showAddRecordDialog = false
           // RefreshManager 会自动触发 refreshTimeline（NowPage 已注册回调）
         }
@@ -369,14 +370,14 @@ struct NowPage {
       editTags: $editTags,  // ✅ 双向绑定标签
       onImagePathsChange: (paths: string[]) => {
         // ✅ 通过回调更新图片数组
-        console.info('[NowPage] 收到图片更新回调，旧数量: ' + this.editImagePaths.length + ', 新数量: ' + paths.length)
-        console.info('[NowPage] 旧数组: ' + JSON.stringify(this.editImagePaths))
-        console.info('[NowPage] 新数组: ' + JSON.stringify(paths))
+        Logger.info('[NowPage] 收到图片更新回调，旧数量: ' + this.editImagePaths.length + ', 新数量: ' + paths.length)
+        Logger.info('[NowPage] 旧数组: ' + JSON.stringify(this.editImagePaths))
+        Logger.info('[NowPage] 新数组: ' + JSON.stringify(paths))
         
         // 强制创建新数组引用，确保触发 UI 更新
         this.editImagePaths = [...paths]
         
-        console.info('[NowPage] 图片数组已更新，当前数量: ' + this.editImagePaths.length)
+        Logger.info('[NowPage] 图片数组已更新，当前数量: ' + this.editImagePaths.length)
       },
       onSave: () => {
         this.onSaveEdit()
@@ -403,14 +404,14 @@ struct NowPage {
       this.customTags = ts.getCustomTags()
       this.tagVersion++  // 触发子组件重载标签
     } catch (error) {
-      console.error('[NowPage] 重新加载自定义标签失败: ' + JSON.stringify(error))
+      Logger.error('[NowPage] 重新加载自定义标签失败: ' + JSON.stringify(error))
     }
   }
 
   // 刷新时间线
   private refreshTimeline() {
     if (this.viewModel) {
-      console.info('[NowPage] 开始刷新时间线')
+      Logger.info('[NowPage] 开始刷新时间线')
 
       // 构建新的时间线数据
       const newTimelineData = this.viewModel.buildTimeline()
@@ -421,11 +422,11 @@ struct NowPage {
       // buildTimelineData 每次返回全新对象图，直接赋值即可触发 @State 更新（P5 移除 JSON 深拷贝）
       this.timelineData = newTimelineData
 
-      console.info('[NowPage] 时间线刷新完成，年份数: ' + this.timelineData.years.length +
+      Logger.info('[NowPage] 时间线刷新完成，年份数: ' + this.timelineData.years.length +
         ', 总记录数: ' + this.getTotalRecordCount() +
         ', trigger: ' + this.refreshTrigger)
     } else {
-      console.warn('[NowPage] viewModel 未初始化，无法刷新')
+      Logger.warn('[NowPage] viewModel 未初始化，无法刷新')
     }
   }
   
@@ -517,7 +518,7 @@ struct NowPage {
       try {
         this.promptAction.showToast({ message: $r('app.string.please_input_content') })
       } catch (error) {
-        console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+        Logger.error('[NowPage] showToast failed: ' + JSON.stringify(error))
       }
       return
     }
@@ -535,7 +536,7 @@ struct NowPage {
         try {
           this.promptAction.showToast({ message: $r('app.string.edit_success') })
         } catch (error) {
-          console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+          Logger.error('[NowPage] showToast failed: ' + JSON.stringify(error))
         }
         this.showEditDialog = false
         this.editingRecord = null as LifeRecord | null
@@ -548,15 +549,15 @@ struct NowPage {
         try {
           this.promptAction.showToast({ message: $r('app.string.edit_failed') })
         } catch (error) {
-          console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+          Logger.error('[NowPage] showToast failed: ' + JSON.stringify(error))
         }
       }
     } catch (error) {
-      console.error('[NowPage] 保存编辑失败: ' + JSON.stringify(error))
+      Logger.error('[NowPage] 保存编辑失败: ' + JSON.stringify(error))
       try {
         this.promptAction.showToast({ message: (this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager.getStringByNameSync('edit_failed_prefix') + (error as Error).message })
       } catch (e) {
-        console.error('[NowPage] showToast failed: ' + JSON.stringify(e))
+        Logger.error('[NowPage] showToast failed: ' + JSON.stringify(e))
       }
     }
   }
@@ -577,7 +578,7 @@ struct NowPage {
             message: wasPinned ? $r('app.string.unpinned_success') : $r('app.string.pinned_success')
           })
         } catch (error) {
-          console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+          Logger.error('[NowPage] showToast failed: ' + JSON.stringify(error))
         }
         // 刷新时间线
         this.refreshTimeline()
@@ -585,11 +586,11 @@ struct NowPage {
         try {
           this.promptAction.showToast({ message: $r('app.string.operation_failed') })
         } catch (error) {
-          console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+          Logger.error('[NowPage] showToast failed: ' + JSON.stringify(error))
         }
       }
     } catch (error) {
-      console.error('[NowPage] 切换收藏失败: ' + JSON.stringify(error))
+      Logger.error('[NowPage] 切换收藏失败: ' + JSON.stringify(error))
     }
   }
 
@@ -602,7 +603,7 @@ struct NowPage {
       primaryButton: {
         value: $r('app.string.cancel'),
         action: () => {
-          console.info('[NowPage] 取消删除')
+          Logger.info('[NowPage] 取消删除')
         }
       },
       secondaryButton: {
@@ -620,7 +621,7 @@ struct NowPage {
               try {
                 this.promptAction.showToast({ message: $r('app.string.delete_success') })
               } catch (error) {
-                console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+                Logger.error('[NowPage] showToast failed: ' + JSON.stringify(error))
               }
               // 通过 RefreshManager 统一刷新（已注册回调，自动触发 refreshTimeline）
               RefreshManager.getInstance().refresh()
@@ -628,15 +629,15 @@ struct NowPage {
               try {
                 this.promptAction.showToast({ message: $r('app.string.delete_failed') })
               } catch (error) {
-                console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+                Logger.error('[NowPage] showToast failed: ' + JSON.stringify(error))
               }
             }
           } catch (error) {
-            console.error('[NowPage] 删除失败: ' + JSON.stringify(error))
+            Logger.error('[NowPage] 删除失败: ' + JSON.stringify(error))
             try {
               this.promptAction.showToast({ message: (this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager.getStringByNameSync('delete_failed_prefix') + (error as Error).message })
             } catch (e) {
-              console.error('[NowPage] showToast failed: ' + JSON.stringify(e))
+              Logger.error('[NowPage] showToast failed: ' + JSON.stringify(e))
             }
           }
         }

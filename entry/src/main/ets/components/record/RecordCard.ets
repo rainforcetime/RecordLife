@@ -8,6 +8,7 @@ import { ShareRecordCard } from '../share/ShareRecordCard'
 import { ShareUtils } from '../../common/utils/ShareUtils'
 import { common } from '@kit.AbilityKit'
 import { ColorUtils } from '../../common/ColorUtils'
+import { Logger } from '../../common/utils/Logger'
 
 // 记录卡片操作回调
 interface RecordCardCallbacks {
@@ -226,17 +227,17 @@ export struct RecordCard {
   
   // 打开图片预览（从路径数组）
   private openImageViewerFromPath(index: number) {
-    console.info('[RecordCard] 进入图片打开事件')
+    Logger.info('[RecordCard] 进入图片打开事件')
     if (!this.viewModel || !this.record.imagePaths) {
-      console.info('[RecordCard] 没有viewModel 或 imagePaths')
+      Logger.info('[RecordCard] 没有viewModel 或 imagePaths')
       return
     }
-    console.info('[RecordCard] 不为空')
+    Logger.info('[RecordCard] 不为空')
     
     const imageUris: string[] = []
     for (let i = 0; i < this.record.imagePaths.length; i++) {
       if (!this.viewModel || !this.record.imagePaths[i]) {
-        console.info('[RecordCard] 没有viewModel 或 imagePaths[i]')
+        Logger.info('[RecordCard] 没有viewModel 或 imagePaths[i]')
         continue
       }
       imageUris.push(this.viewModel.getImageUri(this.record.imagePaths[i]))
@@ -249,7 +250,7 @@ export struct RecordCard {
   
   // 打开图片预览
   private openImageViewer(uris: string[], index: number) {
-    console.info('[RecordCard] openImageViewer')
+    Logger.info('[RecordCard] openImageViewer')
     this.viewerImageUris = uris
     this.viewerCurrentIndex = index
     this.showImageViewer = true
@@ -396,7 +397,7 @@ export struct RecordCard {
     }
     
     this.isSharing = true
-    console.info('[RecordCard] 开始分享，记录ID: ' + this.record.id)
+    Logger.info('[RecordCard] 开始分享，记录ID: ' + this.record.id)
     
     try {
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext
@@ -409,19 +410,19 @@ export struct RecordCard {
       )
       
       if (success) {
-        console.info('[RecordCard] 分享成功')
+        Logger.info('[RecordCard] 分享成功')
         // 延迟关闭弹窗，让用户看到分享成功
         setTimeout(() => {
           this.showShareDialog = false
           this.isSharing = false
         }, 500)
       } else {
-        console.error('[RecordCard] 分享失败')
+        Logger.error('[RecordCard] 分享失败')
         this.isSharing = false
         // 可以在这里显示错误提示
       }
     } catch (error) {
-      console.error('[RecordCard] 分享异常: ' + JSON.stringify(error))
+      Logger.error('[RecordCard] 分享异常: ' + JSON.stringify(error))
       this.isSharing = false
     }
   }

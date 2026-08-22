@@ -13,6 +13,7 @@ import { AccountViewModel, AccountDataStatistics } from '../viewmodel/AccountVie
 import { AccountUtils } from '../common/utils/AccountUtils'
 import { AppInfo } from '../config/UserConfig'
 import { RefreshManager } from '../common/managers/RefreshManager'
+import { Logger } from '../common/utils/Logger'
 
 @Component
 export struct AccountPage {
@@ -122,18 +123,18 @@ export struct AccountPage {
       
       // 注册全局刷新回调
       RefreshManager.getInstance().register('AccountPage', () => {
-        console.info('[AccountPage] 收到全局刷新通知')
+        Logger.info('[AccountPage] 收到全局刷新通知')
         this.hasBackgroundRefresh = true
         this.loadDataStatistics()
       })
     } catch (error) {
-      console.error('AccountPage 初始化失败: ' + JSON.stringify(error))
+      Logger.error('AccountPage 初始化失败: ' + JSON.stringify(error))
     }
   }
   
   // 页面销毁时注销回调
   aboutToDisappear() {
-    console.info('[AccountPage] aboutToDisappear')
+    Logger.info('[AccountPage] aboutToDisappear')
     // 注销刷新回调
     RefreshManager.getInstance().unregister('AccountPage')
   }
@@ -143,15 +144,15 @@ export struct AccountPage {
   onPageShow() {
     if (this.isFirstShow) {
       this.isFirstShow = false
-      console.info('[AccountPage] onPageShow 跳过首次加载（已在 aboutToAppear 中完成）')
+      Logger.info('[AccountPage] onPageShow 跳过首次加载（已在 aboutToAppear 中完成）')
       return
     }
     if (this.hasBackgroundRefresh) {
       this.hasBackgroundRefresh = false
-      console.info('[AccountPage] onPageShow 跳过加载（已在后台通过 RefreshManager 刷新）')
+      Logger.info('[AccountPage] onPageShow 跳过加载（已在后台通过 RefreshManager 刷新）')
       return
     }
-    console.info('[AccountPage] onPageShow 刷新统计数据')
+    Logger.info('[AccountPage] onPageShow 刷新统计数据')
     this.loadDataStatistics()
   }
   
@@ -182,9 +183,9 @@ export struct AccountPage {
 
   // 加载数据统计信息
   private async loadDataStatistics() {
-    console.info('[AccountPage] 开始加载数据统计')
+    Logger.info('[AccountPage] 开始加载数据统计')
     const statistics = await this.viewModel.loadDataStatistics()
-    console.info('[AccountPage] 获取到统计数据: ' + JSON.stringify(statistics))
+    Logger.info('[AccountPage] 获取到统计数据: ' + JSON.stringify(statistics))
     
     // 必须重新赋值整个对象才能触发UI更新
     this.statisticsInfo = {
@@ -194,7 +195,7 @@ export struct AccountPage {
       storageSize: statistics.storageSize
     }
     
-    console.info('[AccountPage] statisticsInfo已更新: ' + JSON.stringify(this.statisticsInfo))
+    Logger.info('[AccountPage] statisticsInfo已更新: ' + JSON.stringify(this.statisticsInfo))
   }
   
   // 加载保存的头像
@@ -233,7 +234,7 @@ export struct AccountPage {
   
   // 编辑资料处理
   private onEditProfile() {
-    console.log('编辑资料')
+    Logger.info('编辑资料')
     this.editProfileDialog.open()
   }
   
@@ -252,13 +253,13 @@ export struct AccountPage {
         hasCustomAvatar: this.userInfo.hasCustomAvatar
       }
       
-      console.info('用户资料保存成功')
+      Logger.info('用户资料保存成功')
       AccountUtils.showToastSafely(this.promptAction, $r('app.string.save_success'))
       
       // 通知其他页面刷新（如 HomePage 的出生日期显示）
       RefreshManager.getInstance().refresh()
     } else {
-      console.error('用户资料保存失败')
+      Logger.error('用户资料保存失败')
       AccountUtils.showToastSafely(this.promptAction, $r('app.string.save_failed'))
     }
   }
@@ -282,31 +283,31 @@ export struct AccountPage {
   
   // 关于应用处理
   private onAboutApp() {
-    console.log('关于应用')
+    Logger.info('关于应用')
     this.aboutAppDialog.open()
   }
   
   // 更多设置处理
   private onMoreSettings() {
-    console.log('更多设置')
+    Logger.info('更多设置')
     try {
       this.getUIContext().getRouter().pushUrl({
         url: 'pages/MorePage'
       })
     } catch (error) {
-      console.error('页面跳转失败: ' + JSON.stringify(error))
+      Logger.error('页面跳转失败: ' + JSON.stringify(error))
     }
   }
   
   // 存储空间点击处理
   private onStorageClick() {
-    console.log('存储空间')
+    Logger.info('存储空间')
     try {
       this.getUIContext().getRouter().pushUrl({
         url: 'pages/StorageImagePage'
       })
     } catch (error) {
-      console.error('页面跳转失败: ' + JSON.stringify(error))
+      Logger.error('页面跳转失败: ' + JSON.stringify(error))
     }
   }
   

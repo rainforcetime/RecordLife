@@ -13,6 +13,7 @@ import { ConfigManager } from '../../config/ConfigManager'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { LifeRecord } from '../types'
 import { AppInfoManager } from '../../config/AppInfoConfig'
+import { Logger } from '../../common/utils/Logger'
 
 // 记录元数据接口
 interface RecordsMetadata {
@@ -34,11 +35,11 @@ export class MorePageBackupHandler {
         bundleName: 'com.rainforcetime.recordlife',
         abilityName: 'EntryAbility'
       }
-      console.info('[MorePageBackupHandler] 准备重启应用')
+      Logger.info('[MorePageBackupHandler] 准备重启应用')
       applicationContext.restartApp(want)
-      console.info('[MorePageBackupHandler] 重启应用已触发')
+      Logger.info('[MorePageBackupHandler] 重启应用已触发')
     } catch (error) {
-      console.error('[MorePageBackupHandler] 重启应用失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageBackupHandler] 重启应用失败: ' + JSON.stringify(error))
     }
   }
   
@@ -50,7 +51,7 @@ export class MorePageBackupHandler {
     backupManager: BackupManager,
     promptAction: PromptAction
   ): Promise<void> {
-    console.info('[MorePageBackupHandler] 开始导出备份')
+    Logger.info('[MorePageBackupHandler] 开始导出备份')
     
     try {
       // 创建备份
@@ -61,7 +62,7 @@ export class MorePageBackupHandler {
         return
       }
       
-      console.info('[MorePageBackupHandler] 备份已创建: ' + zipPath)
+      Logger.info('[MorePageBackupHandler] 备份已创建: ' + zipPath)
       
       // 使用 DocumentViewPicker 保存文件（picker 流程已下沉至 ZipTransferService，P3）
       const saved = await ZipTransferService.saveZipToDocument(context, zipPath)
@@ -70,19 +71,19 @@ export class MorePageBackupHandler {
         // 删除临时备份文件
         fileIo.unlinkSync(zipPath)
         
-        console.info('[MorePageBackupHandler] 备份导出成功')
+        Logger.info('[MorePageBackupHandler] 备份导出成功')
         promptAction.showToast({ message: $r('app.string.backup_export_success') })
       } else {
         // 用户取消，删除临时备份文件
         fileIo.unlinkSync(zipPath)
-        console.info('[MorePageBackupHandler] 用户取消导出')
+        Logger.info('[MorePageBackupHandler] 用户取消导出')
       }
     } catch (error) {
-      console.error('[MorePageBackupHandler] 导出备份失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageBackupHandler] 导出备份失败: ' + JSON.stringify(error))
       try {
         promptAction.showToast({ message: context.resourceManager.getStringByNameSync('export_failed_prefix') + (error as Error).message })
       } catch (e) {
-        console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
+        Logger.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }
     }
   }
@@ -95,7 +96,7 @@ export class MorePageBackupHandler {
     backupManager: BackupManager,
     promptAction: PromptAction
   ): Promise<void> {
-    console.info('[MorePageBackupHandler] 开始导入备份')
+    Logger.info('[MorePageBackupHandler] 开始导入备份')
     
     try {
       // 使用 DocumentViewPicker 选择备份文件（picker 流程已下沉至 ZipTransferService，P3）
@@ -110,7 +111,7 @@ export class MorePageBackupHandler {
         fileIo.unlinkSync(tempZipPath)
         
         if (success) {
-          console.info('[MorePageBackupHandler] 备份导入成功')
+          Logger.info('[MorePageBackupHandler] 备份导入成功')
           promptAction.showToast({ message: $r('app.string.backup_import_success') })
           
           // 延迟1秒后重启应用，让用户看到提示
@@ -118,18 +119,18 @@ export class MorePageBackupHandler {
             MorePageBackupHandler.restartApp(context)
           }, 1000)
         } else {
-          console.error('[MorePageBackupHandler] 备份导入失败')
+          Logger.error('[MorePageBackupHandler] 备份导入失败')
           promptAction.showToast({ message: $r('app.string.backup_invalid') })
         }
       } else {
-        console.info('[MorePageBackupHandler] 用户取消导入')
+        Logger.info('[MorePageBackupHandler] 用户取消导入')
       }
     } catch (error) {
-      console.error('[MorePageBackupHandler] 导入备份失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageBackupHandler] 导入备份失败: ' + JSON.stringify(error))
       try {
         promptAction.showToast({ message: context.resourceManager.getStringByNameSync('import_failed_prefix') + (error as Error).message })
       } catch (e) {
-        console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
+        Logger.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }
     }
   }
@@ -142,7 +143,7 @@ export class MorePageBackupHandler {
     configManager: ConfigManager,
     promptAction: PromptAction
   ): Promise<void> {
-    console.info('[MorePageBackupHandler] 开始导出所有数据')
+    Logger.info('[MorePageBackupHandler] 开始导出所有数据')
     
     try {
       // 1. 创建临时目录
@@ -158,7 +159,7 @@ export class MorePageBackupHandler {
       const configFile = fileIo.openSync(configPath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
       fileIo.writeSync(configFile.fd, configStr)
       fileIo.closeSync(configFile)
-      console.info('[MorePageBackupHandler] 用户配置已导出')
+      Logger.info('[MorePageBackupHandler] 用户配置已导出')
       
       // 3. 导出此刻记录
       const viewModel = await NowViewModel.getInstance(context)
@@ -170,7 +171,7 @@ export class MorePageBackupHandler {
         const appInfoManager = await AppInfoManager.getInstance()
         appVersion = appInfoManager.getAppVersion()
       } catch (error) {
-        console.error('[MorePageBackupHandler] 获取应用版本失败: ' + JSON.stringify(error))
+        Logger.error('[MorePageBackupHandler] 获取应用版本失败: ' + JSON.stringify(error))
       }
       
       // 创建记录元数据
@@ -186,7 +187,7 @@ export class MorePageBackupHandler {
       const metadataFile = fileIo.openSync(metadataPath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
       fileIo.writeSync(metadataFile.fd, metadataStr)
       fileIo.closeSync(metadataFile)
-      console.info('[MorePageBackupHandler] 记录元数据已导出')
+      Logger.info('[MorePageBackupHandler] 记录元数据已导出')
       
       // 4. 复制图片文件
       const recordsDir = `${tempDir}/records`
@@ -208,7 +209,7 @@ export class MorePageBackupHandler {
           }
         }
       }
-      console.info(`[MorePageBackupHandler] 复制了 ${imageCount} 个图片文件`)
+      Logger.info(`[MorePageBackupHandler] 复制了 ${imageCount} 个图片文件`)
       
       // 5. 压缩为 zip 文件
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19)
@@ -222,16 +223,16 @@ export class MorePageBackupHandler {
       }
       
       await zlib.compressFile(tempDir, zipPath, options)
-      console.info(`[MorePageBackupHandler] 所有数据已打包: ${zipPath}`)
+      Logger.info(`[MorePageBackupHandler] 所有数据已打包: ${zipPath}`)
       
       // 7. 使用 DocumentViewPicker 保存文件（picker 流程已下沉至 ZipTransferService，P3）
       const saved = await ZipTransferService.saveZipToDocument(context, zipPath)
       
       if (saved) {
-        console.info('[MorePageBackupHandler] 所有数据导出成功')
+        Logger.info('[MorePageBackupHandler] 所有数据导出成功')
         promptAction.showToast({ message: $r('app.string.export_success') })
       } else {
-        console.info('[MorePageBackupHandler] 用户取消导出')
+        Logger.info('[MorePageBackupHandler] 用户取消导出')
       }
       
       // 8. 清理临时文件
@@ -241,11 +242,11 @@ export class MorePageBackupHandler {
       }
       
     } catch (error) {
-      console.error('[MorePageBackupHandler] 导出所有数据失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageBackupHandler] 导出所有数据失败: ' + JSON.stringify(error))
       try {
         promptAction.showToast({ message: context.resourceManager.getStringByNameSync('export_failed_prefix') + (error as Error).message })
       } catch (e) {
-        console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
+        Logger.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }
     }
   }
@@ -258,7 +259,7 @@ export class MorePageBackupHandler {
     configManager: ConfigManager,
     promptAction: PromptAction
   ): Promise<void> {
-    console.info('[MorePageBackupHandler] 开始导入所有数据')
+    Logger.info('[MorePageBackupHandler] 开始导入所有数据')
     
     try {
       // 1. 使用 DocumentViewPicker 选择文件（picker 流程已下沉至 ZipTransferService，P3）
@@ -266,7 +267,7 @@ export class MorePageBackupHandler {
       const picked = await ZipTransferService.pickZipToSandbox(context, tempZipPath)
       
       if (!picked) {
-        console.info('[MorePageBackupHandler] 用户取消导入')
+        Logger.info('[MorePageBackupHandler] 用户取消导入')
         return
       }
       
@@ -282,7 +283,7 @@ export class MorePageBackupHandler {
       }
       
       await zlib.decompressFile(tempZipPath, tempDir, options)
-      console.info('[MorePageBackupHandler] zip 文件已解压')
+      Logger.info('[MorePageBackupHandler] zip 文件已解压')
       
       // 4. 导入用户配置
       const configPath = `${tempDir}/config.json`
@@ -298,7 +299,7 @@ export class MorePageBackupHandler {
         const configStr = decoder.decodeToString(new Uint8Array(configBuffer))
         
         configImported = await ConfigTransferService.importConfig(configManager, configStr)
-        console.info('[MorePageBackupHandler] 用户配置导入: ' + (configImported ? '成功' : '失败'))
+        Logger.info('[MorePageBackupHandler] 用户配置导入: ' + (configImported ? '成功' : '失败'))
       }
       
       // 5. 导入此刻记录
@@ -364,11 +365,11 @@ export class MorePageBackupHandler {
           return updatedRecord
         })
         
-        console.info(`[MorePageBackupHandler] 图片文件已恢复，记录路径已更新`)
+        Logger.info(`[MorePageBackupHandler] 图片文件已恢复，记录路径已更新`)
         
         // 恢复记录到 Preferences
         recordsImported = await MorePageBackupHandler.restoreRecordsToPreferences(context, updatedRecords)
-        console.info('[MorePageBackupHandler] 记录导入: ' + (recordsImported ? '成功' : '失败'))
+        Logger.info('[MorePageBackupHandler] 记录导入: ' + (recordsImported ? '成功' : '失败'))
       }
       
       // 6. 清理临时文件
@@ -393,11 +394,11 @@ export class MorePageBackupHandler {
       }
       
     } catch (error) {
-      console.error('[MorePageBackupHandler] 导入所有数据失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageBackupHandler] 导入所有数据失败: ' + JSON.stringify(error))
       try {
         promptAction.showToast({ message: context.resourceManager.getStringByNameSync('import_failed_prefix') + (error as Error).message })
       } catch (e) {
-        console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
+        Logger.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }
     }
   }
@@ -412,11 +413,11 @@ export class MorePageBackupHandler {
     try {
       const success = await RecordRepository.saveRecords(context, records)
       if (success) {
-        console.info(`[MorePageBackupHandler] 已恢复 ${records.length} 条记录到 Preferences`)
+        Logger.info(`[MorePageBackupHandler] 已恢复 ${records.length} 条记录到 Preferences`)
       }
       return success
     } catch (error) {
-      console.error('[MorePageBackupHandler] 恢复记录到 Preferences 失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageBackupHandler] 恢复记录到 Preferences 失败: ' + JSON.stringify(error))
       return false
     }
   }

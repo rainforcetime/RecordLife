@@ -2,6 +2,7 @@
 import { image } from '@kit.ImageKit';
 import { fileIo as fs } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
+import { Logger } from './Logger'
 
 export class ImageGenerator {
   /**
@@ -54,7 +55,7 @@ export class ImageGenerator {
       const saveDir = `${context.filesDir}/records`;
       if (!fs.accessSync(saveDir)) {
         fs.mkdirSync(saveDir);
-        console.info('[ImageGenerator] 创建目录: ' + saveDir);
+        Logger.info('[ImageGenerator] 创建目录: ' + saveDir);
       }
 
       // 4. 生成文件名
@@ -80,11 +81,11 @@ export class ImageGenerator {
       imagePackerApi.release();
       pixelMap.release();
       
-      console.info('[ImageGenerator] 图片生成成功: ' + filePath);
+      Logger.info('[ImageGenerator] 图片生成成功: ' + filePath);
       return filePath;
       
     } catch (error) {
-      console.error('[ImageGenerator] 生成图片失败: ' + JSON.stringify(error));
+      Logger.error('[ImageGenerator] 生成图片失败: ' + JSON.stringify(error));
       return null;
     }
   }
@@ -179,11 +180,11 @@ export class ImageGenerator {
       imagePackerApi.release();
       pixelMap.release();
       
-      console.info('[ImageGenerator] 渐变图片生成成功: ' + filePath);
+      Logger.info('[ImageGenerator] 渐变图片生成成功: ' + filePath);
       return filePath;
       
     } catch (error) {
-      console.error('[ImageGenerator] 生成渐变图片失败: ' + JSON.stringify(error));
+      Logger.error('[ImageGenerator] 生成渐变图片失败: ' + JSON.stringify(error));
       return null;
     }
   }

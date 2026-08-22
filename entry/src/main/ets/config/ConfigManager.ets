@@ -8,6 +8,7 @@ import { common } from '@kit.AbilityKit';
 import { UserConfig, createDefaultConfig, createDefaultConfigSync, validateConfig } from './UserConfig';
 import { ConfigRepository } from '../repository/ConfigRepository';
 import { TimeUtils } from '../common/utils/TimeUtils';
+import { Logger } from '../common/utils/Logger'
 
 export class ConfigManager {
   private static instance: ConfigManager | null = null;
@@ -23,7 +24,7 @@ export class ConfigManager {
       await ConfigManager.instance.init(context);
     } else if (context && !ConfigManager.instance.context) {
       // 已有 instance 但 context 未初始化，用显式传入的 context 重新初始化
-      console.info('ConfigManager.getInstance: 使用注入的 context 重新初始化');
+      Logger.info('ConfigManager.getInstance: 使用注入的 context 重新初始化');
       await ConfigManager.instance.init(context);
     }
     return ConfigManager.instance;
@@ -31,7 +32,7 @@ export class ConfigManager {
 
   // 初始化配置管理器（context 显式注入优先，否则回退 AppStorage）
   private async init(context?: common.UIAbilityContext): Promise<void> {
-    console.info('ConfigManager.init 开始')
+    Logger.info('ConfigManager.init 开始')
     
     try {
       // 优先使用显式注入的 context（A5），否则从 AppStorage 获取
@@ -39,10 +40,10 @@ export class ConfigManager {
       if (!uiContext) {
         uiContext = AppStorage.get('uiContext') as common.UIAbilityContext;
       }
-      console.info('ConfigManager.init: uiContext - ' + (uiContext ? '存在' : '不存在'))
+      Logger.info('ConfigManager.init: uiContext - ' + (uiContext ? '存在' : '不存在'))
       
       if (!uiContext) {
-        console.warn('ConfigManager.init: uiContext 不存在，延迟初始化');
+        Logger.warn('ConfigManager.init: uiContext 不存在，延迟初始化');
         // 创建默认配置，但不返回，等待下次初始化
         if (!this.config) {
           this.config = await createDefaultConfig();
@@ -50,14 +51,14 @@ export class ConfigManager {
         return;
       }
       
-      console.info('ConfigManager.init: 保存 context')
+      Logger.info('ConfigManager.init: 保存 context')
       this.context = uiContext;
       
       // 加载配置
       await this.loadConfig();
-      console.info('ConfigManager.init: 配置加载完成')
+      Logger.info('ConfigManager.init: 配置加载完成')
     } catch (error) {
-      console.error('ConfigManager init failed:', error);
+      Logger.error('ConfigManager init failed: ' + JSON.stringify(error));
       // 使用默认配置
       this.config = await createDefaultConfig();
     }
@@ -83,7 +84,7 @@ export class ConfigManager {
             this.config.settings.customTags = [];
           }
         } else {
-          console.warn('Invalid config, using default');
+          Logger.warn('Invalid config, using default');
           this.config = await createDefaultConfig();
         }
       } else {
@@ -92,19 +93,19 @@ export class ConfigManager {
         await this.saveConfig();
       }
     } catch (error) {
-      console.error('Load config failed:', error);
+      Logger.error('Load config failed: ' + JSON.stringify(error));
       this.config = await createDefaultConfig();
     }
   }
 
   // 保存配置到存储
   async saveConfig(): Promise<boolean> {
-    console.info('saveConfig 开始')
-    console.info('this.context: ' + (this.context ? '存在' : '不存在'))
-    console.info('this.config: ' + (this.config ? '存在' : '不存在'))
+    Logger.info('saveConfig 开始')
+    Logger.info('this.context: ' + (this.context ? '存在' : '不存在'))
+    Logger.info('this.config: ' + (this.config ? '存在' : '不存在'))
     
     if (!this.context || !this.config) {
-      console.error('saveConfig: context 或 config 不存在')
+      Logger.error('saveConfig: context 或 config 不存在')
       return false;
     }
 
@@ -113,14 +114,14 @@ export class ConfigManager {
       this.config.metadata.updatedAt = new Date().toISOString();
       
       const configStr = JSON.stringify(this.config);
-      console.info('saveConfig: 配置字符串长度: ' + configStr.length)
+      Logger.info('saveConfig: 配置字符串长度: ' + configStr.length)
       
       const success = await ConfigRepository.saveConfigString(this.context, configStr);
-      console.info('saveConfig: 保存 ' + (success ? '成功' : '失败'))
+      Logger.info('saveConfig: 保存 ' + (success ? '成功' : '失败'))
       
       return success;
     } catch (error) {
-      console.error('Save config failed:', error);
+      Logger.error('Save config failed: ' + JSON.stringify(error));
       return false;
     }
   }
@@ -171,27 +172,27 @@ export class ConfigManager {
 
   // 设置主题并保存
   async setTheme(theme: string): Promise<boolean> {
-    console.info('ConfigManager.setTheme 开始, theme: ' + theme)
-    console.info('this.config: ' + (this.config ? '存在' : '不存在'))
-    console.info('this.context: ' + (this.context ? '存在' : '不存在'))
+    Logger.info('ConfigManager.setTheme 开始, theme: ' + theme)
+    Logger.info('this.config: ' + (this.config ? '存在' : '不存在'))
+    Logger.info('this.context: ' + (this.context ? '存在' : '不存在'))
     
     if (!this.config) {
-      console.error('ConfigManager.setTheme: config 不存在')
+      Logger.error('ConfigManager.setTheme: config 不存在')
       return false;
     }
 
     if (!this.context) {
-      console.error('ConfigManager.setTheme: context 不存在')
+      Logger.error('ConfigManager.setTheme: context 不存在')
       return false;
     }
 
     try {
       this.config.settings.theme = theme;
       const result = await this.saveConfig();
-      console.info('ConfigManager.setTheme saveConfig 结果: ' + result)
+      Logger.info('ConfigManager.setTheme saveConfig 结果: ' + result)
       return result;
     } catch (error) {
-      console.error('ConfigManager.setTheme 异常: ' + JSON.stringify(error))
+      Logger.error('ConfigManager.setTheme 异常: ' + JSON.stringify(error))
       return false;
     }
   }

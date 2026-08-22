@@ -7,6 +7,7 @@ import { promptAction, PromptAction } from '@kit.ArkUI'
 import { BackupManager } from '../service/BackupManager'
 import { MorePageBackupHandler } from '../common/handlers/MorePageBackupHandler'
 import { MorePageConfigHandler } from '../common/handlers/MorePageConfigHandler'
+import { Logger } from '../common/utils/Logger'
 
 // 导出选项弹窗
 @CustomDialog
@@ -204,17 +205,17 @@ struct MorePage {
     try {
       // 获取应用上下文
       this.context = this.getUIContext().getHostContext() as common.UIAbilityContext
-      console.info('MorePage: context 已获取 - ' + (this.context ? '成功' : '失败'))
+      Logger.info('MorePage: context 已获取 - ' + (this.context ? '成功' : '失败'))
       
       // 初始化配置管理器
       this.configManager = await ConfigManager.getInstance(this.context)
-      console.info('MorePage: configManager 已初始化 - ' + (this.configManager ? '成功' : '失败'))
+      Logger.info('MorePage: configManager 已初始化 - ' + (this.configManager ? '成功' : '失败'))
       
       // 初始化备份管理器
       this.backupManager = await BackupManager.getInstance(this.context)
-      console.info('MorePage: backupManager 已初始化 - ' + (this.backupManager ? '成功' : '失败'))
+      Logger.info('MorePage: backupManager 已初始化 - ' + (this.backupManager ? '成功' : '失败'))
     } catch (error) {
-      console.error('MorePage 初始化失败: ' + JSON.stringify(error))
+      Logger.error('MorePage 初始化失败: ' + JSON.stringify(error))
     }
   }
   
@@ -334,7 +335,7 @@ struct MorePage {
       try {
         this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
-        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+        Logger.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
       return
     }
@@ -348,7 +349,7 @@ struct MorePage {
       try {
         this.promptAction.showToast({ message: $r('app.string.config_manager_not_initialized') })
       } catch (error) {
-        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+        Logger.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
       return
     }
@@ -362,7 +363,7 @@ struct MorePage {
       try {
         this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
-        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+        Logger.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
       return
     }
@@ -376,7 +377,7 @@ struct MorePage {
       try {
         this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
-        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+        Logger.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
       return
     }
@@ -390,7 +391,7 @@ struct MorePage {
       try {
         this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
-        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+        Logger.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
       return
     }
@@ -404,7 +405,7 @@ struct MorePage {
       try {
         this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
-        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+        Logger.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
       return
     }
@@ -418,7 +419,7 @@ struct MorePage {
       try {
         this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
-        console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+        Logger.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
       return
     }

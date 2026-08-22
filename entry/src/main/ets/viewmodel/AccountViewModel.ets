@@ -12,6 +12,7 @@ import { AccountProfile, ThemeSettings, AccountDataStatistics, AvatarInfo } from
 import { ImageFileService } from '../service/ImageFileService'
 import { StorageService } from '../service/StorageService'
 import { resourceManager } from '@kit.LocalizationKit'
+import { Logger } from '../common/utils/Logger'
 
 // 向后兼容：AccountPage.ets 通过 AccountViewModel 导入这些类型
 export { AccountProfile, AccountDataStatistics }
@@ -26,15 +27,15 @@ export class AccountViewModel {
   async initialize(context: common.UIAbilityContext): Promise<void> {
     try {
       this.context = context
-      console.info('AccountViewModel: context 已获取 - ' + (this.context ? '成功' : '失败'))
+      Logger.info('AccountViewModel: context 已获取 - ' + (this.context ? '成功' : '失败'))
       
       this.configManager = await ConfigManager.getInstance(this.context)
-      console.info('AccountViewModel: configManager 已初始化 - ' + (this.configManager ? '成功' : '失败'))
+      Logger.info('AccountViewModel: configManager 已初始化 - ' + (this.configManager ? '成功' : '失败'))
       
       this.themeManager = await ThemeManager.getInstance(this.context)
-      console.info('AccountViewModel: themeManager 已初始化 - ' + (this.themeManager ? '成功' : '失败'))
+      Logger.info('AccountViewModel: themeManager 已初始化 - ' + (this.themeManager ? '成功' : '失败'))
     } catch (error) {
-      console.error('AccountViewModel 初始化失败: ' + JSON.stringify(error))
+      Logger.error('AccountViewModel 初始化失败: ' + JSON.stringify(error))
     }
   }
 
@@ -80,10 +81,10 @@ export class AccountViewModel {
         defaultProfile.gender = AccountUtils.convertGenderToDisplay(profile.gender, rm)
       }
 
-      console.info('用户资料加载成功')
+      Logger.info('用户资料加载成功')
       return defaultProfile
     } catch (error) {
-      console.error('加载用户资料失败: ' + JSON.stringify(error))
+      Logger.error('加载用户资料失败: ' + JSON.stringify(error))
       return defaultProfile
     }
   }
@@ -101,7 +102,7 @@ export class AccountViewModel {
       const currentTheme = AccountUtils.themeToDisplay(theme, rm)
       return { currentTheme }
     } catch (error) {
-      console.error('加载主题设置失败: ' + JSON.stringify(error))
+      Logger.error('加载主题设置失败: ' + JSON.stringify(error))
       return { currentTheme: rm ? rm.getStringByNameSync('follow_system') : '' }
     }
   }
@@ -133,7 +134,7 @@ export class AccountViewModel {
         description: config.description
       };
     } catch (error) {
-      console.error('从AppInfoManager加载应用信息失败: ' + JSON.stringify(error));
+      Logger.error('从AppInfoManager加载应用信息失败: ' + JSON.stringify(error));
       return defaultAppInfo;
     }
   }
@@ -155,7 +156,7 @@ export class AccountViewModel {
         const appInfoManager = await AppInfoManager.getInstance();
         appVersion = appInfoManager.getAppVersion();
       } catch (error) {
-        console.error('从AppInfoManager获取版本失败: ' + JSON.stringify(error));
+        Logger.error('从AppInfoManager获取版本失败: ' + JSON.stringify(error));
       }
 
       if (!this.configManager) {
@@ -183,7 +184,7 @@ export class AccountViewModel {
 
       return result;
     } catch (error) {
-      console.error('[AccountViewModel] 加载数据统计失败: ' + JSON.stringify(error));
+      Logger.error('[AccountViewModel] 加载数据统计失败: ' + JSON.stringify(error));
       return defaultStatistics;
     }
   }
@@ -212,13 +213,13 @@ export class AccountViewModel {
       if (savedAvatarPath && savedAvatarPath.length > 0) {
         // 如果是URI格式（file://开头），直接使用
         if (savedAvatarPath.startsWith('file://')) {
-          console.info('加载保存的头像URI成功: ' + savedAvatarPath)
+          Logger.info('加载保存的头像URI成功: ' + savedAvatarPath)
           return { avatar: savedAvatarPath, hasCustomAvatar: true }
         } else {
           // 如果是旧的沙箱路径格式，转换为URI
           if (fileIo.accessSync(savedAvatarPath)) {
             let avatarUri = fileUri.getUriFromPath(savedAvatarPath)
-            console.info('加载保存的头像并转换为URI成功: ' + avatarUri)
+            Logger.info('加载保存的头像并转换为URI成功: ' + avatarUri)
             return { avatar: avatarUri, hasCustomAvatar: true }
           }
         }
@@ -227,33 +228,33 @@ export class AccountViewModel {
       // 没有保存的头像，使用默认头像
       return { avatar: '', hasCustomAvatar: false }
     } catch (error) {
-      console.error('加载保存的头像失败: ' + JSON.stringify(error))
+      Logger.error('加载保存的头像失败: ' + JSON.stringify(error))
       return { avatar: '', hasCustomAvatar: false }
     }
   }
 
   // 主题切换处理
   async onThemeChange(value: string): Promise<boolean> {
-    console.info('开始切换主题: ' + value)
+    Logger.info('开始切换主题: ' + value)
     
     if (!this.themeManager) {
-      console.error('主题管理器未初始化')
+      Logger.error('主题管理器未初始化')
       return false
     }
     
     if (!this.context) {
-      console.error('上下文未初始化')
+      Logger.error('上下文未初始化')
       return false
     }
 
     try {
       // 转换为存储格式
       const theme = AccountUtils.displayToTheme(value, this.getRm())
-      console.info('转换后的主题: ' + theme)
+      Logger.info('转换后的主题: ' + theme)
 
       // 通过ThemeManager更新主题（会自动保存到ConfigManager并更新AppStorage）
       const success = await this.themeManager.updateTheme(theme as 'light' | 'dark' | 'auto')
-      console.info('更新主题结果: ' + success)
+      Logger.info('更新主题结果: ' + success)
 
       if (success) {
         // 应用主题到系统
@@ -262,14 +263,14 @@ export class AccountViewModel {
         // 更新 AppStorage（供页面监听）
         AppStorage.setOrCreate('currentTheme', theme)
 
-        console.info('主题设置成功: ' + theme)
+        Logger.info('主题设置成功: ' + theme)
         return true
       } else {
-        console.error('主题更新失败')
+        Logger.error('主题更新失败')
         return false
       }
     } catch (error) {
-      console.error('主题切换异常: ' + JSON.stringify(error))
+      Logger.error('主题切换异常: ' + JSON.stringify(error))
       return false
     }
   }
@@ -297,9 +298,9 @@ export class AccountViewModel {
           break
       }
 
-      console.info('主题已应用: ' + theme)
+      Logger.info('主题已应用: ' + theme)
     } catch (error) {
-      console.error('应用主题失败: ' + JSON.stringify(error))
+      Logger.error('应用主题失败: ' + JSON.stringify(error))
     }
   }
 
@@ -318,7 +319,7 @@ export class AccountViewModel {
 
       // 调用select方法拉起图库选择界面
       const photoSelectResult = await photoPicker.select(photoSelectOptions)
-      console.info('PhotoViewPicker.select successfully, photoSelectResult: ' + JSON.stringify(photoSelectResult))
+      Logger.info('PhotoViewPicker.select successfully, photoSelectResult: ' + JSON.stringify(photoSelectResult))
 
       // 获取选中的图片URI数组
       if (photoSelectResult.photoUris && photoSelectResult.photoUris.length > 0) {
@@ -329,7 +330,7 @@ export class AccountViewModel {
       return null
     } catch (error) {
       let err: BusinessError = error as BusinessError
-      console.error(`PhotoViewPicker failed with err: ${err.code}, ${err.message}`)
+      Logger.error(`PhotoViewPicker failed with err: ${err.code}, ${err.message}`)
       return null
     }
   }
@@ -337,7 +338,7 @@ export class AccountViewModel {
   // 复制图片到沙箱目录（图片 IO 已下沉至 service/ImageFileService，P3）
   private async copyImageToSandbox(sourceUri: string): Promise<string | null> {
     if (!this.context) {
-      console.error('上下文为空，无法复制图片')
+      Logger.error('上下文为空，无法复制图片')
       return null
     }
 
@@ -353,7 +354,7 @@ export class AccountViewModel {
   private async saveAvatarPath(avatarPath: string): Promise<void> {
     try {
       if (!this.configManager) {
-        console.error('配置管理器未初始化，无法保存头像')
+        Logger.error('配置管理器未初始化，无法保存头像')
         return
       }
 
@@ -369,19 +370,19 @@ export class AccountViewModel {
       )
 
       if (success) {
-        console.info('头像路径保存成功: ' + avatarPath)
+        Logger.info('头像路径保存成功: ' + avatarPath)
       } else {
-        console.error('头像路径保存失败')
+        Logger.error('头像路径保存失败')
       }
     } catch (error) {
-      console.error('保存头像路径失败: ' + JSON.stringify(error))
+      Logger.error('保存头像路径失败: ' + JSON.stringify(error))
     }
   }
 
   // 保存用户资料
   async saveProfile(name: string, birthday: string, gender: string, avatarPath: string): Promise<boolean> {
     if (!this.configManager) {
-      console.error('配置管理器未初始化')
+      Logger.error('配置管理器未初始化')
       return false
     }
 
@@ -393,14 +394,14 @@ export class AccountViewModel {
       const success = await this.configManager.updateProfile(name, birthday, genderStorage, avatarPath)
 
       if (success) {
-        console.info('用户资料保存成功')
+        Logger.info('用户资料保存成功')
         return true
       } else {
-        console.error('用户资料保存失败')
+        Logger.error('用户资料保存失败')
         return false
       }
     } catch (error) {
-      console.error('保存用户资料异常: ' + JSON.stringify(error))
+      Logger.error('保存用户资料异常: ' + JSON.stringify(error))
       return false
     }
   }

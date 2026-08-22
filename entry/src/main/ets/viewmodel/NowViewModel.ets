@@ -5,6 +5,7 @@ import { TimeUtils } from '../common/utils/TimeUtils'
 import { ImageGenerator } from '../common/utils/ImageGenerator'
 import { RecordRepository } from '../repository/RecordRepository'
 import { ImageFileService } from '../service/ImageFileService'
+import { Logger } from '../common/utils/Logger'
 
 // 生活记录数据管理类
 export class NowViewModel {
@@ -29,7 +30,7 @@ export class NowViewModel {
   
   // 初始化（context 显式注入优先，否则回退 AppStorage）
   private async init(context?: common.UIAbilityContext): Promise<void> {
-    console.info('[NowViewModel] init 开始')
+    Logger.info('[NowViewModel] init 开始')
     
     // 最多重试3次，每次间隔100ms
     for (let retry = 0; retry < 3; retry++) {
@@ -44,12 +45,12 @@ export class NowViewModel {
         }
         
         if (!uiContext) {
-          console.warn(`[NowViewModel] uiContext 不存在，重试 ${retry + 1}/3`)
+          Logger.warn(`[NowViewModel] uiContext 不存在，重试 ${retry + 1}/3`)
           if (retry < 2) {
             await new Promise<void>(resolve => setTimeout(resolve, 100))
             continue
           }
-          console.error('[NowViewModel] uiContext 获取失败，初始化终止')
+          Logger.error('[NowViewModel] uiContext 获取失败，初始化终止')
           return
         }
         
@@ -57,10 +58,10 @@ export class NowViewModel {
         
         // 加载记录
         await this.loadRecords()
-        console.info('[NowViewModel] 记录加载完成，数量: ' + this.records.length)
+        Logger.info('[NowViewModel] 记录加载完成，数量: ' + this.records.length)
         return // 初始化成功，退出
       } catch (error) {
-        console.error('[NowViewModel] init 失败: ' + JSON.stringify(error))
+        Logger.error('[NowViewModel] init 失败: ' + JSON.stringify(error))
         if (retry < 2) {
           await new Promise<void>(resolve => setTimeout(resolve, 100))
         }
@@ -87,17 +88,17 @@ export class NowViewModel {
         await this.initSampleData()
       }
     } catch (error) {
-      console.error('[NowViewModel] 加载记录失败: ' + JSON.stringify(error))
+      Logger.error('[NowViewModel] 加载记录失败: ' + JSON.stringify(error))
       this.records = []
     }
   }
   
   // 初始化示例数据
   private async initSampleData(): Promise<void> {
-    console.info('[NowViewModel] 初始化示例数据')
+    Logger.info('[NowViewModel] 初始化示例数据')
     
     if (!this.context) {
-      console.error('[NowViewModel] context 未初始化，无法生成示例图片')
+      Logger.error('[NowViewModel] context 未初始化，无法生成示例图片')
       return
     }
     
@@ -118,12 +119,12 @@ export class NowViewModel {
       )
       
       if (sampleImagePath) {
-        console.info('[NowViewModel] 示例图片生成成功: ' + sampleImagePath)
+        Logger.info('[NowViewModel] 示例图片生成成功: ' + sampleImagePath)
       } else {
-        console.warn('[NowViewModel] 示例图片生成失败')
+        Logger.warn('[NowViewModel] 示例图片生成失败')
       }
     } catch (error) {
-      console.error('[NowViewModel] 生成示例图片异常: ' + JSON.stringify(error))
+      Logger.error('[NowViewModel] 生成示例图片异常: ' + JSON.stringify(error))
     }
     
     const rm = this.context?.resourceManager
@@ -170,30 +171,30 @@ export class NowViewModel {
     
     this.records = sampleRecords
     await this.saveRecords()
-    console.info('[NowViewModel] 示例数据初始化完成')
+    Logger.info('[NowViewModel] 示例数据初始化完成')
   }
   
   // 保存记录
   private async saveRecords(): Promise<boolean> {
     // 如果 prefs 未初始化，尝试重新初始化
     if (!this.context) {
-      console.warn('[NowViewModel] context 未初始化，尝试重新初始化')
+      Logger.warn('[NowViewModel] context 未初始化，尝试重新初始化')
       await this.init()
     }
     
     if (!this.context) {
-      console.error('[NowViewModel] context 仍然未初始化，保存失败')
+      Logger.error('[NowViewModel] context 仍然未初始化，保存失败')
       return false
     }
     
     try {
       const success = await RecordRepository.saveRecords(this.context, this.records)
       if (success) {
-        console.info('[NowViewModel] 记录保存成功，数量: ' + this.records.length)
+        Logger.info('[NowViewModel] 记录保存成功，数量: ' + this.records.length)
       }
       return success
     } catch (error) {
-      console.error('[NowViewModel] 保存记录失败: ' + JSON.stringify(error))
+      Logger.error('[NowViewModel] 保存记录失败: ' + JSON.stringify(error))
       return false
     }
   }
@@ -229,7 +230,7 @@ export class NowViewModel {
   async updateRecord(id: string, content: string, imagePaths?: string[], tags?: string[]): Promise<boolean> {
     const index = this.records.findIndex(r => r.id === id)
     if (index === -1) {
-      console.error('[NowViewModel] 未找到记录: ' + id)
+      Logger.error('[NowViewModel] 未找到记录: ' + id)
       return false
     }
     
@@ -268,13 +269,13 @@ export class NowViewModel {
   async togglePin(id: string): Promise<boolean> {
     const index = this.records.findIndex(r => r.id === id)
     if (index === -1) {
-      console.error('[NowViewModel] 未找到记录: ' + id)
+      Logger.error('[NowViewModel] 未找到记录: ' + id)
       return false
     }
 
     const record = this.records[index]
     record.isPinned = !record.isPinned
-    console.info('[NowViewModel] 记录' + id + ' 收藏状态切换为: ' + record.isPinned)
+    Logger.info('[NowViewModel] 记录' + id + ' 收藏状态切换为: ' + record.isPinned)
 
     return await this.saveRecords()
   }
@@ -288,7 +289,7 @@ export class NowViewModel {
   async deleteRecord(id: string): Promise<boolean> {
     const index = this.records.findIndex(r => r.id === id)
     if (index === -1) {
-      console.error('[NowViewModel] 未找到记录: ' + id)
+      Logger.error('[NowViewModel] 未找到记录: ' + id)
       return false
     }
     
@@ -312,7 +313,7 @@ export class NowViewModel {
   // 图片 IO 已下沉至 service/ImageFileService（P3）
   async saveImageToSandbox(sourceUri: string): Promise<string | null> {
     if (!this.context) {
-      console.error('[NowViewModel] context 未初始化')
+      Logger.error('[NowViewModel] context 未初始化')
       return null
     }
     return await ImageFileService.saveRecordImage(this.context, sourceUri)

@@ -5,6 +5,7 @@
 import { storageStatistics } from '@kit.CoreFileKit'
 import { common } from '@kit.AbilityKit'
 import { TimeUtils } from '../common/utils/TimeUtils'
+import { Logger } from '../common/utils/Logger'
 
 export class StorageService {
   /**
@@ -18,7 +19,7 @@ export class StorageService {
       const totalSize = bundleStats.appSize + bundleStats.cacheSize + bundleStats.dataSize
       return StorageService.formatStorageSize(totalSize)
     } catch (error) {
-      console.error('[StorageService] 获取应用存储空间失败: ' + JSON.stringify(error))
+      Logger.error('[StorageService] 获取应用存储空间失败: ' + JSON.stringify(error))
       return context.resourceManager.getStringByNameSync('calc_failed')
     }
   }

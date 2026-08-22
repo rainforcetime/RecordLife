@@ -3,6 +3,7 @@
  * 统一管理应用的基本信息，避免多处硬编码
  */
 import { bundleManager } from '@kit.AbilityKit';
+import { Logger } from '../common/utils/Logger'
 
 // 应用信息接口
 export interface AppInfoConfig {
@@ -58,9 +59,9 @@ export class AppInfoManager {
         description: appDescription
       };
       
-      console.info('应用信息初始化成功: ' + JSON.stringify(this.appInfo));
+      Logger.info('应用信息初始化成功: ' + JSON.stringify(this.appInfo));
     } catch (error) {
-      console.error('应用信息初始化失败，使用默认值: ' + JSON.stringify(error));
+      Logger.error('应用信息初始化失败，使用默认值: ' + JSON.stringify(error));
       // 使用默认值
       this.appInfo = this.getDefaultAppInfo();
     }
@@ -73,7 +74,7 @@ export class AppInfoManager {
     try {
       return getContext().resourceManager.getStringByNameSync(resourceName);
     } catch (error) {
-      console.error(`读取资源字符串 ${resourceName} 失败: ` + JSON.stringify(error));
+      Logger.error(`读取资源字符串 ${resourceName} 失败: ` + JSON.stringify(error));
       return defaultValue;
     }
   }

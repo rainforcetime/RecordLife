@@ -1,5 +1,6 @@
 // 编辑资料弹窗组件
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
+import { Logger } from '../../common/utils/Logger'
 
 @CustomDialog
 export struct EditProfileDialog {
@@ -197,7 +198,7 @@ export struct EditProfileDialog {
         return new Date(year, month, day)
       }
     } catch (error) {
-      console.error('日期解析失败: ' + error)
+      Logger.error('日期解析失败: ' + error)
     }
     // 返回默认日期
     return new Date(1990, 0, 1)

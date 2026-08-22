@@ -3,6 +3,7 @@ import { fileIo } from '@kit.CoreFileKit'
 import { fileUri } from '@kit.CoreFileKit'
 import { util } from '@kit.ArkTS'
 import { ImagePathUtils } from './ImagePathUtils'
+import { Logger } from './Logger'
 
 export class MorePageHelper {
   /**
@@ -32,7 +33,7 @@ export class MorePageHelper {
       // 删除空目录
       fileIo.rmdirSync(dirPath)
     } catch (error) {
-      console.error('[MorePageHelper] 删除目录失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageHelper] 删除目录失败: ' + JSON.stringify(error))
     }
   }
   
@@ -61,7 +62,7 @@ export class MorePageHelper {
       const decoder: util.TextDecoder = util.TextDecoder.create('utf-8')
       return decoder.decodeToString(new Uint8Array(buffer))
     } catch (error) {
-      console.error('[MorePageHelper] 读取文件失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageHelper] 读取文件失败: ' + JSON.stringify(error))
       throw new Error('读取文件失败: ' + JSON.stringify(error))
     }
   }
@@ -77,7 +78,7 @@ export class MorePageHelper {
       fileIo.writeSync(file.fd, content)
       fileIo.closeSync(file)
     } catch (error) {
-      console.error('[MorePageHelper] 写入文件失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageHelper] 写入文件失败: ' + JSON.stringify(error))
       throw new Error('写入文件失败: ' + JSON.stringify(error))
     }
   }
@@ -91,7 +92,7 @@ export class MorePageHelper {
     try {
       fileIo.copyFileSync(srcPath, destPath)
     } catch (error) {
-      console.error('[MorePageHelper] 复制文件失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageHelper] 复制文件失败: ' + JSON.stringify(error))
       throw new Error('复制文件失败: ' + JSON.stringify(error))
     }
   }
@@ -119,7 +120,7 @@ export class MorePageHelper {
         fileIo.mkdirSync(dirPath)
       }
     } catch (error) {
-      console.error('[MorePageHelper] 创建目录失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageHelper] 创建目录失败: ' + JSON.stringify(error))
       throw new Error('创建目录失败: ' + JSON.stringify(error))
     }
   }

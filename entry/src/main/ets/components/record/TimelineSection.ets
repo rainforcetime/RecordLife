@@ -5,6 +5,7 @@ import { RecordCard } from './RecordCard'
 import { ColorUtils } from '../../common/ColorUtils'
 import { TagService } from '../../service/TagService'
 import { common } from '@kit.AbilityKit'
+import { Logger } from '../../common/utils/Logger'
 
 // 日期分组数据结构
 interface DateGroup {
@@ -57,26 +58,26 @@ export struct TimelineSection {
       this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.customTags = this.tagService.getCustomTags()
     } catch (error) {
-      console.error('[TimelineSection] 初始化失败: ' + JSON.stringify(error))
+      Logger.error('[TimelineSection] 初始化失败: ' + JSON.stringify(error))
     }
     this.buildDateGroups()
   }
   
   // 当 timelineData 改变时重新构建数据
   private onTimelineDataChange() {
-    console.info('[TimelineSection] timelineDataVersion 改变: ' + this.timelineDataVersion)
+    Logger.info('[TimelineSection] timelineDataVersion 改变: ' + this.timelineDataVersion)
     this.buildDateGroups()
   }
   
   // 当搜索关键词改变时重新构建数据
   private onSearchKeywordChange() {
-    console.info('[TimelineSection] searchKeyword 改变: ' + this.searchKeyword)
+    Logger.info('[TimelineSection] searchKeyword 改变: ' + this.searchKeyword)
     this.buildDateGroups()
   }
 
   // 当标签筛选改变时重新构建数据
   private onFilterTagIdsChange() {
-    console.info('[TimelineSection] filterTagIds 改变: ' + JSON.stringify(this.filterTagIds))
+    Logger.info('[TimelineSection] filterTagIds 改变: ' + JSON.stringify(this.filterTagIds))
     this.buildDateGroups()
   }
   
@@ -207,7 +208,7 @@ export struct TimelineSection {
 
     this.dateGroups = groups
     this.pinnedRecords = pinned
-    console.info('[TimelineSection] 构建日期分组完成，共 ' + groups.length + ' 个日期组，收藏记录: ' + pinned.length)
+    Logger.info('[TimelineSection] 构建日期分组完成，共 ' + groups.length + ' 个日期组，收藏记录: ' + pinned.length)
   }
   
   build() {

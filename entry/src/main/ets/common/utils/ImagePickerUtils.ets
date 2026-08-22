@@ -3,6 +3,7 @@ import { common } from '@kit.AbilityKit'
 import { cameraPicker as picker, camera } from '@kit.CameraKit'
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
 import { PromptAction } from '@kit.ArkUI'
+import { Logger } from './Logger'
 
 // 图片选择结果
 export interface ImagePickResult {
@@ -35,7 +36,7 @@ export class ImagePickerUtils {
         return await ImagePickerUtils.pickFromGallery()
       }
     } catch (error) {
-      console.error(`[ImagePickerUtils] 选择图片失败: ${JSON.stringify(error)}`)
+      Logger.error(`[ImagePickerUtils] 选择图片失败: ${JSON.stringify(error)}`)
       return {
         success: false,
         errorMessage: $r('app.string.pick_image_failed')
@@ -65,7 +66,7 @@ export class ImagePickerUtils {
       )
 
       if (pickerResult && pickerResult.resultUri && pickerResult.resultCode === 0) {
-        console.info('[ImagePickerUtils] 拍照成功: ' + pickerResult.resultUri)
+        Logger.info('[ImagePickerUtils] 拍照成功: ' + pickerResult.resultUri)
         return {
           success: true,
           uri: pickerResult.resultUri
@@ -77,7 +78,7 @@ export class ImagePickerUtils {
         errorMessage: $r('app.string.camera_cancelled')
       }
     } catch (error) {
-      console.error('[ImagePickerUtils] 拍照失败: ' + JSON.stringify(error))
+      Logger.error('[ImagePickerUtils] 拍照失败: ' + JSON.stringify(error))
       return {
         success: false,
         errorMessage: $r('app.string.camera_failed')
@@ -103,12 +104,12 @@ export class ImagePickerUtils {
 
       // 调用select方法拉起图库选择界面
       const photoSelectResult = await photoPicker.select(photoSelectOptions)
-      console.info('[ImagePickerUtils] 从相册选择成功: ' + JSON.stringify(photoSelectResult))
+      Logger.info('[ImagePickerUtils] 从相册选择成功: ' + JSON.stringify(photoSelectResult))
 
       // 获取选中的图片URI
       if (photoSelectResult.photoUris && photoSelectResult.photoUris.length > 0) {
         const selectedUri = photoSelectResult.photoUris[0]
-        console.info('[ImagePickerUtils] 选中的图片URI: ' + selectedUri)
+        Logger.info('[ImagePickerUtils] 选中的图片URI: ' + selectedUri)
         return {
           success: true,
           uri: selectedUri
@@ -120,7 +121,7 @@ export class ImagePickerUtils {
         errorMessage: $r('app.string.no_image_selected')
       }
     } catch (error) {
-      console.error('[ImagePickerUtils] 从相册选择失败: ' + JSON.stringify(error))
+      Logger.error('[ImagePickerUtils] 从相册选择失败: ' + JSON.stringify(error))
       return {
         success: false,
         errorMessage: $r('app.string.pick_image_failed')
@@ -137,7 +138,7 @@ export class ImagePickerUtils {
     try {
       promptAction.showToast({ message: message })
     } catch (error) {
-      console.error('[ImagePickerUtils] showToast failed: ' + JSON.stringify(error))
+      Logger.error('[ImagePickerUtils] showToast failed: ' + JSON.stringify(error))
     }
   }
 }

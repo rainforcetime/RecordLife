@@ -6,6 +6,7 @@ import { common } from '@kit.AbilityKit'
 import { PromptAction } from '@kit.ArkUI'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { TagSelector } from '../common/TagSelector'
+import { Logger } from '../../common/utils/Logger'
 
 @Component
 export struct EditRecordDialog {
@@ -53,13 +54,13 @@ export struct EditRecordDialog {
     
     // 初始化本地数组副本
     this.localImagePaths = [...this.editImagePaths]
-    console.info('[EditRecordDialog] aboutToAppear, 初始化本地数组: ' + JSON.stringify(this.localImagePaths))
+    Logger.info('[EditRecordDialog] aboutToAppear, 初始化本地数组: ' + JSON.stringify(this.localImagePaths))
   }
   
   // 监听 prop 变化，同步到本地数组
   aboutToReuse(params: Record<string, Object>) {
     this.localImagePaths = [...this.editImagePaths]
-    console.info('[EditRecordDialog] aboutToReuse, 同步本地数组: ' + JSON.stringify(this.localImagePaths))
+    Logger.info('[EditRecordDialog] aboutToReuse, 同步本地数组: ' + JSON.stringify(this.localImagePaths))
   }
   
   build() {
@@ -211,14 +212,14 @@ export struct EditRecordDialog {
             if (this.onImagePathsChange) {
               this.onImagePathsChange(this.localImagePaths)
             }
-            console.info('[EditRecordDialog] 添加图片成功，当前图片数: ' + this.localImagePaths.length)
+            Logger.info('[EditRecordDialog] 添加图片成功，当前图片数: ' + this.localImagePaths.length)
           }
         }
       } else if (result.errorMessage && this.promptAction) {
         ImagePickerUtils.showErrorToast(this.promptAction, result.errorMessage)
       }
     } catch (error) {
-      console.error('[EditRecordDialog] 选择图片失败: ' + JSON.stringify(error))
+      Logger.error('[EditRecordDialog] 选择图片失败: ' + JSON.stringify(error))
       if (this.promptAction) {
         ImagePickerUtils.showErrorToast(this.promptAction, $r('app.string.pick_image_failed_retry'))
       }

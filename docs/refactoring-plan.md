@@ -851,6 +851,30 @@ entry/src/main/ets/
 
 **验证**：✅ 用户实机确认修复（自定义标签显示名称/颜色/图标正常）。
 
+### 轮次 19 — 2026-08-22（B3 日志收敛：统一 hilog + 日志开关）
+
+> 前置：用户选择 B3 日志收敛方向。
+
+**本轮目标**：全工程 `console.info/warn/error`（392 处 + 6 处 console.log）统一为封装 hilog 的 `Logger`，移除临时调试日志。
+
+**涉及文件**（40 .ets）：
+- `common/utils/Logger.ets`（新增）— 封装 `hilog`：`info/warn` 受 `debugEnabled` 开关控制（`setDebugEnabled`），`error` 始终输出
+- 39 个文件脚本批量替换 `console.info/warn/error/log` → `Logger.info/warn/error`，按目录深度自动插入 `import { Logger }`
+- 临时调试日志移除：`TagManagementDialog` 3 处 `>>>` 日志、`CalendarDayItem` 2 行颜色打印
+
+**已完成**：
+- [x] 全工程 `console.*` 调用清零（grep 验证；EntryAbility/EntryBackupAbility 本用 hilog，未改动）
+- [x] 双参数调用修正：5 处 `Logger.error('msg:', error)` → 单参拼接（`JSON.stringify(error)`）
+- [x] import 完整性验证（所有 Logger 使用者均有正确路径的 import；RefreshManager 原无 import 区，手动补加）
+- [x] Logger 提供日志开关（info/warn 可控，error 恒输出）
+
+**遗留问题**：
+- ⚠️ 需 DevEco 编译 + 实机验证（hilog 输出正常、无编译错误）
+- `hilog` 格式化统一使用 `%{public}s`（与原 console 明文一致）；敏感数据如需脱敏可改用 `%{private}s`
+- 日志内容本身未精简（部分 info 偏冗余，可按需清理）
+
+**下一轮计划**：可选 — 预设标签名国际化（数据层显示映射）或收工
+
 ### 10.3 数据兼容性验证记录
 
 | 验证时间 | 备份文件来源 | 导入结果 | 验证人 | 备注 |

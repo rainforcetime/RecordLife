@@ -9,6 +9,7 @@ import { ConfigTransferService } from '../../service/ConfigTransferService'
 import { RefreshManager } from '../managers/RefreshManager'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { RecordRepository } from '../../repository/RecordRepository'
+import { Logger } from '../../common/utils/Logger'
 
 export class MorePageConfigHandler {
   /**
@@ -22,11 +23,11 @@ export class MorePageConfigHandler {
         bundleName: 'com.rainforcetime.recordlife',
         abilityName: 'EntryAbility'
       }
-      console.info('[MorePageConfigHandler] 准备重启应用')
+      Logger.info('[MorePageConfigHandler] 准备重启应用')
       applicationContext.restartApp(want)
-      console.info('[MorePageConfigHandler] 重启应用已触发')
+      Logger.info('[MorePageConfigHandler] 重启应用已触发')
     } catch (error) {
-      console.error('[MorePageConfigHandler] 重启应用失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageConfigHandler] 重启应用失败: ' + JSON.stringify(error))
     }
   }
   
@@ -38,12 +39,12 @@ export class MorePageConfigHandler {
     configManager: ConfigManager,
     promptAction: PromptAction
   ): Promise<void> {
-    console.info('[MorePageConfigHandler] 开始导出配置')
+    Logger.info('[MorePageConfigHandler] 开始导出配置')
     
     try {
       // 获取配置内容
       const configStr = await ConfigTransferService.exportConfig(configManager)
-      console.info('[MorePageConfigHandler] 配置内容长度: ' + configStr.length)
+      Logger.info('[MorePageConfigHandler] 配置内容长度: ' + configStr.length)
       
       // 生成文件名（带时间戳）
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19)
@@ -55,7 +56,7 @@ export class MorePageConfigHandler {
       const documentPicker: picker.DocumentViewPicker = new picker.DocumentViewPicker()
       
       const uriResult: Array<string> = await documentPicker.save(documentSaveOptions)
-      console.info('[MorePageConfigHandler] 文件选择结果: ' + JSON.stringify(uriResult))
+      Logger.info('[MorePageConfigHandler] 文件选择结果: ' + JSON.stringify(uriResult))
       
       if (uriResult && uriResult.length > 0) {
         const saveUri: string = uriResult[0]
@@ -65,17 +66,17 @@ export class MorePageConfigHandler {
         fileIo.writeSync(file.fd, configStr)
         fileIo.closeSync(file)
         
-        console.info('[MorePageConfigHandler] 配置导出成功: ' + saveUri)
+        Logger.info('[MorePageConfigHandler] 配置导出成功: ' + saveUri)
         promptAction.showToast({ message: $r('app.string.config_export_success') })
       } else {
-        console.info('[MorePageConfigHandler] 用户取消导出')
+        Logger.info('[MorePageConfigHandler] 用户取消导出')
       }
     } catch (error) {
-      console.error('[MorePageConfigHandler] 导出配置失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageConfigHandler] 导出配置失败: ' + JSON.stringify(error))
       try {
         promptAction.showToast({ message: context.resourceManager.getStringByNameSync('export_failed_prefix') + (error as Error).message })
       } catch (toastError) {
-        console.error('[MorePageConfigHandler] showToast 失败: ' + JSON.stringify(toastError))
+        Logger.error('[MorePageConfigHandler] showToast 失败: ' + JSON.stringify(toastError))
       }
     }
   }
@@ -88,7 +89,7 @@ export class MorePageConfigHandler {
     configManager: ConfigManager,
     promptAction: PromptAction
   ): Promise<void> {
-    console.info('[MorePageConfigHandler] 开始导入配置')
+    Logger.info('[MorePageConfigHandler] 开始导入配置')
     
     try {
       // 使用DocumentViewPicker选择配置文件
@@ -97,7 +98,7 @@ export class MorePageConfigHandler {
       const documentPicker: picker.DocumentViewPicker = new picker.DocumentViewPicker()
       
       const uriResult: Array<string> = await documentPicker.select(documentSelectOptions)
-      console.info('[MorePageConfigHandler] 文件选择结果: ' + JSON.stringify(uriResult))
+      Logger.info('[MorePageConfigHandler] 文件选择结果: ' + JSON.stringify(uriResult))
       
       if (uriResult && uriResult.length > 0) {
         const selectUri: string = uriResult[0]
@@ -112,13 +113,13 @@ export class MorePageConfigHandler {
         // 将ArrayBuffer转换为字符串
         const decoder: util.TextDecoder = util.TextDecoder.create('utf-8')
         const configStr = decoder.decodeToString(new Uint8Array(buffer))
-        console.info('[MorePageConfigHandler] 配置内容长度: ' + configStr.length)
+        Logger.info('[MorePageConfigHandler] 配置内容长度: ' + configStr.length)
         
         // 导入配置
         const success = await ConfigTransferService.importConfig(configManager, configStr)
         
         if (success) {
-          console.info('[MorePageConfigHandler] 配置导入成功')
+          Logger.info('[MorePageConfigHandler] 配置导入成功')
           promptAction.showToast({ message: $r('app.string.config_import_success') })
           
           // 延迟1秒后重启应用，让用户看到提示
@@ -126,18 +127,18 @@ export class MorePageConfigHandler {
             MorePageConfigHandler.restartApp(context)
           }, 1000)
         } else {
-          console.error('[MorePageConfigHandler] 配置导入失败：格式无效')
+          Logger.error('[MorePageConfigHandler] 配置导入失败：格式无效')
           promptAction.showToast({ message: $r('app.string.config_invalid') })
         }
       } else {
-        console.info('[MorePageConfigHandler] 用户取消导入')
+        Logger.info('[MorePageConfigHandler] 用户取消导入')
       }
     } catch (error) {
-      console.error('[MorePageConfigHandler] 导入配置失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageConfigHandler] 导入配置失败: ' + JSON.stringify(error))
       try {
         promptAction.showToast({ message: context.resourceManager.getStringByNameSync('import_failed_prefix') + (error as Error).message })
       } catch (toastError) {
-        console.error('[MorePageConfigHandler] showToast 失败: ' + JSON.stringify(toastError))
+        Logger.error('[MorePageConfigHandler] showToast 失败: ' + JSON.stringify(toastError))
       }
     }
   }
@@ -166,7 +167,7 @@ export class MorePageConfigHandler {
             fileIo.unlinkSync(filePath)
           }
         }
-        console.info(`[MorePageConfigHandler] 删除了 filesDir 下的所有文件`)
+        Logger.info(`[MorePageConfigHandler] 删除了 filesDir 下的所有文件`)
       }
       
       // 3. 清空缓存目录
@@ -182,17 +183,17 @@ export class MorePageConfigHandler {
             fileIo.unlinkSync(filePath)
           }
         }
-        console.info(`[MorePageConfigHandler] 删除了 cacheDir 下的所有文件`)
+        Logger.info(`[MorePageConfigHandler] 删除了 cacheDir 下的所有文件`)
       }
       
       // 4. 清空 Preferences 中的记录数据
       await RecordRepository.clearRecords(context)
       
-      console.info('[MorePageConfigHandler] 记录数据已清空')
+      Logger.info('[MorePageConfigHandler] 记录数据已清空')
       
       return records.length
     } catch (error) {
-      console.error('[MorePageConfigHandler] 删除记录失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageConfigHandler] 删除记录失败: ' + JSON.stringify(error))
       return 0
     }
   }
@@ -219,7 +220,7 @@ export class MorePageConfigHandler {
       
       fileIo.rmdirSync(dirPath)
     } catch (error) {
-      console.error('[MorePageConfigHandler] 删除目录失败: ' + JSON.stringify(error))
+      Logger.error('[MorePageConfigHandler] 删除目录失败: ' + JSON.stringify(error))
     }
   }
   
@@ -238,24 +239,24 @@ export class MorePageConfigHandler {
       primaryButton: {
         value: $r('app.string.cancel'),
         action: () => {
-          console.info('[MorePageConfigHandler] 用户取消重置')
+          Logger.info('[MorePageConfigHandler] 用户取消重置')
         }
       },
       secondaryButton: {
         value: $r('app.string.confirm'),
         action: async () => {
-          console.info('[MorePageConfigHandler] 开始重置应用')
+          Logger.info('[MorePageConfigHandler] 开始重置应用')
           
           try {
             // 1. 删除此刻记录数据
             const recordsDeleted = await MorePageConfigHandler.deleteAllRecords(context)
-            console.info(`[MorePageConfigHandler] 删除了 ${recordsDeleted} 条记录`)
+            Logger.info(`[MorePageConfigHandler] 删除了 ${recordsDeleted} 条记录`)
             
             // 2. 重置配置
             const success = await configManager.resetToDefault()
             
             if (success) {
-              console.info('[MorePageConfigHandler] 应用重置成功')
+              Logger.info('[MorePageConfigHandler] 应用重置成功')
               promptAction.showToast({ message: $r('app.string.reset_success') })
               
               // 延迟1秒后重启应用，让用户看到提示
@@ -263,11 +264,11 @@ export class MorePageConfigHandler {
                 MorePageConfigHandler.restartApp(context)
               }, 1000)
             } else {
-              console.error('[MorePageConfigHandler] 应用重置失败')
+              Logger.error('[MorePageConfigHandler] 应用重置失败')
               promptAction.showToast({ message: $r('app.string.reset_failed') })
             }
           } catch (error) {
-            console.error('[MorePageConfigHandler] 重置应用异常: ' + JSON.stringify(error))
+            Logger.error('[MorePageConfigHandler] 重置应用异常: ' + JSON.stringify(error))
             promptAction.showToast({ message: context.resourceManager.getStringByNameSync('reset_failed_prefix') + (error as Error).message })
           }
         }

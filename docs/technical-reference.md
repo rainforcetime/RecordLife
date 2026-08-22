@@ -540,7 +540,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | 3 | 硬编码颜色残留（有意保留类）：标签调色板 10 色、`getDayColor` 选中 `'#FFFFFF'`（CalendarUtils.ets:193）、主题判定 `textPrimary === '#FFFFFF'`（ThemeManager.ets:147/149）、纯白文字 on 彩色背景 | 多处 | B1 残余说明 |
 | 4 | `createDefaultConfig` / `createDefaultConfigSync` 几乎重复 | UserConfigModel.ets:83/138 | B5 |
 | 5 | ~~`JSON.parse(JSON.stringify(...))` 深拷贝~~ ✅ 已替换 | NowPage.refreshTimeline 直接赋值（buildTimelineData 每次返回全新对象图，P5 轮次 10） | B6 已解决 |
-| 6 | 调试日志泛滥（`console.info` 100+，含 `>>>`/`[StorageDebug]`/`[ConfigManager]` 等） | 全工程 | B3（`[StorageDebug]` 已清零，P4 轮次 8；其余待收敛） |
+| 6 | ~~调试日志泛滥（`console.info` 100+，含 `>>>`/`[StorageDebug]`/`[ConfigManager]` 等）~~ ✅ 已收敛 | 全工程 `console.*` 清零（B3 轮次 19）：统一 `common/utils/Logger`（hilog 封装 + 开关，error 恒输出）；`>>>` 临时日志与 `[StorageDebug]` 已移除 | B3 已解决 |
 | 7 | `uiContext` 获取失败时 `getPromptAction` 等生命周期初始化风险 | NowPage.ets:82 等 | B7 |
 | 8 | ~~`uriToSandboxPath` 三处重复实现~~ ✅ 已收敛 | 统一至 `common/utils/ImagePathUtils.ets`（P3 轮次 4）；MorePageHelper 保留委托兼容 | C1 已解决 |
 | 9 | ~~无业务单测~~ ✅ 已解决（15 用例）；ViewModel fileIo 已下沉 | NowViewModel 的 fileIo 已下沉至 `service/ImageFileService`（P3 轮次 4）；AccountViewModel 仍直接 import fileIo（loadSavedAvatar 用）；单测见 `entry/src/test/`（P6 轮次 11） | A3/C2/P4 |

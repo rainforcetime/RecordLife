@@ -1,6 +1,7 @@
 // 账号页面工具类：common/utils/AccountUtils.ets
 import { promptAction, PromptAction } from '@kit.ArkUI'
 import { resourceManager } from '@kit.LocalizationKit'
+import { Logger } from './Logger'
 
 // 账号页面工具方法类
 export class AccountUtils {
@@ -76,7 +77,7 @@ export class AccountUtils {
         duration: duration
       })
     } catch (error) {
-      console.error('显示 Toast 失败: ' + JSON.stringify(error))
+      Logger.error('显示 Toast 失败: ' + JSON.stringify(error))
     }
   }
 }

@@ -7,6 +7,7 @@ import { LifeRecord } from '../common/types'
 import { RecordRepository } from '../repository/RecordRepository'
 import { AppInfoManager } from '../config/AppInfoConfig'
 import { ImagePathUtils } from '../common/utils/ImagePathUtils'
+import { Logger } from '../common/utils/Logger'
 
 // 备份元数据结构
 interface BackupMetadata {
@@ -39,7 +40,7 @@ export class BackupManager {
   
   // 初始化（context 显式注入优先，否则回退 AppStorage）
   private async init(context?: common.UIAbilityContext): Promise<void> {
-    console.info('[BackupManager] init 开始')
+    Logger.info('[BackupManager] init 开始')
     
     // 获取上下文（注入优先，A5）
     let uiContext = context
@@ -51,23 +52,23 @@ export class BackupManager {
     }
     
     if (!uiContext) {
-      console.error('[BackupManager] uiContext 获取失败')
+      Logger.error('[BackupManager] uiContext 获取失败')
       return
     }
     
     this.context = uiContext
-    console.info('[BackupManager] init 完成')
+    Logger.info('[BackupManager] init 完成')
   }
   
   // 创建备份到沙箱临时目录
   async createBackup(): Promise<string | null> {
     if (!this.context) {
-      console.error('[BackupManager] context 未初始化')
+      Logger.error('[BackupManager] context 未初始化')
       return null
     }
     
     try {
-      console.info('[BackupManager] 开始创建备份')
+      Logger.info('[BackupManager] 开始创建备份')
       
       // 1. 创建临时目录
       const tempDir = `${this.context.cacheDir}/${this.TEMP_DIR}`
@@ -78,16 +79,16 @@ export class BackupManager {
       // 2. 获取所有记录（直接读存储层，避免 service → viewmodel 反向依赖，P3）
       const records = await RecordRepository.getRecords(this.context)
       
-      console.info(`[BackupManager] 获取到 ${records.length} 条记录`)
+      Logger.info(`[BackupManager] 获取到 ${records.length} 条记录`)
       
       // 从AppInfoManager获取应用版本号
       let backupVersion = '1.0.0'
       try {
         const appInfoManager = await AppInfoManager.getInstance()
         backupVersion = appInfoManager.getAppVersion()
-        console.info(`[BackupManager] 应用版本: ${backupVersion}`)
+        Logger.info(`[BackupManager] 应用版本: ${backupVersion}`)
       } catch (error) {
-        console.error('[BackupManager] 获取应用版本失败: ' + JSON.stringify(error))
+        Logger.error('[BackupManager] 获取应用版本失败: ' + JSON.stringify(error))
       }
       
       // 3. 创建备份元数据
@@ -105,7 +106,7 @@ export class BackupManager {
       fileIo.writeSync(metadataFile.fd, metadataStr)
       fileIo.closeSync(metadataFile)
       
-      console.info('[BackupManager] 元数据文件已创建')
+      Logger.info('[BackupManager] 元数据文件已创建')
       
       // 5. 复制图片文件到临时目录
       const recordsDir = `${tempDir}/${this.RECORDS_DIR}`
@@ -134,7 +135,7 @@ export class BackupManager {
         }
       }
       
-      console.info(`[BackupManager] 复制了 ${imageCount} 个图片文件`)
+      Logger.info(`[BackupManager] 复制了 ${imageCount} 个图片文件`)
       
       // 6. 压缩为 zip 文件
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19)
@@ -148,14 +149,14 @@ export class BackupManager {
       }
       
       await zlib.compressFile(tempDir, zipPath, options)
-      console.info(`[BackupManager] 备份文件已创建: ${zipPath}`)
+      Logger.info(`[BackupManager] 备份文件已创建: ${zipPath}`)
       
       // 7. 清理临时目录
       this.deleteDirectory(tempDir)
       
       return zipPath
     } catch (error) {
-      console.error('[BackupManager] 创建备份失败: ' + JSON.stringify(error))
+      Logger.error('[BackupManager] 创建备份失败: ' + JSON.stringify(error))
       return null
     }
   }
@@ -163,12 +164,12 @@ export class BackupManager {
   // 从 zip 文件恢复备份
   async restoreBackup(zipPath: string): Promise<boolean> {
     if (!this.context) {
-      console.error('[BackupManager] context 未初始化')
+      Logger.error('[BackupManager] context 未初始化')
       return false
     }
     
     try {
-      console.info('[BackupManager] 开始恢复备份')
+      Logger.info('[BackupManager] 开始恢复备份')
       
       // 1. 创建临时解压目录
       const tempDir = `${this.context.cacheDir}/${this.TEMP_DIR}_restore`
@@ -182,12 +183,12 @@ export class BackupManager {
       }
       
       await zlib.decompressFile(zipPath, tempDir, options)
-      console.info('[BackupManager] zip 文件已解压')
+      Logger.info('[BackupManager] zip 文件已解压')
       
       // 3. 读取元数据
       const metadataPath = `${tempDir}/${this.METADATA_FILE}`
       if (!fileIo.accessSync(metadataPath)) {
-        console.error('[BackupManager] 元数据文件不存在')
+        Logger.error('[BackupManager] 元数据文件不存在')
         this.deleteDirectory(tempDir)
         return false
       }
@@ -203,7 +204,7 @@ export class BackupManager {
       const metadataStr = decoder.decodeToString(new Uint8Array(buffer))
       const metadata: BackupMetadata = JSON.parse(metadataStr)
       
-      console.info(`[BackupManager] 读取到 ${metadata.recordCount} 条记录`)
+      Logger.info(`[BackupManager] 读取到 ${metadata.recordCount} 条记录`)
       
       // 4. 恢复图片文件
       const recordsDir = `${tempDir}/${this.RECORDS_DIR}`
@@ -255,15 +256,15 @@ export class BackupManager {
         return updatedRecord
       })
       
-      console.info(`[BackupManager] 图片文件已恢复，记录路径已更新`)
+      Logger.info(`[BackupManager] 图片文件已恢复，记录路径已更新`)
       
       // 5. 恢复记录到 Preferences
       const success = await this.restoreRecordsToPreferences(updatedRecords)
       
       if (success) {
-        console.info('[BackupManager] 备份恢复成功')
+        Logger.info('[BackupManager] 备份恢复成功')
       } else {
-        console.error('[BackupManager] 恢复记录失败')
+        Logger.error('[BackupManager] 恢复记录失败')
       }
       
       // 6. 清理临时目录
@@ -271,7 +272,7 @@ export class BackupManager {
       
       return success
     } catch (error) {
-      console.error('[BackupManager] 恢复备份失败: ' + JSON.stringify(error))
+      Logger.error('[BackupManager] 恢复备份失败: ' + JSON.stringify(error))
       return false
     }
   }
@@ -285,11 +286,11 @@ export class BackupManager {
     try {
       const success = await RecordRepository.saveRecords(this.context, records)
       if (success) {
-        console.info(`[BackupManager] 已恢复 ${records.length} 条记录到 Preferences`)
+        Logger.info(`[BackupManager] 已恢复 ${records.length} 条记录到 Preferences`)
       }
       return success
     } catch (error) {
-      console.error('[BackupManager] 恢复记录到 Preferences 失败: ' + JSON.stringify(error))
+      Logger.error('[BackupManager] 恢复记录到 Preferences 失败: ' + JSON.stringify(error))
       return false
     }
   }
@@ -311,7 +312,7 @@ export class BackupManager {
         fileIo.rmdirSync(dirPath)
       }
     } catch (error) {
-      console.error('[BackupManager] 删除目录失败: ' + JSON.stringify(error))
+      Logger.error('[BackupManager] 删除目录失败: ' + JSON.stringify(error))
     }
   }
   

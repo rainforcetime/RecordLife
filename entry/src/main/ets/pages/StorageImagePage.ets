@@ -3,6 +3,7 @@ import { common } from '@kit.AbilityKit'
 import { fileIo as fs, fileUri, storageStatistics } from '@kit.CoreFileKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { RefreshManager } from '../common/managers/RefreshManager'
+import { Logger } from '../common/utils/Logger'
 
 // 图片信息接口
 interface ImageInfo {
@@ -42,28 +43,28 @@ struct StorageImagePage {
       
       // 注册全局刷新回调
       RefreshManager.getInstance().register('StorageImagePage', () => {
-        console.info('[StorageImagePage] 收到全局刷新通知')
+        Logger.info('[StorageImagePage] 收到全局刷新通知')
         this.loadSandboxImages()
       })
       
       // 加载沙箱目录中的图片
       await this.loadSandboxImages()
     } catch (error) {
-      console.error('[StorageImagePage] 初始化失败: ' + JSON.stringify(error))
+      Logger.error('[StorageImagePage] 初始化失败: ' + JSON.stringify(error))
       this.isLoading = false
     }
   }
   
   // 页面销毁时注销回调
   aboutToDisappear() {
-    console.info('[StorageImagePage] aboutToDisappear')
+    Logger.info('[StorageImagePage] aboutToDisappear')
     // 注销刷新回调
     RefreshManager.getInstance().unregister('StorageImagePage')
   }
   
   // 页面显示时刷新数据
   async onPageShow() {
-    console.info('[StorageImagePage] onPageShow')
+    Logger.info('[StorageImagePage] onPageShow')
     // 重新加载图片列表
     await this.loadSandboxImages()
   }
@@ -76,18 +77,18 @@ struct StorageImagePage {
       this.totalImageSize = 0
       
       if (!this.context) {
-        console.error('[StorageImagePage] context为空')
+        Logger.error('[StorageImagePage] context为空')
         this.isLoading = false
         return
       }
       
       // 获取记录图片目录路径（与 NowViewModel 保存路径一致）
       const recordsPath = `${this.context.filesDir}/records`
-      console.info('[StorageImagePage] 记录图片目录路径: ' + recordsPath)
+      Logger.info('[StorageImagePage] 记录图片目录路径: ' + recordsPath)
       
       // 检查目录是否存在
       if (!fs.accessSync(recordsPath)) {
-        console.info('[StorageImagePage] 记录图片目录不存在')
+        Logger.info('[StorageImagePage] 记录图片目录不存在')
         this.isLoading = false
         // 仍然获取设备可用存储空间
         await this.loadFreeStorageSize()
@@ -96,7 +97,7 @@ struct StorageImagePage {
       
       // 获取目录下的所有文件
       const filenames = fs.listFileSync(recordsPath)
-      console.info('[StorageImagePage] 找到文件数量: ' + filenames.length)
+      Logger.info('[StorageImagePage] 找到文件数量: ' + filenames.length)
       
       // 过滤出图片文件（支持常见图片格式）
       const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg']
@@ -105,7 +106,7 @@ struct StorageImagePage {
         return imageExtensions.some(ext => lowerName.endsWith(ext))
       })
       
-      console.info('[StorageImagePage] 图片文件数量: ' + imageFiles.length)
+      Logger.info('[StorageImagePage] 图片文件数量: ' + imageFiles.length)
       
       // 处理每个图片文件
       for (const filename of imageFiles) {
@@ -133,7 +134,7 @@ struct StorageImagePage {
           // 累加图片总大小
           this.totalImageSize += stat.size
         } catch (error) {
-          console.error('[StorageImagePage] 处理文件失败: ' + filename + ', 错误: ' + JSON.stringify(error))
+          Logger.error('[StorageImagePage] 处理文件失败: ' + filename + ', 错误: ' + JSON.stringify(error))
         }
       }
       
@@ -145,7 +146,7 @@ struct StorageImagePage {
       
       this.isLoading = false
     } catch (error) {
-      console.error('[StorageImagePage] 加载图片失败: ' + JSON.stringify(error))
+      Logger.error('[StorageImagePage] 加载图片失败: ' + JSON.stringify(error))
       this.isLoading = false
     }
   }
@@ -156,7 +157,7 @@ struct StorageImagePage {
       const freeSize = await storageStatistics.getFreeSize()
       this.freeStorageSize = freeSize
     } catch (error) {
-      console.error('[StorageImagePage] 获取可用存储空间失败: ' + JSON.stringify(error))
+      Logger.error('[StorageImagePage] 获取可用存储空间失败: ' + JSON.stringify(error))
       this.freeStorageSize = 0
     }
   }
@@ -298,7 +299,7 @@ struct StorageImagePage {
             bottomRight: 0
           })
           .onError(() => {
-            console.error('[StorageImagePage] 图片加载失败: ' + item.name)
+            Logger.error('[StorageImagePage] 图片加载失败: ' + item.name)
           })
       }
       .width('100%')

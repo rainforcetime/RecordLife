@@ -6,6 +6,7 @@
 import { common } from '@kit.AbilityKit'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { ImagePathUtils } from '../common/utils/ImagePathUtils'
+import { Logger } from '../common/utils/Logger'
 
 export class ImageFileService {
   /**
@@ -37,14 +38,14 @@ export class ImageFileService {
       // 返回 URI 格式（统一路径格式）
       return fileUri.getUriFromPath(sandboxPath)
     } catch (error) {
-      console.error('[ImageFileService] 保存图片失败: ' + JSON.stringify(error))
+      Logger.error('[ImageFileService] 保存图片失败: ' + JSON.stringify(error))
       return null
     } finally {
       if (sourceFile) {
         try {
           fileIo.closeSync(sourceFile)
         } catch (error) {
-          console.error('[ImageFileService] 关闭文件失败: ' + JSON.stringify(error))
+          Logger.error('[ImageFileService] 关闭文件失败: ' + JSON.stringify(error))
         }
       }
     }
@@ -62,7 +63,7 @@ export class ImageFileService {
     try {
       return fileUri.getUriFromPath(path)  // 兼容旧的沙箱路径格式
     } catch (error) {
-      console.error('[ImageFileService] 获取图片URI失败: ' + JSON.stringify(error))
+      Logger.error('[ImageFileService] 获取图片URI失败: ' + JSON.stringify(error))
       return path
     }
   }
@@ -80,7 +81,7 @@ export class ImageFileService {
           fileIo.unlinkSync(sandboxPath)
         }
       } catch (error) {
-        console.error('[ImageFileService] 删除图片文件失败: ' + JSON.stringify(error))
+        Logger.error('[ImageFileService] 删除图片文件失败: ' + JSON.stringify(error))
       }
     }
   }
@@ -112,7 +113,7 @@ export class ImageFileService {
       // 将沙箱路径转换为 URI（Image组件需要URI格式）
       return fileUri.getUriFromPath(sandboxPath)
     } catch (error) {
-      console.error('[ImageFileService] 复制头像失败: ' + JSON.stringify(error))
+      Logger.error('[ImageFileService] 复制头像失败: ' + JSON.stringify(error))
       return null
     } finally {
       // 关闭源文件
@@ -120,7 +121,7 @@ export class ImageFileService {
         try {
           fileIo.closeSync(sourceFile)
         } catch (closeError) {
-          console.error('[ImageFileService] 关闭文件失败: ' + JSON.stringify(closeError))
+          Logger.error('[ImageFileService] 关闭文件失败: ' + JSON.stringify(closeError))
         }
       }
     }
@@ -141,12 +142,12 @@ export class ImageFileService {
           try {
             fileIo.unlinkSync(filePath)
           } catch (e) {
-            console.error('[ImageFileService] 删除旧头像缓存失败: ' + filePath + ', 错误: ' + JSON.stringify(e))
+            Logger.error('[ImageFileService] 删除旧头像缓存失败: ' + filePath + ', 错误: ' + JSON.stringify(e))
           }
         }
       }
     } catch (error) {
-      console.error('[ImageFileService] 列出头像目录失败: ' + JSON.stringify(error))
+      Logger.error('[ImageFileService] 列出头像目录失败: ' + JSON.stringify(error))
     }
   }
 }

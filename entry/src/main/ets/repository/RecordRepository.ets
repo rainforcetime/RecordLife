@@ -8,6 +8,7 @@
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { LifeRecord } from '../model/RecordModel';
+import { Logger } from '../common/utils/Logger'
 
 export class RecordRepository {
   private static readonly STORE_NAME = 'now_page_records';
@@ -26,7 +27,7 @@ export class RecordRepository {
       }
       return [];
     } catch (error) {
-      console.error('[RecordRepository] 加载记录失败: ' + JSON.stringify(error));
+      Logger.error('[RecordRepository] 加载记录失败: ' + JSON.stringify(error));
       return [];
     }
   }
@@ -43,7 +44,7 @@ export class RecordRepository {
       await prefs.flush();
       return true;
     } catch (error) {
-      console.error('[RecordRepository] 保存记录失败: ' + JSON.stringify(error));
+      Logger.error('[RecordRepository] 保存记录失败: ' + JSON.stringify(error));
       return false;
     }
   }
@@ -59,7 +60,7 @@ export class RecordRepository {
       await prefs.flush();
       return true;
     } catch (error) {
-      console.error('[RecordRepository] 清空记录失败: ' + JSON.stringify(error));
+      Logger.error('[RecordRepository] 清空记录失败: ' + JSON.stringify(error));
       return false;
     }
   }

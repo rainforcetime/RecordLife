@@ -4,6 +4,7 @@ import { AppInfoManager } from '../../config/AppInfoConfig'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { common } from '@kit.AbilityKit'
 import { BusinessError } from '@kit.BasicServicesKit'
+import { Logger } from '../../common/utils/Logger'
 
 @CustomDialog
 export struct AboutAppDialog {
@@ -35,7 +36,7 @@ export struct AboutAppDialog {
         description: config.description
       }
     } catch (error) {
-      console.error('加载应用信息失败: ' + JSON.stringify(error))
+      Logger.error('加载应用信息失败: ' + JSON.stringify(error))
     }
   }
 
@@ -105,7 +106,7 @@ export struct AboutAppDialog {
           let context = this.getUIContext().getHostContext() as common.UIAbilityContext
           context.openLink(this.appInfo.website, { appLinkingOnly: false })
             .catch((error: BusinessError) => {
-              console.error('打开链接失败: ' + JSON.stringify(error))
+              Logger.error('打开链接失败: ' + JSON.stringify(error))
             })
         })
       }

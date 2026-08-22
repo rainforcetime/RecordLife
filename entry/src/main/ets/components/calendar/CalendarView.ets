@@ -5,6 +5,7 @@ import { CalendarUtils } from './CalendarUtils'
 import { CalendarMonthNavigator } from './CalendarMonthNavigator'
 import { CalendarDayItem } from './CalendarDayItem'
 import { CalendarSelectedRecords } from './CalendarSelectedRecords'
+import { Logger } from '../../common/utils/Logger'
 
 /**
  * 日历视图组件
@@ -40,7 +41,7 @@ export struct CalendarView {
   
   // 监听 timelineData 变化
   onTimelineDataChange() {
-    console.info('[CalendarView] timelineData 变化，重新构建日历')
+    Logger.info('[CalendarView] timelineData 变化，重新构建日历')
     this.buildCalendarDays()
     this.updateSelectedRecords()
   }
@@ -74,7 +75,7 @@ export struct CalendarView {
       d.day === this.selectedDay
     )
     this.selectedRecords = day?.records || []
-    console.info(`[CalendarView] 更新选中记录缓存: ${this.selectedRecords.length} 条`)
+    Logger.info(`[CalendarView] 更新选中记录缓存: ${this.selectedRecords.length} 条`)
   }
 
   // 星期标题（国际化：读 week_short 数组资源）

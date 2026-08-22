@@ -5,6 +5,7 @@ import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { TagService } from '../../service/TagService'
 import { common } from '@kit.AbilityKit'
+import { Logger } from '../../common/utils/Logger'
 
 @Component
 export struct ShareRecordCard {
@@ -23,7 +24,7 @@ export struct ShareRecordCard {
       const ts = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.allTags = getAllTags(ts.getCustomTags())
     } catch (error) {
-      console.error('[ShareRecordCard] 加载标签失败: ' + JSON.stringify(error))
+      Logger.error('[ShareRecordCard] 加载标签失败: ' + JSON.stringify(error))
     }
   }
   

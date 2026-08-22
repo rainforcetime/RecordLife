@@ -3,6 +3,7 @@ import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { CalendarDay } from '../../common/types'
 import { CalendarUtils } from './CalendarUtils'
 import { ColorUtils } from '../../common/ColorUtils'
+import { Logger } from '../../common/utils/Logger'
 
 /**
  * 日历日期项组件
@@ -51,8 +52,6 @@ export struct CalendarDayItem {
   
   // 判断是否为深色模式
   private isDarkMode(): boolean {
-    console.log('[CalendarDayItem]', this.themeColors.textPrimary);
-    console.log(this.themeColors.textPrimary);
     return this.themeColors.textPrimary === '#FFFFFF'
   }
   

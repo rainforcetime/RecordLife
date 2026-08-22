@@ -1,5 +1,6 @@
 // 日历工具类：components/calendar/CalendarUtils.ets
 import { TimelineData, LifeRecord, CalendarDay } from '../../common/types'
+import { Logger } from '../../common/utils/Logger'
 
 /**
  * 日历工具类
@@ -20,7 +21,7 @@ export class CalendarUtils {
     const firstDay = new Date(year, month - 1, 1)
     const lastDay = new Date(year, month, 0)
     
-    console.info(`[CalendarUtils] 构建日历: ${year}年${month}月, 天数: ${lastDay.getDate()}`)
+    Logger.info(`[CalendarUtils] 构建日历: ${year}年${month}月, 天数: ${lastDay.getDate()}`)
     
     // 获取当月第一天是星期几（0=周日）
     const firstDayOfWeek = firstDay.getDay()

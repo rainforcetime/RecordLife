@@ -4,6 +4,7 @@ import { Tag, DEFAULT_TAGS, getAllTags } from '../../common/types'
 import { TagService } from '../../service/TagService'
 import { common } from '@kit.AbilityKit'
 import { promptAction } from '@kit.ArkUI'
+import { Logger } from '../../common/utils/Logger'
 
 @Component
 export struct TagFilterBar {
@@ -30,12 +31,12 @@ export struct TagFilterBar {
       this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.loadTags()
     } catch (error) {
-      console.error('[TagFilterBar] 初始化失败: ' + JSON.stringify(error))
+      Logger.error('[TagFilterBar] 初始化失败: ' + JSON.stringify(error))
     }
   }
 
   private onTagVersionChange() {
-    console.info('[TagFilterBar] tagVersion 改变，重新加载标签')
+    Logger.info('[TagFilterBar] tagVersion 改变，重新加载标签')
     this.loadTags()
   }
 

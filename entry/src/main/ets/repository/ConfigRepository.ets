@@ -10,6 +10,7 @@
 
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
+import { Logger } from '../common/utils/Logger'
 
 export class ConfigRepository {
   private static readonly STORE_NAME = 'record_life_config';
@@ -24,7 +25,7 @@ export class ConfigRepository {
       const prefs = await preferences.getPreferences(context, ConfigRepository.STORE_NAME);
       return await prefs.get(ConfigRepository.CONFIG_KEY, '') as string;
     } catch (error) {
-      console.error('[ConfigRepository] 加载配置失败: ' + JSON.stringify(error));
+      Logger.error('[ConfigRepository] 加载配置失败: ' + JSON.stringify(error));
       return '';
     }
   }
@@ -40,7 +41,7 @@ export class ConfigRepository {
       await prefs.flush();
       return true;
     } catch (error) {
-      console.error('[ConfigRepository] 保存配置失败: ' + JSON.stringify(error));
+      Logger.error('[ConfigRepository] 保存配置失败: ' + JSON.stringify(error));
       return false;
     }
   }

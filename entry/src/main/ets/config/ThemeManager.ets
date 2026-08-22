@@ -9,6 +9,7 @@ import { ConfigurationConstant, common } from '@kit.AbilityKit'
 import { window } from '@kit.ArkUI'
 import { ThemeColors, ThemeMode, ThemeConfig, LightTheme, DarkTheme } from './ThemeConfig'
 import { ConfigManager } from './ConfigManager'
+import { Logger } from '../common/utils/Logger'
 
 export class ThemeManager {
   private static instance: ThemeManager | null = null
@@ -33,12 +34,12 @@ export class ThemeManager {
       
       // 从ConfigManager读取主题设置
       const savedTheme = this.configManager.getTheme() as ThemeMode
-      console.info('ThemeManager.init: 从ConfigManager读取主题: ' + savedTheme)
+      Logger.info('ThemeManager.init: 从ConfigManager读取主题: ' + savedTheme)
       
       // 初始化AppStorage
       this.initAppStorage(savedTheme)
     } catch (error) {
-      console.error('ThemeManager.init 失败: ' + JSON.stringify(error))
+      Logger.error('ThemeManager.init 失败: ' + JSON.stringify(error))
       // 使用默认主题
       this.initAppStorage('light')
     }
@@ -53,7 +54,7 @@ export class ThemeManager {
     const colors = ThemeConfig.getColors(theme === 'dark')
     AppStorage.setOrCreate('themeColors', colors)
     
-    console.info('ThemeManager: 主题系统初始化完成, theme=' + theme)
+    Logger.info('ThemeManager: 主题系统初始化完成, theme=' + theme)
   }
   
   // 更新主题（先保存到ConfigManager，再更新AppStorage）
@@ -63,7 +64,7 @@ export class ThemeManager {
       if (this.configManager) {
         const saved = await this.configManager.setTheme(theme)
         if (!saved) {
-          console.error('ThemeManager.updateTheme: 保存主题到ConfigManager失败')
+          Logger.error('ThemeManager.updateTheme: 保存主题到ConfigManager失败')
           return false
         }
       }
@@ -82,10 +83,10 @@ export class ThemeManager {
       // 5. 更新窗口系统栏颜色
       this.updateWindowSystemBarColor(colors)
       
-      console.info('ThemeManager: 主题已更新, theme=' + theme + ', isDark=' + isDark)
+      Logger.info('ThemeManager: 主题已更新, theme=' + theme + ', isDark=' + isDark)
       return true
     } catch (error) {
-      console.error('ThemeManager.updateTheme 异常: ' + JSON.stringify(error))
+      Logger.error('ThemeManager.updateTheme 异常: ' + JSON.stringify(error))
       return false
     }
   }
@@ -125,7 +126,7 @@ export class ThemeManager {
       // 更新窗口系统栏颜色
       this.updateWindowSystemBarColor(colors)
       
-      console.info('ThemeManager: 系统主题变化，已更新为 ' + (isDark ? '深色' : '浅色') + ' 模式')
+      Logger.info('ThemeManager: 系统主题变化，已更新为 ' + (isDark ? '深色' : '浅色') + ' 模式')
     }
   }
   
@@ -135,7 +136,7 @@ export class ThemeManager {
       // 从 AppStorage 获取窗口实例
       const uiContext = AppStorage.get('uiContext') as common.UIAbilityContext | undefined
       if (!uiContext) {
-        console.warn('ThemeManager: uiContext 未初始化，无法更新系统栏颜色')
+        Logger.warn('ThemeManager: uiContext 未初始化，无法更新系统栏颜色')
         return
       }
       
@@ -148,10 +149,10 @@ export class ThemeManager {
           navigationBarColor: colors.background,
           navigationBarContentColor: colors.textPrimary === '#FFFFFF' ? 'light' : 'dark'
         })
-        console.info('ThemeManager: 系统栏颜色已更新')
+        Logger.info('ThemeManager: 系统栏颜色已更新')
       }
     } catch (error) {
-      console.error('ThemeManager: 更新窗口系统栏颜色异常: ' + JSON.stringify(error))
+      Logger.error('ThemeManager: 更新窗口系统栏颜色异常: ' + JSON.stringify(error))
     }
   }
 }

@@ -4,6 +4,7 @@ import { Tag } from '../../common/types'
 import { TagService } from '../../service/TagService'
 import { common } from '@kit.AbilityKit'
 import { RefreshManager } from '../../common/managers/RefreshManager'
+import { Logger } from '../../common/utils/Logger'
 
 // 预设可选颜色
 const PRESET_COLORS: string[] = [
@@ -44,17 +45,17 @@ export struct TagManagementDialog {
   private tagService: TagService | null = null
 
   async aboutToAppear() {
-    console.info('[TagMgmtDialog] aboutToAppear 开始')
+    Logger.info('[TagMgmtDialog] aboutToAppear 开始')
     this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
-    console.info('[TagMgmtDialog] tagService 初始化完成: ' + (this.tagService !== null))
+    Logger.info('[TagMgmtDialog] tagService 初始化完成: ' + (this.tagService !== null))
     this.loadTags()
-    console.info('[TagMgmtDialog] aboutToAppear 完成, customTags count: ' + this.customTags.length)
+    Logger.info('[TagMgmtDialog] aboutToAppear 完成, customTags count: ' + this.customTags.length)
   }
 
   private loadTags() {
     if (this.tagService) {
       this.customTags = [...this.tagService.getCustomTags()]
-      console.info('[TagMgmtDialog] loadTags 完成, count: ' + this.customTags.length)
+      Logger.info('[TagMgmtDialog] loadTags 完成, count: ' + this.customTags.length)
     }
   }
 
@@ -73,19 +74,17 @@ export struct TagManagementDialog {
 
   // 开始添加新标签
   private startAddTag() {
-    console.info('[TagMgmtDialog] >>> startAddTag 被调用 <<<')
     this.editingTag = { id: '', name: '', color: '#4A90D9', icon: '' }
     this.editTagName = ''
     this.isNewTag = true
     this.isEditing = true
     this.showColorPicker = false
     this.showIconPicker = false
-    console.info('[TagMgmtDialog] startAddTag 完成, isEditing: ' + this.isEditing + ', editTagName: "' + this.editTagName + '"')
+    Logger.info('[TagMgmtDialog] startAddTag 完成, isEditing: ' + this.isEditing + ', editTagName: "' + this.editTagName + '"')
   }
 
   // 开始编辑标签
   private startEditTag(tag: Tag) {
-    console.info('[TagMgmtDialog] >>> startEditTag 被调用, tagName: ' + tag.name + ' <<<')
     this.editingTag = {
       id: tag.id,
       name: tag.name,
@@ -101,7 +100,7 @@ export struct TagManagementDialog {
 
   // 取消编辑
   private cancelEdit() {
-    console.info('[TagMgmtDialog] cancelEdit 被调用')
+    Logger.info('[TagMgmtDialog] cancelEdit 被调用')
     this.isEditing = false
     this.editingTag = { id: '', name: '', color: '#4A90D9', icon: '' }
     this.editTagName = ''
@@ -109,36 +108,35 @@ export struct TagManagementDialog {
 
   // 保存标签
   private async saveTag() {
-    console.info('[TagMgmtDialog] >>> saveTag 被调用 <<<')
     if (!this.tagService) {
-      console.warn('[TagMgmtDialog] saveTag 失败: tagService 为 null')
+      Logger.warn('[TagMgmtDialog] saveTag 失败: tagService 为 null')
       return
     }
 
     const name = this.editTagName.trim()
-    console.info('[TagMgmtDialog] saveTag editTagName: "' + this.editTagName + '", trim后: "' + name + '", length: ' + name.length)
+    Logger.info('[TagMgmtDialog] saveTag editTagName: "' + this.editTagName + '", trim后: "' + name + '", length: ' + name.length)
     if (name.length === 0) {
-      console.warn('[TagMgmtDialog] saveTag 失败: name 为空')
+      Logger.warn('[TagMgmtDialog] saveTag 失败: name 为空')
       return
     }
 
     if (this.isNewTag) {
-      console.info('[TagMgmtDialog] saveTag 新建标签, name: ' + name + ', color: ' + this.editingTag.color)
+      Logger.info('[TagMgmtDialog] saveTag 新建标签, name: ' + name + ', color: ' + this.editingTag.color)
       const newTag: Tag = {
         id: this.generateId(),
         name: name,
         color: this.editingTag.color,
         icon: this.editingTag.icon || undefined
       }
-      console.info('[TagMgmtDialog] 准备调用 tagService.addCustomTag, tagService 类型: ' + typeof this.tagService + ', 是否为null: ' + (this.tagService === null))
+      Logger.info('[TagMgmtDialog] 准备调用 tagService.addCustomTag, tagService 类型: ' + typeof this.tagService + ', 是否为null: ' + (this.tagService === null))
       try {
         const result = await this.tagService.addCustomTag(newTag)
-        console.info('[TagMgmtDialog] addCustomTag 返回: ' + result)
+        Logger.info('[TagMgmtDialog] addCustomTag 返回: ' + result)
       } catch (e) {
-        console.error('[TagMgmtDialog] addCustomTag 异常: ' + String(e) + ', message: ' + (e as Error).message + ', stack: ' + (e as Error).stack)
+        Logger.error('[TagMgmtDialog] addCustomTag 异常: ' + String(e) + ', message: ' + (e as Error).message + ', stack: ' + (e as Error).stack)
       }
     } else {
-      console.info('[TagMgmtDialog] saveTag 更新标签, name: ' + name)
+      Logger.info('[TagMgmtDialog] saveTag 更新标签, name: ' + name)
       const updatedTag: Tag = {
         id: this.editingTag.id,
         name: name,
@@ -147,29 +145,29 @@ export struct TagManagementDialog {
       }
       try {
         const result = await this.tagService.updateCustomTag(updatedTag)
-        console.info('[TagMgmtDialog] updateCustomTag 返回: ' + result)
+        Logger.info('[TagMgmtDialog] updateCustomTag 返回: ' + result)
       } catch (e) {
-        console.error('[TagMgmtDialog] updateCustomTag 异常: ' + JSON.stringify(e))
+        Logger.error('[TagMgmtDialog] updateCustomTag 异常: ' + JSON.stringify(e))
       }
     }
 
     this.isEditing = false
     this.loadTags()
     RefreshManager.getInstance().refresh()
-    console.info('[TagMgmtDialog] saveTag 完成, 返回列表')
+    Logger.info('[TagMgmtDialog] saveTag 完成, 返回列表')
   }
 
   // 删除标签
   private async deleteTag(tag: Tag) {
-    console.info('[TagMgmtDialog] deleteTag 被调用, id: ' + tag.id)
+    Logger.info('[TagMgmtDialog] deleteTag 被调用, id: ' + tag.id)
     if (!this.tagService) {
-      console.warn('[TagMgmtDialog] deleteTag 失败: tagService 为 null')
+      Logger.warn('[TagMgmtDialog] deleteTag 失败: tagService 为 null')
       return
     }
     await this.tagService.deleteCustomTag(tag.id)
     this.loadTags()
     RefreshManager.getInstance().refresh()
-    console.info('[TagMgmtDialog] deleteTag 完成')
+    Logger.info('[TagMgmtDialog] deleteTag 完成')
   }
 
   build() {
@@ -274,7 +272,7 @@ export struct TagManagementDialog {
             .height(48)
             .alignItems(VerticalAlign.Center)
             .onClick(() => {
-              console.info('[TagMgmtDialog] "添加自定义标签" 按钮 onClick')
+              Logger.info('[TagMgmtDialog] "添加自定义标签" 按钮 onClick')
               this.startAddTag()
             })
           }
@@ -300,7 +298,7 @@ export struct TagManagementDialog {
             .backgroundColor(this.hexToRgba(this.themeColors.primary, 0.1))
             .borderRadius(8)
             .onClick(() => {
-              console.info('[TagMgmtDialog] "添加第一个标签" Button onClick')
+              Logger.info('[TagMgmtDialog] "添加第一个标签" Button onClick')
               this.startAddTag()
             })
         }
@@ -324,7 +322,7 @@ export struct TagManagementDialog {
           .fontSize(20)
           .fontColor([this.themeColors.iconColor])
           .onClick(() => {
-            console.info('[TagMgmtDialog] 返回按钮 onClick, 取消编辑')
+            Logger.info('[TagMgmtDialog] 返回按钮 onClick, 取消编辑')
             this.cancelEdit()
           })
 
@@ -341,11 +339,11 @@ export struct TagManagementDialog {
           .fontColor(this.editTagName.trim().length > 0 ? this.themeColors.primary : this.themeColors.textTertiary)
           .fontWeight(FontWeight.Medium)
           .onClick(() => {
-            console.info('[TagMgmtDialog] 保存按钮 onClick, editTagName: "' + this.editTagName + '", trim.length: ' + this.editTagName.trim().length)
+            Logger.info('[TagMgmtDialog] 保存按钮 onClick, editTagName: "' + this.editTagName + '", trim.length: ' + this.editTagName.trim().length)
             if (this.editTagName.trim().length > 0) {
               this.saveTag()
             } else {
-              console.warn('[TagMgmtDialog] 保存按钮: 名称为空，不执行保存')
+              Logger.warn('[TagMgmtDialog] 保存按钮: 名称为空，不执行保存')
             }
           })
       }
@@ -370,7 +368,7 @@ export struct TagManagementDialog {
         .padding({ left: 12, right: 12 })
         .margin({ bottom: 16 })
         .onChange((value: string) => {
-          console.info('[TagMgmtDialog] TextInput onChange: "' + value + '", editTagName: "' + this.editTagName + '"')
+          Logger.info('[TagMgmtDialog] TextInput onChange: "' + value + '", editTagName: "' + this.editTagName + '"')
         })
 
       // 颜色选择

@@ -4,6 +4,7 @@ import { photoAccessHelper } from '@kit.MediaLibraryKit'
 import { fileIo as fs } from '@kit.CoreFileKit'
 import { common } from '@kit.AbilityKit'
 import { promptAction } from '@kit.ArkUI'
+import { Logger } from '../../common/utils/Logger'
 
 @Component
 export struct ImageViewer {
@@ -30,11 +31,11 @@ export struct ImageViewer {
       
       // 获取当前图片URI
       const imageUri = this.imageUris[this.currentIndex]
-      console.info('[ImageViewer] 保存图片: ' + imageUri)
+      Logger.info('[ImageViewer] 保存图片: ' + imageUri)
       
       // 1. 通过 createAsset 创建图片文件（SaveButton 授权后 10 秒内有效）
       const targetUri = await helper.createAsset(photoAccessHelper.PhotoType.IMAGE, 'jpg')
-      console.info('[ImageViewer] 创建目标文件: ' + targetUri)
+      Logger.info('[ImageViewer] 创建目标文件: ' + targetUri)
       
       // 2. 打开目标文件
       const targetFile = await fs.open(targetUri, fs.OpenMode.READ_WRITE)
@@ -53,20 +54,20 @@ export struct ImageViewer {
       await fs.write(targetFile.fd, buffer)
       await fs.close(targetFile.fd)
       
-      console.info('[ImageViewer] 图片保存成功')
+      Logger.info('[ImageViewer] 图片保存成功')
       this.getUIContext().getPromptAction().showToast({
         message: $r('app.string.saved_to_gallery'),
         duration: 2000
       })
     } catch (error) {
-      console.error('[ImageViewer] 保存图片失败: ' + JSON.stringify(error))
+      Logger.error('[ImageViewer] 保存图片失败: ' + JSON.stringify(error))
       try {
         this.getUIContext().getPromptAction().showToast({
           message: $r('app.string.save_failed'),
           duration: 2000
         })
       } catch (e) {
-        console.error('[ImageViewer] 显示Toast失败: ' + JSON.stringify(e))
+        Logger.error('[ImageViewer] 显示Toast失败: ' + JSON.stringify(e))
       }
     }
   }

@@ -11,6 +11,7 @@ import { AccumulatedModeToggle } from '../components/home/AccumulatedModeToggle'
 import { ShareUtils } from '../common/utils/ShareUtils';
 import { common } from '@kit.AbilityKit';
 import { RefreshManager } from '../common/managers/RefreshManager';
+import { Logger } from '../common/utils/Logger'
 
 // 卡片颜色配置接口
 interface CardColors {
@@ -143,7 +144,7 @@ export struct HomePage {
     
     // 注册全局刷新回调：当其他页面修改出生日期时同步更新
     RefreshManager.getInstance().register('HomePage', () => {
-      console.info('[HomePage] 收到全局刷新通知，重新加载出生日期')
+      Logger.info('[HomePage] 收到全局刷新通知，重新加载出生日期')
       if (this.configManager) {
         const newBirthDate = this.configManager.getBirthDate()
         if (newBirthDate.getTime() !== this.birthDate.getTime()) {
@@ -175,7 +176,7 @@ export struct HomePage {
   
   // 处理分享操作
   private handleShare() {
-    console.info('[HomePage] 分享按钮被点击');
+    Logger.info('[HomePage] 分享按钮被点击');
     this.showShareDialog = true;
   }
 
@@ -375,7 +376,7 @@ export struct HomePage {
             .height(32)
             .backgroundColor(this.themeColors.background)
             .onClick(() => {
-              console.info('[HomePage] 分享按钮被点击');
+              Logger.info('[HomePage] 分享按钮被点击');
               this.handleShare();
             })
             .margin({ left: 8 })
@@ -665,7 +666,7 @@ export struct HomePage {
     }
     
     this.isSharing = true;
-    console.info('[HomePage] 开始分享');
+    Logger.info('[HomePage] 开始分享');
     
     try {
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
@@ -681,17 +682,17 @@ export struct HomePage {
       );
       
       if (success) {
-        console.info('[HomePage] 分享成功');
+        Logger.info('[HomePage] 分享成功');
         setTimeout(() => {
           this.showShareDialog = false;
           this.isSharing = false;
         }, 500);
       } else {
-        console.error('[HomePage] 分享失败');
+        Logger.error('[HomePage] 分享失败');
         this.isSharing = false;
       }
     } catch (error) {
-      console.error('[HomePage] 分享异常: ' + JSON.stringify(error));
+      Logger.error('[HomePage] 分享异常: ' + JSON.stringify(error));
       this.isSharing = false;
     }
   }

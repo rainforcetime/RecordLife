@@ -7,6 +7,7 @@ import { RefreshManager } from '../../common/managers/RefreshManager'
 import { PromptAction } from '@kit.ArkUI'
 import { ImagePickerUtils, ImagePickMode } from '../../common/utils/ImagePickerUtils'
 import { TagSelector } from '../common/TagSelector'
+import { Logger } from '../../common/utils/Logger'
 
 @Component
 export struct AddRecordSection {
@@ -43,7 +44,7 @@ export struct AddRecordSection {
     // 同步获取已初始化的 ViewModel 实例
     NowViewModel.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext).then((vm) => {
       this.viewModel = vm
-      console.info('[AddRecordSection] ViewModel 获取成功')
+      Logger.info('[AddRecordSection] ViewModel 获取成功')
     })
   }
   
@@ -194,14 +195,14 @@ export struct AddRecordSection {
               path: savedUri,
               uri: savedUri
             })
-            console.info('[AddRecordSection] 添加图片成功，当前图片数: ' + this.images.length)
+            Logger.info('[AddRecordSection] 添加图片成功，当前图片数: ' + this.images.length)
           }
         }
       } else if (result.errorMessage && this.promptAction) {
         ImagePickerUtils.showErrorToast(this.promptAction, result.errorMessage)
       }
     } catch (error) {
-      console.error('[AddRecordSection] 选择图片失败: ' + JSON.stringify(error))
+      Logger.error('[AddRecordSection] 选择图片失败: ' + JSON.stringify(error))
       if (this.promptAction) {
         ImagePickerUtils.showErrorToast(this.promptAction, $r('app.string.pick_image_failed_retry'))
       }
@@ -211,7 +212,7 @@ export struct AddRecordSection {
   // 移除图片
   private removeImage(index: number) {
     this.images.splice(index, 1)
-    console.info('[AddRecordSection] 移除图片，当前图片数: ' + this.images.length)
+    Logger.info('[AddRecordSection] 移除图片，当前图片数: ' + this.images.length)
   }
   
   // 保存记录
@@ -221,7 +222,7 @@ export struct AddRecordSection {
         try {
           this.promptAction.showToast({ message: $r('app.string.data_manager_not_initialized') })
         } catch (error) {
-          console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
+          Logger.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
         }
       }
       return
@@ -247,7 +248,7 @@ export struct AddRecordSection {
         try {
           this.promptAction.showToast({ message: $r('app.string.record_save_success') })
         } catch (error) {
-          console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
+          Logger.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
         }
         
         // 清空输入
@@ -256,7 +257,7 @@ export struct AddRecordSection {
         this.selectedTags = []
         
         // 触发全局刷新
-        console.info('[AddRecordSection] 触发全局刷新')
+        Logger.info('[AddRecordSection] 触发全局刷新')
         RefreshManager.getInstance().refresh()
         
         // 回调
@@ -267,15 +268,15 @@ export struct AddRecordSection {
         try {
           this.promptAction.showToast({ message: $r('app.string.save_failed_retry') })
         } catch (error) {
-          console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
+          Logger.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
         }
       }
     } catch (error) {
-      console.error('[AddRecordSection] 保存失败: ' + JSON.stringify(error))
+      Logger.error('[AddRecordSection] 保存失败: ' + JSON.stringify(error))
       try {
         this.promptAction.showToast({ message: (this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager.getStringByNameSync('save_failed_prefix') + (error as Error).message })
       } catch (e) {
-        console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(e))
+        Logger.error('[AddRecordSection] showToast failed: ' + JSON.stringify(e))
       }
     } finally {
       this.isSaving = false

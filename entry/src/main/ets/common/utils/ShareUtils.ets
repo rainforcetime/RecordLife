@@ -6,6 +6,7 @@ import { systemShare } from '@kit.ShareKit'
 import { common } from '@kit.AbilityKit'
 import { fileUri, fileIo as fs } from '@kit.CoreFileKit'
 import { BusinessError } from '@kit.BasicServicesKit'
+import { Logger } from './Logger'
 
 export class ShareUtils {
   /**
@@ -24,7 +25,7 @@ export class ShareUtils {
     description?: string
   ): Promise<boolean> {
     try {
-      console.info('[ShareUtils] 开始截图分享，组件ID: ' + componentId)
+      Logger.info('[ShareUtils] 开始截图分享，组件ID: ' + componentId)
       
       // 1. 获取组件截图
       const pixelMap = await uiContext.getComponentSnapshot().get(componentId, {
@@ -33,11 +34,11 @@ export class ShareUtils {
       })
       
       if (!pixelMap) {
-        console.error('[ShareUtils] 截图失败：PixelMap为空')
+        Logger.error('[ShareUtils] 截图失败：PixelMap为空')
         return false
       }
       
-      console.info('[ShareUtils] 截图成功')
+      Logger.info('[ShareUtils] 截图成功')
       
       // 2. 将PixelMap转换为ArrayBuffer
       const imageBuffer = await ShareUtils.pixelMapToBuffer(pixelMap)
@@ -45,7 +46,7 @@ export class ShareUtils {
       // 3. 保存到沙箱目录
       const imagePath = await ShareUtils.saveImageToSandbox(imageBuffer, context)
       
-      console.info('[ShareUtils] 图片已保存到: ' + imagePath)
+      Logger.info('[ShareUtils] 图片已保存到: ' + imagePath)
       
       // 4. 执行系统分享
       await ShareUtils.doShare(imagePath, context, title, description)
@@ -55,7 +56,7 @@ export class ShareUtils {
       
       return true
     } catch (error) {
-      console.error('[ShareUtils] 分享失败: ' + JSON.stringify(error))
+      Logger.error('[ShareUtils] 分享失败: ' + JSON.stringify(error))
       return false
     }
   }
@@ -75,7 +76,7 @@ export class ShareUtils {
       return buffer
     } catch (err) {
       const error = err as BusinessError
-      console.error('[ShareUtils] 图片打包失败: ' + JSON.stringify(error))
+      Logger.error('[ShareUtils] 图片打包失败: ' + JSON.stringify(error))
       throw error as Error
     }
   }
@@ -98,7 +99,7 @@ export class ShareUtils {
       fs.writeSync(file.fd, imageBuffer)
       fs.closeSync(file)
     } catch (err) {
-      console.error('[ShareUtils] 保存图片到沙箱失败: ' + JSON.stringify(err))
+      Logger.error('[ShareUtils] 保存图片到沙箱失败: ' + JSON.stringify(err))
       throw err as Error
     }
     
@@ -136,15 +137,15 @@ export class ShareUtils {
           previewMode: systemShare.SharePreviewMode.DETAIL
         })
           .then(() => {
-            console.info('[ShareUtils] 分享面板显示成功')
+            Logger.info('[ShareUtils] 分享面板显示成功')
             resolve()
           })
           .catch((error: BusinessError) => {
-            console.error('[ShareUtils] 分享面板显示失败: ' + JSON.stringify(error))
+            Logger.error('[ShareUtils] 分享面板显示失败: ' + JSON.stringify(error))
             reject(error)
           })
       } catch (error) {
-        console.error('[ShareUtils] 分享执行失败: ' + JSON.stringify(error))
+        Logger.error('[ShareUtils] 分享执行失败: ' + JSON.stringify(error))
         reject(error)
       }
     })
@@ -172,12 +173,12 @@ export class ShareUtils {
           // 如果文件超过最大保留时间，则删除
           if (now - stat.mtime * 1000 > maxAge) {
             fs.unlinkSync(filePath)
-            console.info('[ShareUtils] 已清理过期分享图片: ' + fileName)
+            Logger.info('[ShareUtils] 已清理过期分享图片: ' + fileName)
           }
         }
       }
     } catch (error) {
-      console.error('[ShareUtils] 清理过期图片失败: ' + JSON.stringify(error))
+      Logger.error('[ShareUtils] 清理过期图片失败: ' + JSON.stringify(error))
     }
   }
 }
