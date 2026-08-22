@@ -7,6 +7,7 @@ import { util } from '@kit.ArkTS'
 import { RecordRepository } from '../../repository/RecordRepository'
 import { BackupManager } from '../../service/BackupManager'
 import { ZipTransferService } from '../../service/ZipTransferService'
+import { ConfigTransferService } from '../../service/ConfigTransferService'
 import { MorePageHelper } from '../utils/MorePageHelper'
 import { ConfigManager } from '../../config/ConfigManager'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
@@ -152,7 +153,7 @@ export class MorePageBackupHandler {
       fileIo.mkdirSync(tempDir)
       
       // 2. 导出用户配置
-      const configStr = await configManager.exportConfig()
+      const configStr = await ConfigTransferService.exportConfig(configManager)
       const configPath = `${tempDir}/config.json`
       const configFile = fileIo.openSync(configPath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
       fileIo.writeSync(configFile.fd, configStr)
@@ -296,7 +297,7 @@ export class MorePageBackupHandler {
         const decoder: util.TextDecoder = util.TextDecoder.create('utf-8')
         const configStr = decoder.decodeToString(new Uint8Array(configBuffer))
         
-        configImported = await configManager.importConfig(configStr)
+        configImported = await ConfigTransferService.importConfig(configManager, configStr)
         console.info('[MorePageBackupHandler] 用户配置导入: ' + (configImported ? '成功' : '失败'))
       }
       

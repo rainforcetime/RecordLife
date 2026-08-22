@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 RecordLife 项目的**现状实现快照**，供不同窗口/会话的 AI 重构任务作为唯一参考，避免每次从头通读全部源码。
 > **配套文档**：`docs/refactoring-plan.md` 是重构方案与进度跟踪；本文档只描述**当前代码实际怎么实现**，两者配合使用。
-> **最后更新**：2026-08-22（P3 service 层抽取第三部分完成；基于当前工作区源码逐文件核对）
+> **最后更新**：2026-08-22（P3 service 层抽取全部完成；基于当前工作区源码逐文件核对）
 > **阅读方式**：全文关键结论均附 `file:line` 引用，可快速定位源码；改动任何涉及数据模型 / 持久化 / 备份导入导出的代码前，**必须先读 §5 与 §6**。
 
 ---
@@ -46,14 +46,14 @@
 │   ├── RecordModel.ets         LifeRecord、ImageInfo、TimelineData/Year/Month/Day、CalendarDay
 │   ├── UserConfigModel.ets     持久化层 UserProfile/AppSettings/BackupConfig/DataStatistics 等 + 工厂/校验
 │   └── AccountModel.ets        UI 层 AccountProfile/ThemeSettings/AccountDataStatistics/AvatarInfo
-├── config/                 ConfigManager（18.7KB 巨型类）/ UserConfig（barrel）/ ThemeConfig / ThemeManager / AppInfoConfig
+├── config/                 ConfigManager（9.8KB，P3 瘦身后）/ UserConfig（barrel）/ ThemeConfig / ThemeManager / AppInfoConfig
 ├── common/
 │   ├── types.ets               re-export barrel → model/（兼容旧 import 路径）
 │   ├── ColorUtils.ets          十六进制色 → rgba 透明度工具
 │   ├── handlers/               MorePageBackupHandler.ets（19.9KB）/ MorePageConfigHandler.ets
 │   ├── managers/               RefreshManager.ets
 │   └── utils/                  TimeUtils / AccountUtils / ImageBase64Utils / ImagePickerUtils / MorePageHelper / ImagePathUtils
-├── service/                ★ P3 新增：ImageFileService.ets（图片 IO）/ TagService.ets（标签 CRUD）/ ZipTransferService.ets（zip picker 传输）/ BackupManager.ets（自 common/managers 迁入）
+├── service/                ★ P3 新增：ImageFileService.ets（图片 IO）/ TagService.ets（标签 CRUD）/ ZipTransferService.ets（zip picker 传输）/ ConfigTransferService.ets（配置导入导出）/ BackupManager.ets（自 common/managers 迁入）
 ├── components/             calendar(5) / common(4) / dialog(4) / record(5) / setting(4) / share(2) / user(4)
 └── utils/                  ShareUtils.ets（组件截图分享）/ ImageGenerator.ets（生成纯色/渐变示例图）
 ```
@@ -204,7 +204,8 @@ interface DateDifference { years; months; days }
 
 | 类 | 文件 | 获取方式 | 职责 |
 | --- | --- | --- | --- |
-| `ConfigManager` | config/ConfigManager.ets:27 | `await ConfigManager.getInstance()` | 配置读写/头像/导入导出/重置（标签 CRUD 已拆至 `TagService`，P3 轮次 5） |
+| `ConfigManager` | config/ConfigManager.ets:27 | `await ConfigManager.getInstance()` | 配置读写/重置（标签 CRUD 已拆至 `TagService`、导入导出已拆至 `ConfigTransferService`，P3） |
+| `ConfigTransferService` | service/ConfigTransferService.ets:24 | 静态方法（依赖传入 ConfigManager） | 用户配置导出/导入（含头像 base64 转换；拆自 ConfigManager，P3 轮次 7） |
 | `TagService` | service/TagService.ets:9 | `await TagService.getInstance()` | 自定义标签 CRUD（拆自 ConfigManager，P3 轮次 5；内部依赖 ConfigManager 单例） |
 | `ThemeManager` | config/ThemeManager.ets:13 | `await ThemeManager.getInstance()` | 主题状态管理（数据源是 ConfigManager，本类只是 AppStorage 便捷层） |
 | `AppInfoManager` | config/AppInfoConfig.ets:21 | `await AppInfoManager.getInstance()` | 从 bundleManager 读应用版本信息 |
@@ -262,8 +263,8 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 
 ### 6.4 `config.json` 结构与头像 base64 处理
 
-- **导出**（`ConfigManager.exportConfig`，ConfigManager.ets:315-375）：若 `profile.avatar` 非空，先 `MorePageHelper.uriToSandboxPath` → 文件存在则 `ImageBase64Utils.imageToBase64` 转 base64 放入 `profile.avatar`；输出 JSON 含 `settings/backup/statistics/metadata/exportedAt/appVersion/profile`（`appVersion` 来自 AppInfoManager，失败回退 `'0.0.2'`）。
-- **导入**（`ConfigManager.importConfig`，ConfigManager.ets:378-455）：
+- **导出**（`ConfigTransferService.exportConfig`，service/ConfigTransferService.ets:26-73）：若 `profile.avatar` 非空，先 `MorePageHelper.uriToSandboxPath` → 文件存在则 `ImageBase64Utils.imageToBase64` 转 base64 放入 `profile.avatar`；输出 JSON 含 `settings/backup/statistics/metadata/exportedAt/appVersion/profile`（`appVersion` 来自 AppInfoManager，失败回退 `'0.0.2'`）。
+- **导入**（`ConfigTransferService.importConfig`，service/ConfigTransferService.ets:75-150）：
   - 先 `validateConfig`，失败直接返回 false（**旧备份若因校验问题导入失败，重构时需处理**）。
   - 头像判定：`!startsWith('file://') && length > 200` 视为 base64 → `ImageBase64Utils.base64ToImage(avatar, filesDir/avatar.jpg)` 落盘，`profile.avatar` 存为**沙箱路径**（非 URI）。
   - 复制 version / profile / settings / backup / statistics / metadata（createdAt/deviceId 保留，updatedAt 刷新为当前）。
@@ -467,6 +468,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | common/utils/ImagePathUtils.ets | ImagePathUtils | ★ P3 新增：`uriToSandboxPath`（统一实现）/ `sandboxPathToUri` / `getFileName` |
 | service/ImageFileService.ets | ImageFileService | ★ P3 新增：`saveRecordImage` / `getImageUri` / `deleteImageFiles` / `copyAvatar`（记录图片与头像的沙箱 IO） |
 | service/ZipTransferService.ets | ZipTransferService | ★ P3 新增：`saveZipToDocument` / `pickZipToSandbox`（DocumentViewPicker zip 保存/选择 + 沙箱复制；取消返回 false，IO 异常冒泡） |
+| service/ConfigTransferService.ets | ConfigTransferService | ★ P3 新增：`exportConfig` / `importConfig`（用户配置导出/导入 + 头像 base64 转换，拆自 ConfigManager） |
 | common/ColorUtils.ets | ColorUtils | `withAlpha(hex, alpha)` → rgba、`primaryLight`(α32)/`primaryExtraLight`(α20)/`primaryUltraLight`(α15) |
 | utils/ShareUtils.ets | ShareUtils | `shareComponent(uiContext, componentId, context, title?, desc?)`：getComponentSnapshot → packToData(jpeg 95) → 存 `cacheDir/share_<ts>.jpg` → `systemShare.ShareController.show`；`cleanupOldShareImages` |
 | utils/ImageGenerator.ets | ImageGenerator | `generateSolidColorImage`（存 `filesDir/records`）、`generateGradientImage`（存 `filesDir/sample_images`），BGRA_8888 逐像素生成 |

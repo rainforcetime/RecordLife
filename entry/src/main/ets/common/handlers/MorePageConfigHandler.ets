@@ -5,6 +5,7 @@ import { fileIo } from '@kit.CoreFileKit'
 import { util } from '@kit.ArkTS'
 import { PromptAction, UIContext } from '@kit.ArkUI'
 import { ConfigManager } from '../../config/ConfigManager'
+import { ConfigTransferService } from '../../service/ConfigTransferService'
 import { RefreshManager } from '../managers/RefreshManager'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { RecordRepository } from '../../repository/RecordRepository'
@@ -41,7 +42,7 @@ export class MorePageConfigHandler {
     
     try {
       // 获取配置内容
-      const configStr = await configManager.exportConfig()
+      const configStr = await ConfigTransferService.exportConfig(configManager)
       console.info('[MorePageConfigHandler] 配置内容长度: ' + configStr.length)
       
       // 生成文件名（带时间戳）
@@ -114,7 +115,7 @@ export class MorePageConfigHandler {
         console.info('[MorePageConfigHandler] 配置内容长度: ' + configStr.length)
         
         // 导入配置
-        const success = await configManager.importConfig(configStr)
+        const success = await ConfigTransferService.importConfig(configManager, configStr)
         
         if (success) {
           console.info('[MorePageConfigHandler] 配置导入成功')

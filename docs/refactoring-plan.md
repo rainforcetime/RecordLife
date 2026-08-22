@@ -304,7 +304,7 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | P0 | 数据兼容性基线锁定（确认旧备份可导入） | ⬜ | — | 备份格式已记录在 §0；尚未做导入冒烟测试 |
 | P1 | 类型层重构（`types.ets` 拆分、消除重复定义） | ✅ | 2026-08-22 | `model/` 目录已创建（5 文件）；`UserProfile`/`DataStatistics` 重复已消除；UI DTO 重命名为 `AccountProfile`/`AccountDataStatistics`；旧文件保留 re-export 兼容 |
 | P2 | Model / Repository 层抽取 | ✅ | 2026-08-22 | `repository/` 已创建（`ConfigRepository` / `RecordRepository`，见轮次 3）；Preferences 访问收敛至 repository 层，store/key 常量集中定义 |
-| P3 | Service 层抽取（备份 / 导入导出 / 图片） | 🟦 | 2026-08-22 | `service/` 已建立（ImageFileService 图片 IO + BackupManager 迁入 + TagService 标签 CRUD + ZipTransferService zip 传输，见轮次 4/5/6）；BackupManager 已改依赖 `RecordRepository`；MorePageBackupHandler 已瘦身（19.9KB → 16.3KB）；剩余：ConfigManager 导出导入拆分（触数据兼容红线，待旧备份验证） |
+| P3 | Service 层抽取（备份 / 导入导出 / 图片） | ✅ | 2026-08-22 | `service/` 共 5 文件（ImageFileService 图片 IO / TagService 标签 CRUD / ZipTransferService zip 传输 / ConfigTransferService 配置导入导出 / BackupManager）；ConfigManager 18.3KB → 9.8KB，MorePageBackupHandler 19.9KB → 16.3KB（见轮次 4~7）；⚠️ 导出导入改动需实机旧备份导入验证（P8 回归，用户有实机可验证） |
 | P4 | ViewModel 瘦身（IO 职责下沉） | ⬜ | — | `NowViewModel` 15.7KB 直接 import `@ohos.data.preferences`；`AccountViewModel` 19.1KB 含重复类型 |
 | P5 | Page 层清理（`@Entry` 标注、路由注册） | ⬜ | — | `NowPage.ets` 误标 `@Entry`（Tab 内容页不应标注）；`main_pages.json` 含 4 页 |
 | P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
@@ -550,6 +550,29 @@ entry/src/main/ets/
 - `ZipTransferService` 未纳入单测（C2）
 
 **下一轮计划**：P4 — ViewModel 瘦身（AccountViewModel 存储统计/`[StorageDebug]` 日志下沉，不触红线）；或收尾 P3（ConfigManager 导出导入拆分，需先确认旧备份导入验证方式）
+
+### 轮次 7 — 2026-08-22（P3 Service 层抽取 · 完成：ConfigManager 导出导入拆分）
+
+> 前置：用户确认有实机可手动验证（旧备份导入冒烟验证）。
+
+**本轮目标**：拆分 ConfigManager 的导出/导入（`exportConfig` / `importConfig`）到独立 `ConfigTransferService`，P3 全部子任务完成。
+
+**涉及文件**：
+- `service/ConfigTransferService.ets`（新增）— `exportConfig(configManager)` / `importConfig(configManager, configStr)` + `ExportData` 接口
+- `config/ConfigManager.ets`（修改）— 删除两方法 + `ExportData` + 5 个 import（AppInfoManager / ImageBase64Utils / MorePageHelper / UserProfile 等类型）
+- `common/handlers/MorePageBackupHandler.ets`、`common/handlers/MorePageConfigHandler.ets`（修改）— 4 处调用切换至 ConfigTransferService
+
+**已完成**：
+- [x] `ConfigTransferService` 创建（逻辑逐行等价：`configManager.getConfig()` 替代原空值兜底——已核对 `createDefaultConfig`/`createDefaultConfigSync` 生成内容逐字段一致；头像 base64 转换、`validateConfig`、`saveConfig` 保留）
+- [x] ConfigManager 18.3KB → 9.8KB（瘦身约 47%）
+- [x] 4 处调用方切换（import 层级 `../../service/` 核对）
+- [x] 静态验证通过（无残留 / ArkTS 约束 / 结构完整）
+
+**遗留问题**：
+- ⚠️ **P3 收尾验收**：导出导入改动（轮次 6/7 涉及 `exportAll`/`importAll`/`exportConfig`/`importConfig`）需用户在实机用旧备份文件做导入冒烟验证（§0.3 红线），验证结果记入 §10.3
+- `ConfigTransferService` 未纳入单测（C2）
+
+**下一轮计划**：P4 — ViewModel 瘦身（AccountViewModel `[StorageDebug]` 日志清理 + 存储统计下沉 `service/StorageService`）
 
 ### 10.3 数据兼容性验证记录
 
