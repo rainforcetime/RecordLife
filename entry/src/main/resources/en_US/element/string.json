@@ -1371,6 +1371,38 @@
     {
       "name": "undo_success",
       "value": "Record restored"
+    },
+    {
+      "name": "privacy_mode",
+      "value": "Privacy mode"
+    },
+    {
+      "name": "privacy_mode_summary",
+      "value": "Hide sensitive info like birth date"
+    },
+    {
+      "name": "privacy_mode_saved",
+      "value": "Privacy mode updated"
+    },
+    {
+      "name": "privacy_mode_on",
+      "value": "Privacy mode on, sensitive info hidden"
+    },
+    {
+      "name": "clean_cache",
+      "value": "Clear cache"
+    },
+    {
+      "name": "clean_cache_summary",
+      "value": "Remove temp & orphan images"
+    },
+    {
+      "name": "cache_cleaned",
+      "value": "Cleaned %d files"
+    },
+    {
+      "name": "cache_nothing",
+      "value": "Nothing to clean"
     }
   ]
 }

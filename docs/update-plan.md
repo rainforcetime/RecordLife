@@ -173,7 +173,7 @@
 | --- | --- | --- | --- | --- | --- |
 | 一期 | 2.1 | 轻量增强：周数/总天数、生日提醒、签名、字体大小（纯函数 + 可选字段） | ✅ | 2026-08-22 | 轮次 1~2 完成：3 个生命里程碑纯函数 + 15 单测 + HomePage 展示 + 签名（编辑/我的页/首页展示）+ 字体大小设置（记录内容缩放，AppStorage fontScale）；涉及数据模型可选字段，需 §8 备份导入回归 |
 | 二期 | 2.2 | 记录体验：心情标记（🔥）、撤销删除（`LifeRecord.mood?`） | ✅ | 2026-08-22 | 轮次 3~4 完成：心情标记全链路（含自定义心情并入标签管理、toast）+ 撤销删除（3s 窗口，图片延迟清理）；涉及数据模型可选字段，需 §8 备份导入回归 |
-| 三期 | 2.3 | 效率与隐私：缓存清理、隐私模式、记录模板 | ⬜ | — | — |
+| 三期 | 2.3 | 效率与隐私：缓存清理、隐私模式、记录模板 | 🔄 | 进行中 | 轮次 5 完成缓存清理（分享图+孤儿图）+ 隐私模式（首页遮罩）；记录模板待做（轮次 6）；涉及可选字段，需 §8 备份回归 |
 | 四期 | 2.4 | 提醒与引导：每日提醒通知（🔥）、引导页 | ⬜ | — | **开工前先做通知能力验证**（§2 矩阵） |
 | 五期 | 2.5 | 数据价值：数据看板（🔥）、生命进度、统计面板 | ⬜ | — | 聚合逻辑纯函数化 |
 | 六期 | 2.6 | 批量与导航：批量删除、时间线跳转、多倒计时 | ⬜ | — | — |
@@ -328,6 +328,29 @@
 - **§8 验证记录待补**：二期涉及 `LifeRecord.mood?` / `customMoods?` 可选字段，需旧备份导入回归
 
 **下一轮计划**：三期 — 缓存清理（复用 StorageService/ImageFileService）、隐私模式（`AppSettings.privacyMode?`）、记录模板
+
+### 轮次 5 — 2026-08-22（三期：缓存清理 + 隐私模式）
+
+**本轮目标**：三期前两项——缓存清理（我的页一键清理）与隐私模式（首页敏感信息遮罩）。
+
+**涉及文件**：
+- `service/StorageService.ets`（+`cleanupCache` / `clearShareCache`（cacheDir/share_*.jpg 全删）/ `clearOrphanRecordImages`（filesDir/records 未被引用图片，按文件名匹配兼容 URI/路径））
+- `model/UserConfigModel.ets`（`AppSettings.privacyMode?` 可选字段，双工厂默认 false）
+- `config/ConfigManager.ets`（+`getPrivacyMode`/`setPrivacyMode`）
+- `viewmodel/AccountViewModel.ets`（+`getPrivacyMode`/`setPrivacyMode`/`cleanupCache`（RecordRepository 取记录 + StorageService 清理））
+- `pages/AccountPage.ets`（隐私模式 Toggle 开关 + 清理缓存设置项 + toast）
+- `pages/HomePage.ets`（隐私开启：出生日期区 🔒 遮罩、生命里程碑行隐藏；RefreshManager 同步）
+- `resources/base|en_US/element/string.json`（+8 key，351 key × 2）
+
+**已完成**：
+- [x] 缓存清理：分享临时图片全删 + 孤儿记录图片（未被引用）清理，toast 反馈清理数量，清理后刷新存储空间
+- [x] 隐私模式：我的页开关 → 首页出生日期遮罩 + 生命里程碑隐藏；`RefreshManager` 跨页同步
+
+**遗留问题**：
+- 记录模板未做（三期剩余）
+- 待 DevEco 编译 + 实机验证：清理数量/误删检查、隐私开关跨页即时生效、旧备份导入
+
+**下一轮计划**：三期剩余 — 记录模板（模板列表持久化 + 记录编辑页一键使用）
 
 ---
 

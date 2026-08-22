@@ -278,6 +278,21 @@ export class ConfigManager {
     return 1.0;
   }
 
+  // 获取隐私模式（更新计划三期；兜底 false）
+  getPrivacyMode(): boolean {
+    const config = this.getConfig();
+    return config.settings.privacyMode === true;
+  }
+
+  // 设置隐私模式并保存
+  async setPrivacyMode(enabled: boolean): Promise<boolean> {
+    if (!this.config) {
+      return false;
+    }
+    this.config.settings.privacyMode = enabled;
+    return await this.saveConfig();
+  }
+
   // 重置为默认配置
   async resetToDefault(): Promise<boolean> {
     this.config = await createDefaultConfig();

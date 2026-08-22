@@ -11,6 +11,7 @@ import { AccountUtils } from '../common/utils/AccountUtils'
 import { AccountProfile, ThemeSettings, AccountDataStatistics, AvatarInfo } from '../model/AccountModel'
 import { ImageFileService } from '../service/ImageFileService'
 import { StorageService } from '../service/StorageService'
+import { RecordRepository } from '../repository/RecordRepository'
 import { resourceManager } from '@kit.LocalizationKit'
 import { Logger } from '../common/utils/Logger'
 
@@ -431,6 +432,36 @@ export class AccountViewModel {
       return false
     }
     return await this.configManager.setFontSize(fontSize)
+  }
+
+  // 获取隐私模式（更新计划三期）
+  getPrivacyMode(): boolean {
+    if (!this.configManager) {
+      return false
+    }
+    return this.configManager.getPrivacyMode()
+  }
+
+  // 设置隐私模式
+  async setPrivacyMode(enabled: boolean): Promise<boolean> {
+    if (!this.configManager) {
+      return false
+    }
+    return await this.configManager.setPrivacyMode(enabled)
+  }
+
+  // 清理缓存（分享临时图片 + 孤儿记录图片；更新计划三期）
+  async cleanupCache(): Promise<number> {
+    if (!this.context) {
+      return 0
+    }
+    try {
+      const records = await RecordRepository.getRecords(this.context)
+      return await StorageService.cleanupCache(this.context, records)
+    } catch (error) {
+      Logger.error('清理缓存异常: ' + JSON.stringify(error))
+      return 0
+    }
   }
 
   // 获取上下文

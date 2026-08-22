@@ -112,6 +112,7 @@ interface AppSettings {
   customTags: Tag[];         // 用户自定义标签
   fontSize?: string;         // 'small'|'medium'|'large'，默认 'medium'，更新计划一期；经 AppStorage('fontScale') 0.9/1.0/1.15 作用于记录内容文本
   customMoods?: Mood[];      // 用户自定义心情（更新计划二期，MoodService 管理）
+  privacyMode?: boolean;     // 隐私模式（更新计划三期，默认 false：首页出生日期/里程碑遮罩）
 }
 interface BackupConfig { autoBackup: boolean; backupFrequency: number; lastBackupTime: string; backupPath: string; cloudBackup: CloudBackupConfig | null }
 interface CloudBackupConfig { enabled: boolean; provider: string /* 'huawei'|'custom' */; syncInterval: number }
@@ -476,7 +477,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | service/ImageFileService.ets | ImageFileService | ★ P3 新增：`saveRecordImage` / `getImageUri` / `deleteImageFiles` / `copyAvatar`（记录图片与头像的沙箱 IO） |
 | service/ZipTransferService.ets | ZipTransferService | ★ P3 新增：`saveZipToDocument` / `pickZipToSandbox`（DocumentViewPicker zip 保存/选择 + 沙箱复制；取消返回 false，IO 异常冒泡） |
 | service/ConfigTransferService.ets | ConfigTransferService | ★ P3 新增：`exportConfig` / `importConfig`（用户配置导出/导入 + 头像 base64 转换，拆自 ConfigManager） |
-| service/StorageService.ets | StorageService | ★ P4 新增：`getAppStorageSize(context)` / `formatStorageSize`（纯函数）/ `calcUsageDays`（拆自 AccountViewModel，P4 轮次 8） |
+| service/StorageService.ets | StorageService | ★ P4 新增：`getAppStorageSize(context)` / `formatStorageSize`（纯函数）/ `calcUsageDays`；★ 更新计划三期：`cleanupCache` / `clearShareCache`（cacheDir/share_*.jpg）/ `clearOrphanRecordImages`（filesDir/records 未被引用图） |
 | common/ColorUtils.ets | ColorUtils | `withAlpha(hex, alpha)` → rgba、`primaryLight`(α32)/`primaryExtraLight`(α20)/`primaryUltraLight`(α15) |
 | common/utils/ShareUtils.ets | ShareUtils | `shareComponent(uiContext, componentId, context, title?, desc?)`：getComponentSnapshot → packToData(jpeg 95) → 存 `cacheDir/share_<ts>.jpg` → `systemShare.ShareController.show`；`cleanupOldShareImages`（P5 自顶层 utils/ 迁入） |
 | common/utils/ImageGenerator.ets | ImageGenerator | `generateSolidColorImage`（存 `filesDir/records`）、`generateGradientImage`（存 `filesDir/sample_images`），BGRA_8888 逐像素生成（P5 自顶层 utils/ 迁入） |

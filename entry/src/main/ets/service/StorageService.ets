@@ -3,9 +3,11 @@
  * 应用存储空间统计与使用天数计算，拆自 AccountViewModel（P4 重构，A3 IO/统计职责下沉）
  */
 import { storageStatistics } from '@kit.CoreFileKit'
+import { fs } from '@kit.CoreFileKit'
 import { common } from '@kit.AbilityKit'
 import { TimeUtils } from '../common/utils/TimeUtils'
 import { Logger } from '../common/utils/Logger'
+import { LifeRecord } from '../model/RecordModel'
 
 export class StorageService {
   /**
@@ -54,5 +56,80 @@ export class StorageService {
     const endDateTime = TimeUtils.parseDate(endDate);
     const daysDiff = Math.floor((endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60 * 24));
     return daysDiff >= 0 ? daysDiff : 0;
+  }
+
+  // ==================== 缓存清理（更新计划三期） ====================
+
+  /**
+   * 清理缓存：分享临时图片（cacheDir/share_*.jpg 全删）+ 孤儿记录图片（filesDir/records 下未被任何记录引用的 jpg/png）
+   * @returns 删除的文件数
+   */
+  static async cleanupCache(context: common.Context, records: LifeRecord[]): Promise<number> {
+    let deletedCount = 0
+    deletedCount += await StorageService.clearShareCache(context)
+    deletedCount += await StorageService.clearOrphanRecordImages(context, records)
+    return deletedCount
+  }
+
+  // 清理分享临时图片（cacheDir/share_*.jpg，分享产物可随时重建，全删）
+  static async clearShareCache(context: common.Context): Promise<number> {
+    try {
+      let count = 0
+      const files = fs.listFileSync(context.cacheDir)
+      for (const fileName of files) {
+        if (fileName.startsWith('share_') && fileName.endsWith('.jpg')) {
+          fs.unlinkSync(context.cacheDir + '/' + fileName)
+          count++
+        }
+      }
+      if (count > 0) {
+        Logger.info('[StorageService] 已清理分享缓存 ' + count + ' 个文件')
+      }
+      return count
+    } catch (error) {
+      Logger.error('[StorageService] 清理分享缓存失败: ' + JSON.stringify(error))
+      return 0
+    }
+  }
+
+  // 清理孤儿记录图片（filesDir/records 下未被任何记录引用的图片；按文件名匹配，兼容 URI/沙箱路径）
+  static async clearOrphanRecordImages(context: common.Context, records: LifeRecord[]): Promise<number> {
+    try {
+      // 收集所有被引用的文件名
+      const referencedNames = new Set<string>()
+      for (const record of records) {
+        if (record.imagePaths) {
+          for (const path of record.imagePaths) {
+            const name = path.split('/').pop()
+            if (name && name.length > 0) {
+              referencedNames.add(name)
+            }
+          }
+        }
+      }
+
+      const dir = context.filesDir + '/records'
+      if (!fs.accessSync(dir)) {
+        return 0
+      }
+      let count = 0
+      const files = fs.listFileSync(dir)
+      for (const fileName of files) {
+        if (!fileName.endsWith('.jpg') && !fileName.endsWith('.png')) {
+          continue
+        }
+        if (!referencedNames.has(fileName)) {
+          fs.unlinkSync(dir + '/' + fileName)
+          count++
+        }
+      }
+      if (count > 0) {
+        Logger.info('[StorageService] 已清理孤儿记录图片 ' + count + ' 个文件')
+      }
+      return count
+    } catch (error) {
+      Logger.error('[StorageService] 清理孤儿记录图片失败: ' + JSON.stringify(error))
+      return 0
+    }
   }
 }

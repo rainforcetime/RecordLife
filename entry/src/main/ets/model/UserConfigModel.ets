@@ -38,6 +38,7 @@ export interface AppSettings {
   customTags: Tag[]; // 用户自定义的标签列表
   fontSize?: string; // 'small' | 'medium' | 'large'（可选，默认 'medium'，更新计划一期）
   customMoods?: Mood[]; // 用户自定义的心情列表（可选，更新计划二期）
+  privacyMode?: boolean; // 隐私模式（可选，默认 false，更新计划三期：隐藏首页出生日期等敏感信息）
 }
 
 // 备份配置
@@ -106,7 +107,8 @@ export async function createDefaultConfig(): Promise<UserConfig> {
     targetAge: 80,            // 默认目标年龄80岁
     customTags: [],           // 默认无自定义标签
     fontSize: 'medium',       // 默认字体大小
-    customMoods: []           // 默认无自定义心情
+    customMoods: [],          // 默认无自定义心情
+    privacyMode: false        // 默认关闭隐私模式
   };
 
   const backup: BackupConfig = {
@@ -164,7 +166,8 @@ export function createDefaultConfigSync(): UserConfig {
     targetAge: 80,            // 默认目标年龄80岁
     customTags: [],           // 默认无自定义标签
     fontSize: 'medium',       // 默认字体大小
-    customMoods: []           // 默认无自定义心情
+    customMoods: [],          // 默认无自定义心情
+    privacyMode: false        // 默认关闭隐私模式
   };
 
   const backup: BackupConfig = {

@@ -37,6 +37,7 @@ export struct HomePage {
   @State @Watch('onBirthDateChanged') birthDate: Date = new Date('1990-01-01T00:00:00Z');
   @State @Watch('onTargetAgeChanged') targetAge: number = 80; // 目标年龄，默认80岁
   @State signature: string = ''; // 签名/座右铭（更新计划一期）
+  @State privacyMode: boolean = false; // 隐私模式（更新计划三期）
   @State userConfig: UserConfig | null = null;
   @State isAccumulatedMode: boolean = true; // true: 累计模式, false: 非累计模式
   @State isRemainingMode: boolean = false; // true: 剩余模式, false: 已存活模式
@@ -134,6 +135,9 @@ export struct HomePage {
     // 加载签名（可选字段，旧配置缺省为空）
     this.signature = this.userConfig?.profile?.signature ?? '';
     
+    // 加载隐私模式（更新计划三期）
+    this.privacyMode = this.configManager.getPrivacyMode();
+    
     // 加载出生日期
     this.birthDate = this.configManager.getBirthDate();
     
@@ -161,6 +165,8 @@ export struct HomePage {
         }
         // 同步刷新签名（我的页保存后）
         this.signature = this.configManager.getConfig()?.profile?.signature ?? ''
+        // 同步刷新隐私模式（我的页切换后）
+        this.privacyMode = this.configManager.getPrivacyMode()
       }
     })
   }
@@ -369,8 +375,23 @@ export struct HomePage {
         .alignItems(HorizontalAlign.Center)
         .padding({ top: 32, bottom: 20 })
 
-        // 出生日期设置组件
-        BirthDateSelector({ birthDate: $birthDate, targetAge: $targetAge, themeColors: this.themeColors })
+        // 出生日期设置组件（隐私模式开启时遮罩，更新计划三期）
+        if (this.privacyMode) {
+          Column() {
+            Text('🔒')
+              .fontSize(32)
+            Text($r('app.string.privacy_mode_on'))
+              .fontSize(14)
+              .fontColor(this.themeColors.textSecondary)
+              .margin({ top: 8 })
+          }
+          .width('100%')
+          .padding({ top: 28, bottom: 28 })
+          .backgroundColor(this.themeColors.cardBackground)
+          .borderRadius(16)
+        } else {
+          BirthDateSelector({ birthDate: $birthDate, targetAge: $targetAge, themeColors: this.themeColors })
+        }
 
         // 时间卡片组（弹性布局，自动换行）
         Column() {
@@ -569,8 +590,9 @@ export struct HomePage {
           }
           .width('100%')
 
-          // 第五行：生命里程碑（第几天 / 第几周 / 距下次生日，更新计划一期）
-          Row({ space: 12 }) {
+          // 第五行：生命里程碑（第几天 / 第几周 / 距下次生日，更新计划一期；隐私模式隐藏）
+          if (!this.privacyMode) {
+            Row({ space: 12 }) {
             Text($r('app.string.life_day', this.dayOfLife))
               .fontSize(14)
               .fontWeight(FontWeight.Medium)
@@ -600,6 +622,9 @@ export struct HomePage {
               .padding({ top: 10, bottom: 10 })
               .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
               .borderRadius(12)
+            }
+            .width('100%')
+            }
           }
           .width('100%')
         }

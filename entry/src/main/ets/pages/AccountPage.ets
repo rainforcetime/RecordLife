@@ -33,6 +33,7 @@ export struct AccountPage {
   // 设置项状态
   @State currentTheme: string = ''
   @State currentFontSize: string = 'medium'  // 字体大小（更新计划一期）
+  @State privacyMode: boolean = false  // 隐私模式（更新计划三期）
   
   // 数据统计
   @State statisticsInfo: AccountDataStatistics = {
@@ -118,6 +119,9 @@ export struct AccountPage {
       // 加载字体大小设置（更新计划一期：内部值 → 显示文本）
       const rm = this.getUIContext().getHostContext()?.resourceManager ?? null
       this.currentFontSize = AccountUtils.fontSizeToDisplay(this.viewModel.getFontSize(), rm)
+      
+      // 加载隐私模式（更新计划三期）
+      this.privacyMode = this.viewModel.getPrivacyMode()
       
       // 加载应用信息
       await this.loadAppInfo()
@@ -263,6 +267,31 @@ export struct AccountPage {
     } else {
       AccountUtils.showToastSafely(this.promptAction, $r('app.string.font_size_save_failed'))
     }
+  }
+
+  // 隐私模式切换处理（更新计划三期）
+  private async onPrivacyModeChange(enabled: boolean) {
+    this.privacyMode = enabled
+    const success = await this.viewModel.setPrivacyMode(enabled)
+    if (success) {
+      AccountUtils.showToastSafely(this.promptAction, $r('app.string.privacy_mode_saved'))
+      // 通知其他页面刷新（首页隐私遮罩）
+      RefreshManager.getInstance().refresh()
+    } else {
+      AccountUtils.showToastSafely(this.promptAction, $r('app.string.operation_failed'))
+    }
+  }
+
+  // 清理缓存（更新计划三期）
+  private async onCleanCache() {
+    const count = await this.viewModel.cleanupCache()
+    if (count > 0) {
+      AccountUtils.showToastSafely(this.promptAction, $r('app.string.cache_cleaned', count))
+    } else {
+      AccountUtils.showToastSafely(this.promptAction, $r('app.string.cache_nothing'))
+    }
+    // 刷新存储空间显示
+    await this.loadDataStatistics()
   }
   
   // 编辑资料处理
@@ -429,6 +458,43 @@ export struct AccountPage {
         .margin({ left: 15 })
         .height(0.5)
       
+      // 隐私模式（开关，更新计划三期）
+      Row() {
+        Column() {
+          Text($r('app.string.privacy_mode'))
+            .fontSize(16)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(this.themeColors.textPrimary)
+            .width('100%')
+
+          Text($r('app.string.privacy_mode_summary'))
+            .fontSize(12)
+            .fontColor(this.themeColors.textSecondary)
+            .width('100%')
+            .margin({ top: 2 })
+        }
+        .layoutWeight(1)
+
+        Toggle({ type: ToggleType.Switch, isOn: this.privacyMode })
+          .selectedColor(this.themeColors.primary)
+          .onChange((isOn: boolean) => {
+            this.onPrivacyModeChange(isOn)
+          })
+      }
+      .padding({ top: 12, bottom: 12, left: 16, right: 16 })
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
+      
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
+        .height(0.5)
+      
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
+        .height(0.5)
+      
       // 存储空间（信息展示）
       SettingItemWithInfo({
         label: $r('app.string.storage_space'),
@@ -436,6 +502,20 @@ export struct AccountPage {
       })
       .onClick(() => {
         this.onStorageClick()
+      })
+      
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
+        .height(0.5)
+      
+      // 清理缓存（更新计划三期）
+      SettingItem({
+        label: $r('app.string.clean_cache'),
+        summary: $r('app.string.clean_cache_summary')
+      })
+      .onClick(() => {
+        this.onCleanCache()
       })
       
       Divider()

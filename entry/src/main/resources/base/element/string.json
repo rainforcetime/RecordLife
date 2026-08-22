@@ -1371,6 +1371,38 @@
     {
       "name": "undo_success",
       "value": "已恢复删除"
+    },
+    {
+      "name": "privacy_mode",
+      "value": "隐私模式"
+    },
+    {
+      "name": "privacy_mode_summary",
+      "value": "隐藏首页出生日期等敏感信息"
+    },
+    {
+      "name": "privacy_mode_saved",
+      "value": "隐私模式已更新"
+    },
+    {
+      "name": "privacy_mode_on",
+      "value": "隐私模式已开启，敏感信息已隐藏"
+    },
+    {
+      "name": "clean_cache",
+      "value": "清理缓存"
+    },
+    {
+      "name": "clean_cache_summary",
+      "value": "清理临时分享图片与无引用图片"
+    },
+    {
+      "name": "cache_cleaned",
+      "value": "已清理 %d 个文件"
+    },
+    {
+      "name": "cache_nothing",
+      "value": "没有可清理的缓存"
     }
   ]
 }
