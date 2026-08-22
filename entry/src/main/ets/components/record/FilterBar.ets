@@ -206,6 +206,12 @@ export struct FilterBar {
           }
         })
 
+        // 心情分组头（区分心情与标签，更新计划五期）
+        Text($r('app.string.mood_tab'))
+          .fontSize(11)
+          .fontColor(this.themeColors.textTertiary)
+          .margin({ right: 6 })
+
         // 心情筛选（更新计划二期）
         ForEach(this.moods, (mood: Mood) => {
           FilterChip({
@@ -224,7 +230,15 @@ export struct FilterBar {
             .width(1)
             .height(18)
             .backgroundColor(this.themeColors.divider)
-            .margin({ right: 8 })
+            .margin({ left: 6, right: 8 })
+        }
+
+        // 标签分组头（区分心情与标签，更新计划五期）
+        if (this.availableTags.length > 0) {
+          Text($r('app.string.tag_tab'))
+            .fontSize(11)
+            .fontColor(this.themeColors.textTertiary)
+            .margin({ right: 6 })
         }
 
         // 标签列表
