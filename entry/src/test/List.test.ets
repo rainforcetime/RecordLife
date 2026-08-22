@@ -3,6 +3,7 @@ import recordModelTest from './RecordModel.test';
 import storageServiceTest from './StorageService.test';
 import configModelTest from './ConfigModel.test';
 import timeUtilsLifeTest from './TimeUtilsLife.test';
+import moodUtilsTest from './MoodUtils.test';
 
 export default function testsuite() {
   localUnitTest();
@@ -10,4 +11,5 @@ export default function testsuite() {
   storageServiceTest();
   configModelTest();
   timeUtilsLifeTest();
+  moodUtilsTest();
 }

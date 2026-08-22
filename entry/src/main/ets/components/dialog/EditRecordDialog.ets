@@ -6,6 +6,7 @@ import { common } from '@kit.AbilityKit'
 import { PromptAction } from '@kit.ArkUI'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { TagSelector } from '../common/TagSelector'
+import { MoodSelector } from '../record/MoodSelector'
 import { Logger } from '../../common/utils/Logger'
 
 @Component
@@ -26,6 +27,9 @@ export struct EditRecordDialog {
   
   // 选中的标签
   @Link editTags: string[]
+  
+  // 选中的心情（更新计划二期；'' = 未选择）
+  @Link editMood: string
   
   // 图片路径更新回调
   onImagePathsChange: ((paths: string[]) => void) | null = null
@@ -86,6 +90,13 @@ export struct EditRecordDialog {
         // 标签选择区域
         Column() {
           TagSelector({ selectedTagIds: $editTags })
+        }
+        .width('100%')
+        .margin({ top: 16 })
+        
+        // 心情选择区域（更新计划二期）
+        Column() {
+          MoodSelector({ selectedMood: $editMood })
         }
         .width('100%')
         .margin({ top: 16 })

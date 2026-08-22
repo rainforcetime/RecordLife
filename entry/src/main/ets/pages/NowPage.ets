@@ -9,6 +9,7 @@ import { AddRecordSection } from '../components/record/AddRecordSection'
 import { EditRecordDialog } from '../components/dialog/EditRecordDialog'
 import { SearchBar } from '../components/common/SearchBar'
 import { TagFilterBar } from '../components/record/TagFilterBar'
+import { MoodFilterBar } from '../components/record/MoodFilterBar'
 import { CalendarView } from '../components/calendar/CalendarView'
 import { RefreshManager } from '../common/managers/RefreshManager'
 import { ColorUtils } from '../common/ColorUtils'
@@ -49,6 +50,17 @@ struct NowPage {
     Logger.info('[NowPage] filterTagIds 改变: ' + JSON.stringify(this.filterTagIds) + ', version: ' + this.filterTagIdsVersion)
   }
   
+  // 心情筛选状态（更新计划二期；'' = 全部）
+  @Watch('onFilterMoodChange')
+  @State private filterMood: string = ''
+  @State private filterMoodVersion: number = 0  // 心情筛选版本号
+
+  // 监听心情筛选改变
+  private onFilterMoodChange() {
+    this.filterMoodVersion++
+    Logger.info('[NowPage] filterMood 改变: ' + this.filterMood + ', version: ' + this.filterMoodVersion)
+  }
+
   // 视图模式：'timeline' | 'calendar'
   @State private viewMode: string = 'timeline'
   
@@ -68,6 +80,9 @@ struct NowPage {
   
   // 编辑标签时的临时变量
   @State private editTags: string[] = []
+  
+  // 编辑心情时的临时变量（更新计划二期；'' = 未选择）
+  @State private editMood: string = ''
   
   // 记录此刻弹窗
   @State private showAddRecordDialog: boolean = false
@@ -201,6 +216,12 @@ struct NowPage {
             })
             .margin({ bottom: 8 })
             
+            // 心情筛选栏（更新计划二期）
+            MoodFilterBar({
+              filterMood: $filterMood
+            })
+            .margin({ bottom: 8 })
+            
             // 搜索结果数量提示
             if (this.searchText.length > 0) {
               Row() {
@@ -239,6 +260,8 @@ struct NowPage {
               searchKeywordVersion: this.searchKeywordVersion,  // 传递搜索关键词版本号
               filterTagIds: this.filterTagIds,  // 传递标签筛选
               filterTagIdsVersion: this.filterTagIdsVersion,  // 传递标签筛选版本号
+              filterMood: this.filterMood,  // 传递心情筛选（更新计划二期）
+              filterMoodVersion: this.filterMoodVersion,  // 传递心情筛选版本号
               onEditRecord: (record: LifeRecord) => {
                 this.onEditRecord(record)
               },
@@ -369,6 +392,7 @@ struct NowPage {
       editContent: $editContent,
       editImagePaths: this.editImagePaths,  // ✅ 传递当前值
       editTags: $editTags,  // ✅ 双向绑定标签
+      editMood: $editMood,  // ✅ 双向绑定心情（更新计划二期）
       onImagePathsChange: (paths: string[]) => {
         // ✅ 通过回调更新图片数组
         Logger.info('[NowPage] 收到图片更新回调，旧数量: ' + this.editImagePaths.length + ', 新数量: ' + paths.length)
@@ -388,6 +412,7 @@ struct NowPage {
         this.editingRecord = null as LifeRecord | null
         this.editImagePaths = []
         this.editTags = []
+        this.editMood = ''
       },
       saveImageToSandbox: async (uri: string) => {
         if (this.viewModel) {
@@ -505,6 +530,9 @@ struct NowPage {
       this.editTags = []
     }
     
+    // 如果有心情，初始化心情（更新计划二期）
+    this.editMood = record.mood ?? ''
+    
     this.showEditDialog = true
   }
   
@@ -530,7 +558,8 @@ struct NowPage {
         this.editingRecord.id,
         this.editContent.trim(),
         this.editImagePaths,  // ✅ 直接传递，空数组也会更新
-        this.editTags  // ✅ 传递标签
+        this.editTags,  // ✅ 传递标签
+        this.editMood  // ✅ 传递心情（更新计划二期）
       )
       
       if (success) {
@@ -543,6 +572,7 @@ struct NowPage {
         this.editingRecord = null as LifeRecord | null
         this.editImagePaths = []
         this.editTags = []
+        this.editMood = ''
         // 通过 RefreshManager 统一刷新（NowPage 已注册回调，会自动触发 refreshTimeline；
         // 同时通知其他注册页面同步刷新）
         RefreshManager.getInstance().refresh()

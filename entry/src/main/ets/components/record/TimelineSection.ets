@@ -32,6 +32,11 @@ export struct TimelineSection {
   @Prop filterTagIds: string[] = []
   @Watch('onFilterTagIdsChange')
   @Prop filterTagIdsVersion: number = 0
+  
+  // 心情筛选（更新计划二期；'' = 全部）
+  @Prop filterMood: string = ''
+  @Watch('onFilterMoodChange')
+  @Prop filterMoodVersion: number = 0
 
   // 回调函数
   onEditRecord?: (record: LifeRecord) => void
@@ -79,6 +84,12 @@ export struct TimelineSection {
   // 当标签筛选改变时重新构建数据
   private onFilterTagIdsChange() {
     Logger.info('[TimelineSection] filterTagIds 改变: ' + JSON.stringify(this.filterTagIds))
+    this.buildDateGroups()
+  }
+
+  // 当心情筛选改变时重新构建数据（更新计划二期）
+  private onFilterMoodChange() {
+    Logger.info('[TimelineSection] filterMood 改变: ' + this.filterMood)
     this.buildDateGroups()
   }
   
@@ -147,6 +158,13 @@ export struct TimelineSection {
           if (this.filterTagIds.length > 0) {
             filteredRecords = filteredRecords.filter(record =>
               this.matchesAnyFilterTag(record)
+            )
+          }
+
+          // 过滤记录（心情筛选，更新计划二期）
+          if (this.filterMood.length > 0) {
+            filteredRecords = filteredRecords.filter(record =>
+              record.mood === this.filterMood
             )
           }
 

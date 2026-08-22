@@ -172,7 +172,7 @@
 | 期次 | 建议版本 | 描述 | 状态 | 完成日期 | 备注 |
 | --- | --- | --- | --- | --- | --- |
 | 一期 | 2.1 | 轻量增强：周数/总天数、生日提醒、签名、字体大小（纯函数 + 可选字段） | ✅ | 2026-08-22 | 轮次 1~2 完成：3 个生命里程碑纯函数 + 15 单测 + HomePage 展示 + 签名（编辑/我的页/首页展示）+ 字体大小设置（记录内容缩放，AppStorage fontScale）；涉及数据模型可选字段，需 §8 备份导入回归 |
-| 二期 | 2.2 | 记录体验：心情标记（🔥）、撤销删除（`LifeRecord.mood?`） | ⬜ | — | 涉及数据模型扩展，需 §8 备份导入回归 |
+| 二期 | 2.2 | 记录体验：心情标记（🔥）、撤销删除（`LifeRecord.mood?`） | 🔄 | 进行中 | 轮次 3 完成心情标记全链路（模型/新增/编辑/展示/筛选 + 8 单测）；撤销删除待做（轮次 4）；涉及数据模型可选字段，需 §8 备份导入回归 |
 | 三期 | 2.3 | 效率与隐私：缓存清理、隐私模式、记录模板 | ⬜ | — | — |
 | 四期 | 2.4 | 提醒与引导：每日提醒通知（🔥）、引导页 | ⬜ | — | **开工前先做通知能力验证**（§2 矩阵） |
 | 五期 | 2.5 | 数据价值：数据看板（🔥）、生命进度、统计面板 | ⬜ | — | 聚合逻辑纯函数化 |
@@ -272,6 +272,35 @@
 - 待 DevEco 编译 + 实机验证：签名编辑/展示、字体三档切换即时生效、重启后字体保持、旧备份导入（新增可选字段）
 
 **下一轮计划**：二期 — 心情标记（🔥，`LifeRecord.mood?`）+ 撤销删除；开工前读 §2 矩阵与 §9 检查清单
+
+### 轮次 3 — 2026-08-22（二期：心情标记全链路）
+
+**本轮目标**：二期核心功能——心情标记：`LifeRecord.mood?` 可选字段 + 新增/编辑选择 + 卡片展示 + 时间线筛选。
+
+**涉及文件**：
+- `model/RecordModel.ets`（`LifeRecord.mood?` 可选字段）
+- `common/utils/MoodUtils.ets`（新建：`MOODS`/`getMoodEmoji`/`isValidMood`，纯函数）
+- `viewmodel/NowViewModel.ets`（`addRecord` 第 4 参、`updateRecord` 第 5 参 mood；'' 清除）
+- `components/record/MoodSelector.ets`（新建：一排 emoji 圆钮单选，再点取消）
+- `components/record/MoodFilterBar.ets`（新建：全部 + 5 emoji 横向 chips）
+- `components/record/AddRecordSection.ets`、`components/dialog/EditRecordDialog.ets`（接入 MoodSelector）
+- `pages/NowPage.ets`（editMood 编辑态、filterMood 筛选态 + 版本号）
+- `components/record/TimelineSection.ets`（filterMood @Watch + buildDateGroups 过滤）
+- `components/record/RecordCard.ets`（内容上方 mood emoji 展示）
+- `resources/base|en_US/element/string.json`（+7 key：mood_*，336 key × 2）
+- `entry/src/test/MoodUtils.test.ets`（新建 8 用例）+ `List.test.ets`（注册，累计 38 用例）
+
+**已完成**：
+- [x] 心情 5 档（happy/calm/excited/sad/tired）+ emoji 映射；新增/编辑记录可选心情，再点取消
+- [x] 记录卡片内容上方展示心情 emoji；时间线按心情筛选（与标签筛选叠加）
+- [x] 单测 8 用例（emoji 映射 + 合法性）
+
+**遗留问题**：
+- 撤销删除未做（二期剩余）
+- 心情筛选与搜索/标签筛选叠加逻辑正确性需实机验证
+- 待 DevEco 编译 + 实机验证：新增/编辑心情、卡片展示、筛选联动、**旧备份导入**（新可选字段）
+
+**下一轮计划**：二期剩余 — 撤销删除（内存暂存 3s 可撤销，不落盘）；随后二期收口（§8 备份回归 + 里程碑 ✅）
 
 ---
 

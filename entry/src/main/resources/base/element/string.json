@@ -1315,6 +1315,34 @@
     {
       "name": "font_size_save_failed",
       "value": "字体大小保存失败"
+    },
+    {
+      "name": "mood_label",
+      "value": "心情"
+    },
+    {
+      "name": "mood_happy",
+      "value": "开心"
+    },
+    {
+      "name": "mood_calm",
+      "value": "平静"
+    },
+    {
+      "name": "mood_excited",
+      "value": "兴奋"
+    },
+    {
+      "name": "mood_sad",
+      "value": "难过"
+    },
+    {
+      "name": "mood_tired",
+      "value": "疲惫"
+    },
+    {
+      "name": "mood_filter_all",
+      "value": "全部"
     }
   ]
 }

@@ -7,6 +7,7 @@ import { RefreshManager } from '../../common/managers/RefreshManager'
 import { PromptAction } from '@kit.ArkUI'
 import { ImagePickerUtils, ImagePickMode } from '../../common/utils/ImagePickerUtils'
 import { TagSelector } from '../common/TagSelector'
+import { MoodSelector } from './MoodSelector'
 import { Logger } from '../../common/utils/Logger'
 
 @Component
@@ -21,6 +22,9 @@ export struct AddRecordSection {
   
   // 选中的标签
   @State private selectedTags: string[] = []
+  
+  // 选中的心情（更新计划二期；'' = 未选择）
+  @State private selectedMood: string = ''
   
   // 是否正在保存
   @State private isSaving: boolean = false
@@ -73,6 +77,13 @@ export struct AddRecordSection {
         // 标签选择区域
         Column() {
           TagSelector({ selectedTagIds: $selectedTags })
+        }
+        .width('100%')
+        .margin({ top: 16 })
+        
+        // 心情选择区域（更新计划二期）
+        Column() {
+          MoodSelector({ selectedMood: $selectedMood })
         }
         .width('100%')
         .margin({ top: 16 })
@@ -237,11 +248,15 @@ export struct AddRecordSection {
       // 提取标签数组
       const tags = this.selectedTags.length > 0 ? this.selectedTags : undefined
       
+      // 提取心情（可选，更新计划二期）
+      const mood = this.selectedMood.length > 0 ? this.selectedMood : undefined
+      
       // 统一保存记录
       const record = await this.viewModel.addRecord(
         this.textContent.trim(),
         imagePaths,
-        tags
+        tags,
+        mood
       )
       
       if (record) {
@@ -255,6 +270,7 @@ export struct AddRecordSection {
         this.textContent = ''
         this.images = []
         this.selectedTags = []
+        this.selectedMood = ''
         
         // 触发全局刷新
         Logger.info('[AddRecordSection] 触发全局刷新')

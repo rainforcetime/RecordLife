@@ -6,6 +6,7 @@ import { ImageViewer } from '../common/ImageViewer'
 import { TagDisplay } from '../common/TagSelector'
 import { ShareRecordCard } from '../share/ShareRecordCard'
 import { ShareUtils } from '../../common/utils/ShareUtils'
+import { MoodUtils } from '../../common/utils/MoodUtils'
 import { common } from '@kit.AbilityKit'
 import { ColorUtils } from '../../common/ColorUtils'
 import { Logger } from '../../common/utils/Logger'
@@ -80,6 +81,13 @@ export struct RecordCard {
           .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
           .borderRadius(12)
           .margin({ bottom: 8 })
+        }
+
+        // 心情展示（更新计划二期）
+        if (this.record.mood && MoodUtils.getMoodEmoji(this.record.mood).length > 0) {
+          Text(MoodUtils.getMoodEmoji(this.record.mood))
+            .fontSize(22)
+            .margin({ bottom: 8 })
         }
 
         // 标签显示（如果有）

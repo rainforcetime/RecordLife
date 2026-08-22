@@ -1315,6 +1315,34 @@
     {
       "name": "font_size_save_failed",
       "value": "Failed to save font size"
+    },
+    {
+      "name": "mood_label",
+      "value": "Mood"
+    },
+    {
+      "name": "mood_happy",
+      "value": "Happy"
+    },
+    {
+      "name": "mood_calm",
+      "value": "Calm"
+    },
+    {
+      "name": "mood_excited",
+      "value": "Excited"
+    },
+    {
+      "name": "mood_sad",
+      "value": "Sad"
+    },
+    {
+      "name": "mood_tired",
+      "value": "Tired"
+    },
+    {
+      "name": "mood_filter_all",
+      "value": "All"
     }
   ]
 }

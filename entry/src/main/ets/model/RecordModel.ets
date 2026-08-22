@@ -9,6 +9,7 @@ export interface LifeRecord {
   imagePaths?: string[];    // 图片路径数组（可选）
   tags?: string[];          // 标签ID数组（可选）
   isPinned?: boolean;       // 是否置顶（可选）
+  mood?: string;            // 心情（可选，更新计划二期：'happy'|'calm'|'excited'|'sad'|'tired'）
 }
 
 // 图片信息接口
