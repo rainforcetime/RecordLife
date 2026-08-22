@@ -238,7 +238,13 @@ export struct FilterBar {
       enableArrow: true,
       arrowPointPosition: ArrowPointPosition.START,
       maskColor: '#00000000',
-      backgroundBlurStyle: BlurStyle.NONE
+      backgroundBlurStyle: BlurStyle.NONE,
+      onStateChange: (e: PopupStateChangeEvent) => {
+        // 气泡关闭时同步复位状态，确保可再次点击弹出
+        if (e.isVisible === false) {
+          this.showFilterPopup = false
+        }
+      }
     })
   }
 
@@ -333,8 +339,9 @@ export struct FilterBar {
       }
       .width('100%')
     }
+    .width(280)
+    .constraintSize({ maxHeight: '55%' })
     .padding({ left: 16, right: 16, top: 8, bottom: 16 })
-    .constraintSize({ maxWidth: '90%', maxHeight: '60%' })
     .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(14)
   }
