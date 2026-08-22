@@ -9,34 +9,10 @@ import { AppInfoManager } from '../config/AppInfoConfig'
 import { ThemeManager } from '../config/ThemeManager'
 import { AccountUtils } from '../common/utils/AccountUtils'
 import { TimeUtils } from '../common/utils/TimeUtils'
+import { AccountProfile, ThemeSettings, AccountDataStatistics, AvatarInfo } from '../model/AccountModel'
 
-// 用户资料数据模型
-export interface UserProfile {
-  name: string
-  birthday: string
-  gender: string
-  avatar: string
-  hasCustomAvatar: boolean
-}
-
-// 主题设置数据模型
-export interface ThemeSettings {
-  currentTheme: string
-}
-
-// 数据统计模型
-export interface DataStatistics {
-  usageDays: number
-  dataVersion: string
-  lastActiveTime: string
-  storageSize: string
-}
-
-// 头像信息模型
-interface AvatarInfo {
-  avatar: string
-  hasCustomAvatar: boolean
-}
+// 向后兼容：AccountPage.ets 通过 AccountViewModel 导入这些类型
+export { AccountProfile, AccountDataStatistics }
 
 // 账号页面状态管理类
 export class AccountViewModel {
@@ -61,8 +37,8 @@ export class AccountViewModel {
   }
 
   // 加载用户资料
-  async loadUserProfile(): Promise<UserProfile> {
-    const defaultProfile: UserProfile = {
+  async loadUserProfile(): Promise<AccountProfile> {
+    const defaultProfile: AccountProfile = {
       name: '用户名',
       birthday: '1990-01-15',
       gender: '其他',
@@ -150,10 +126,10 @@ export class AccountViewModel {
   }
 
   // 加载数据统计信息
-  async loadDataStatistics(): Promise<DataStatistics> {
+  async loadDataStatistics(): Promise<AccountDataStatistics> {
     console.info('[StorageDebug] loadDataStatistics 开始执行')
     
-    const defaultStatistics: DataStatistics = {
+    const defaultStatistics: AccountDataStatistics = {
       usageDays: 0,
       dataVersion: 'v0.0.1',
       lastActiveTime: '',
@@ -201,7 +177,7 @@ export class AccountViewModel {
       const storageSize = await this.getAppStorageSize();
       console.info('[StorageDebug] getAppStorageSize() 返回: ' + storageSize)
       
-      const result: DataStatistics = {
+      const result: AccountDataStatistics = {
         usageDays: daysDiff >= 0 ? daysDiff : 0,
         dataVersion: `v${appVersion}`,
         lastActiveTime: lastActiveTime,

@@ -9,7 +9,7 @@ import { EditProfileDialog } from '../components/dialog/EditProfileDialog'
 import { AboutAppDialog } from '../components/dialog/AboutAppDialog'
 import { TagManagementDialog } from '../components/dialog/TagManagementDialog'
 import { UserInfoSection, UserInfo } from '../components/user/UserInfoSection'
-import { AccountViewModel, DataStatistics } from '../viewmodel/AccountViewModel'
+import { AccountViewModel, AccountDataStatistics } from '../viewmodel/AccountViewModel'
 import { AccountUtils } from '../common/utils/AccountUtils'
 import { AppInfo } from '../config/UserConfig'
 import { RefreshManager } from '../common/managers/RefreshManager'
@@ -32,7 +32,7 @@ export struct AccountPage {
   @State currentTheme: string = '跟随系统'
   
   // 数据统计
-  @State statisticsInfo: DataStatistics = {
+  @State statisticsInfo: AccountDataStatistics = {
     usageDays: 0,
     dataVersion: 'v0.0.1',  // 初始值，会在loadAppInfo时更新为实际版本
     lastActiveTime: '',

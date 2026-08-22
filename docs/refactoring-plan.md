@@ -302,7 +302,7 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | 阶段 | 描述 | 状态 | 完成日期 | 备注 |
 | --- | --- | --- | --- | --- |
 | P0 | 数据兼容性基线锁定（确认旧备份可导入） | ⬜ | — | 备份格式已记录在 §0；尚未做导入冒烟测试 |
-| P1 | 类型层重构（`types.ets` 拆分、消除重复定义） | ⬜ | — | `types.ets` 4.5KB 单文件；`UserProfile` 在 `AccountViewModel.ets` 与 `UserConfig.ets` 重复定义 |
+| P1 | 类型层重构（`types.ets` 拆分、消除重复定义） | ✅ | 2026-08-22 | `model/` 目录已创建（5 文件）；`UserProfile`/`DataStatistics` 重复已消除；UI DTO 重命名为 `AccountProfile`/`AccountDataStatistics`；旧文件保留 re-export 兼容 |
 | P2 | Model / Repository 层抽取 | ⬜ | — | 无 `model/` `repository/` 目录；数据访问散落在 ViewModel / ConfigManager / BackupManager |
 | P3 | Service 层抽取（备份 / 导入导出 / 图片） | ⬜ | — | 无 `service/` 目录；`MorePageBackupHandler` 19.9KB、`ConfigManager` 18.7KB、`BackupManager` 11.9KB 均过大 |
 | P4 | ViewModel 瘦身（IO 职责下沉） | ⬜ | — | `NowViewModel` 15.7KB 直接 import `@ohos.data.preferences`；`AccountViewModel` 19.1KB 含重复类型 |
@@ -402,6 +402,38 @@ entry/src/main/ets/
 - `$r('app.color.*')` 尚未在 .ets 中引用（颜色通过 `ThemeConfig` 动态分发，未走资源系统）— 可在后续 P3 主题服务重构时统一
 
 **下一轮计划**：P0 — 用现有备份文件验证当前导入流程，锁定兼容性基线；或 P1 — 类型层重构
+
+### 轮次 2 — 2026-08-22（P1 类型层重构）
+
+**本轮目标**：创建 `model/` 目录，统一领域模型，消除 `UserProfile` / `DataStatistics` 重复定义（解决 A1）。
+
+**涉及文件**：
+- `model/CommonModel.ets`（新增）— `TimeData`, `DateDifference`
+- `model/TagModel.ets`（新增）— `Tag`, `DEFAULT_TAGS`, `getAllTags`, `getTagNameById`, `getTagById`
+- `model/RecordModel.ets`（新增）— `LifeRecord`, `ImageInfo`, `TimelineData`, `TimelineYear`, `TimelineMonth`, `TimelineDay`, `CalendarDay`
+- `model/UserConfigModel.ets`（新增）— `UserProfile`, `AppSettings`, `BackupConfig`, `DataStatistics`, `ConfigMetadata`, `UserConfig`, `CloudBackupConfig`, `AppInfo` + 工厂函数
+- `model/AccountModel.ets`（新增）— `AccountProfile`（原 AccountViewModel 的 `UserProfile`）, `ThemeSettings`, `AccountDataStatistics`（原 AccountViewModel 的 `DataStatistics`）, `AvatarInfo`
+- `common/types.ets`（改写）— re-export barrel → `model/`
+- `config/UserConfig.ets`（改写）— re-export barrel → `model/UserConfigModel`
+- `viewmodel/AccountViewModel.ets`（修改）— 移除本地类型定义，import from `model/AccountModel`
+- `pages/AccountPage.ets`（修改）— `DataStatistics` → `AccountDataStatistics`
+
+**已完成**：
+- [x] 创建 `model/` 目录（5 文件）
+- [x] 消除 `UserProfile` 重复（持久化层 `UserConfigModel` vs UI 层 `AccountModel`，重命名为 `AccountProfile`）
+- [x] 消除 `DataStatistics` 重复（持久化层 `UserConfigModel` vs UI 层 `AccountModel`，重命名为 `AccountDataStatistics`）
+- [x] `common/types.ets` → re-export barrel（向后兼容）
+- [x] `config/UserConfig.ets` → re-export barrel（向后兼容）
+- [x] 修复 `CalendarDay` 接口字段（`date: Date`, `year`, `month`, `day`, `isToday`, `recordCount`）
+- [x] 修复 `ImageInfo` 接口（增加 `uri?` 字段）
+- [x] 修复 `getAllTags` / `getTagNameById` 函数签名（支持 `customTags?` 参数）
+- [x] 编译通过（`Build success`）
+
+**遗留问题**：
+- `common/types.ets` 和 `config/UserConfig.ets` 保留为 re-export barrel，后续可逐步迁移 import 路径至 `model/` 后删除
+- `AccountViewModel.ets` 仍 re-export `AccountProfile` / `AccountDataStatistics` 供 `AccountPage.ets` 使用，后续 P4 瘦身时可改为直接 import
+
+**下一轮计划**：P2 — Model / Repository 层抽取（新建 `repository/`，封装 Preferences 读写）
 
 ### 10.3 数据兼容性验证记录
 
