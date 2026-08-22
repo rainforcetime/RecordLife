@@ -300,7 +300,7 @@ export struct FilterBar {
           })
       }
       .width('100%')
-      .margin({ top: 12, bottom: 12 })
+      .margin({ top: 8, bottom: 10 })
 
       // 可滚动内容区（心情 + 标签分组）
       Scroll() {
@@ -353,11 +353,11 @@ export struct FilterBar {
       }
       .scrollBar(BarState.Off)
       .width('100%')
-      .height(200)
+      .height(150)
     }
     .width(280)
-    .constraintSize({ maxHeight: '40%' })
-    .padding({ left: 16, right: 16, top: 8, bottom: 12 })
+    .constraintSize({ maxHeight: '35%' })
+    .padding({ left: 14, right: 14, top: 6, bottom: 8 })
     .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(14)
   }
