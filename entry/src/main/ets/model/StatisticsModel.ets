@@ -26,6 +26,22 @@ export interface LifeProgress {
   totalDays: number;    // 目标年龄总天数
 }
 
+// 已度过时间明细（更新计划五期）
+export interface LifeBreakdown {
+  years: number;        // 已活整年
+  months: number;       // 年内的整月（0-11）
+  days: number;         // 剩余天数
+}
+
+// 生命里程碑（更新计划五期）
+export interface LifeMilestone {
+  type: string;         // 'days_10000' | 'age_18' | 'age_50' | 'half_target' | 'target'（UI 层映射资源文案）
+  daysFromBirth: number; // 距出生天数
+  reached: boolean;     // 是否已达成
+  daysLeft: number;     // 未来=距达成天数（正）；已达成=0
+  date: string;         // 达成日期（YYYY-MM-DD，UTC+8）
+}
+
 export class StatisticsUtils {
   /**
    * 计算数据看板统计（records 应为全部记录）
@@ -108,5 +124,50 @@ export class StatisticsUtils {
       livedDays: livedDays,
       totalDays: totalDays
     }
+  }
+
+  /**
+   * 已度过时间明细（年月日，UTC+8）
+   */
+  static getLifeBreakdown(birthDate: Date, now?: Date): LifeBreakdown {
+    const diff = TimeUtils.getDateDifference(birthDate, now ?? TimeUtils.now())
+    return {
+      years: diff.years,
+      months: diff.months,
+      days: diff.days
+    }
+  }
+
+  /**
+   * 生命里程碑列表（按距出生天数升序；type 供 UI 层映射文案）
+   * 里程碑：1 万天 / 18 岁 / 50 岁 / 目标年龄一半 / 目标年龄
+   */
+  static getLifeMilestones(birthDate: Date, targetAge: number, now?: Date): LifeMilestone[] {
+    const safeTarget = targetAge > 0 ? targetAge : 80
+    const livedDays = TimeUtils.getDayOfLife(birthDate, now)
+    const base = birthDate.getTime()
+
+    const candidates: Array<[string, number]> = [
+      ['days_10000', 10000],
+      ['age_18', 18 * 365],
+      ['age_50', 50 * 365],
+      ['half_target', Math.floor(safeTarget / 2) * 365],
+      ['target', safeTarget * 365]
+    ]
+
+    const milestones: LifeMilestone[] = []
+    for (const [type, daysFromBirth] of candidates) {
+      // 达成日期 = 出生 + daysFromBirth 天（UTC+8）
+      const date = TimeUtils.formatDate(new Date(base + daysFromBirth * DAY_MS))
+      const reached = livedDays >= daysFromBirth
+      milestones.push({
+        type: type,
+        daysFromBirth: daysFromBirth,
+        reached: reached,
+        daysLeft: reached ? 0 : daysFromBirth - livedDays,
+        date: date
+      })
+    }
+    return milestones
   }
 }

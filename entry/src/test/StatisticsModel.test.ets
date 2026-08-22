@@ -83,4 +83,45 @@ export default function statisticsTest() {
       expect(p.totalDays).assertEqual(80 * 365);
     });
   });
+
+  describe('getLifeMilestones', () => {
+    it('已达成与未来里程碑正确', 0, () => {
+      const birth = TimeUtils.parseDate('1990-06-15');
+      const ms = StatisticsUtils.getLifeMilestones(birth, 80, TimeUtils.parseDate('2025-06-15'));
+      expect(ms.length).assertEqual(5);
+      // 1 万天与 18 岁已达成
+      expect(ms[0].type).assertEqual('days_10000');
+      expect(ms[0].reached).assertTrue();
+      expect(ms[0].date).assertEqual('2017-10-31');
+      // 目标年龄未达成，倒计时正确
+      expect(ms[4].type).assertEqual('target');
+      expect(ms[4].reached).assertFalse();
+      expect(ms[4].daysLeft).assertEqual(80 * 365 - 12785);
+    });
+
+    it('出生当天全部未达成', 0, () => {
+      const birth = TimeUtils.parseDate('2025-01-01');
+      const ms = StatisticsUtils.getLifeMilestones(birth, 80, TimeUtils.parseDate('2025-01-01'));
+      for (const m of ms) {
+        expect(m.reached).assertFalse();
+        expect(m.daysLeft).assertEqual(m.daysFromBirth - 1);
+      }
+    });
+  });
+
+  describe('getLifeBreakdown', () => {
+    it('同一天为 0 年 0 月 0 天', 0, () => {
+      const b = StatisticsUtils.getLifeBreakdown(TimeUtils.parseDate('2025-01-01'), TimeUtils.parseDate('2025-01-01'));
+      expect(b.years).assertEqual(0);
+      expect(b.months).assertEqual(0);
+      expect(b.days).assertEqual(0);
+    });
+
+    it('整年生日为整年', 0, () => {
+      const b = StatisticsUtils.getLifeBreakdown(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-15'));
+      expect(b.years).assertEqual(35);
+      expect(b.months).assertEqual(0);
+      expect(b.days).assertEqual(0);
+    });
+  });
 }

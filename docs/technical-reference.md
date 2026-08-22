@@ -465,7 +465,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 
 | 文件 | 类 | 关键方法 |
 | --- | --- | --- |
-| model/StatisticsModel.ets | StatisticsUtils | ★ 更新计划五期：`calculateStatistics(records)` / `getLongestStreak(records)` / `getLifeProgress(birth, targetAge, now?)`（纯函数，可单测） |
+| model/StatisticsModel.ets | StatisticsUtils | ★ 更新计划五期：`calculateStatistics(records)` / `getLongestStreak(records)` / `getLifeProgress(birth, targetAge, now?)` / `getLifeBreakdown(birth, now?)` / `getLifeMilestones(birth, targetAge, now?)`（纯函数，可单测） |
 | common/utils/TimeUtils.ets | TimeUtils | **统一 UTC+8**：`now` / `getFullYear/getMonth/getDate/getHours/getMinutes/getSeconds`（+8h 后取 UTC 分量）/ `setFullYear` / `formatDate`(YYYY-MM-DD) / `parseDate`(YYYY-MM-DD 按 UTC+8 0 点) / `getDateDifference` / `getLastDayOfMonth`（`formatDateCN` 已于 P6 轮次 14 删除） |
 | common/utils/AccountUtils.ets | AccountUtils | `themeToDisplay/displayToTheme`、`convertGenderToDisplay/Storage`（均带 `rm` 参数：显示文本读资源、反向匹配按资源值，国际化）/ `showToastSafely(promptAction, message, duration)` |
 | common/utils/ImageBase64Utils.ets | ImageBase64Utils | `imageToBase64(path)`（util.Base64Helper）/ `base64ToImage(base64, outPath)` / `uriToSandboxPath` / `getAvatarSavePath` → `filesDir/avatar.jpg` |

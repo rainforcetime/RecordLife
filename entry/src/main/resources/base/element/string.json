@@ -1543,6 +1543,46 @@
     {
       "name": "stat_days",
       "value": "天"
+    },
+    {
+      "name": "life_breakdown",
+      "value": "已度过时间"
+    },
+    {
+      "name": "life_breakdown_format",
+      "value": "已活 %1$d 年 %2$d 个月 %3$d 天"
+    },
+    {
+      "name": "milestone_title",
+      "value": "生命里程碑"
+    },
+    {
+      "name": "milestone_achieved",
+      "value": "已达成"
+    },
+    {
+      "name": "milestone_remaining",
+      "value": "还差 %d 天"
+    },
+    {
+      "name": "milestone_days_10000",
+      "value": "第 1 万天"
+    },
+    {
+      "name": "milestone_age_18",
+      "value": "18 岁"
+    },
+    {
+      "name": "milestone_age_50",
+      "value": "50 岁"
+    },
+    {
+      "name": "milestone_half_target",
+      "value": "目标年龄过半"
+    },
+    {
+      "name": "milestone_target",
+      "value": "目标年龄"
     }
   ]
 }

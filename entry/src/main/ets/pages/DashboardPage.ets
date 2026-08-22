@@ -4,7 +4,7 @@ import { common } from '@kit.AbilityKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { ConfigManager } from '../config/ConfigManager'
 import { NowViewModel } from '../viewmodel/NowViewModel'
-import { StatisticsUtils, LifeStatistics, LifeProgress } from '../model/StatisticsModel'
+import { StatisticsUtils, LifeStatistics, LifeProgress, LifeBreakdown, LifeMilestone } from '../model/StatisticsModel'
 import { TimeUtils } from '../common/utils/TimeUtils'
 import { Logger } from '../common/utils/Logger'
 
@@ -30,6 +30,10 @@ struct DashboardPage {
   // 目标年龄
   @State targetAge: number = 80
 
+  // 生命统计面板（更新计划五期）
+  @State breakdown: LifeBreakdown = { years: 0, months: 0, days: 0 }
+  @State milestones: LifeMilestone[] = []
+
   async aboutToAppear() {
     try {
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext
@@ -42,6 +46,8 @@ struct DashboardPage {
       Logger.info('[DashboardPage] 加载记录: ' + records.length + ' 条')
       this.statistics = StatisticsUtils.calculateStatistics(records)
       this.lifeProgress = StatisticsUtils.getLifeProgress(configManager.getBirthDate(), this.targetAge, TimeUtils.now())
+      this.breakdown = StatisticsUtils.getLifeBreakdown(configManager.getBirthDate(), TimeUtils.now())
+      this.milestones = StatisticsUtils.getLifeMilestones(configManager.getBirthDate(), this.targetAge, TimeUtils.now())
       Logger.info('[DashboardPage] 统计完成: ' + this.statistics.totalRecords + ' 条 / ' + this.statistics.activeDays + ' 天')
     } catch (error) {
       Logger.error('[DashboardPage] 加载统计失败: ' + JSON.stringify(error))
@@ -152,6 +158,74 @@ struct DashboardPage {
             this.StatCard($r('app.string.stat_target_age'), this.formatNumber(this.targetAge))
           }
           .width('100%')
+          .margin({ bottom: 12 })
+
+          // 生命统计面板（更新计划五期）
+          Column() {
+            // 已度过时间明细
+            Text($r('app.string.life_breakdown'))
+              .fontSize(16)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(this.themeColors.textPrimary)
+              .width('100%')
+              .margin({ bottom: 10 })
+
+            Row() {
+              Text($r('app.string.life_breakdown_format', this.breakdown.years, this.breakdown.months, this.breakdown.days))
+                .fontSize(15)
+                .fontColor(this.themeColors.textPrimary)
+
+              Blank()
+
+              Text(this.lifeProgress.percent.toFixed(1) + '%')
+                .fontSize(15)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(this.themeColors.primary)
+            }
+            .width('100%')
+            .margin({ bottom: 16 })
+
+            // 生命里程碑
+            Text($r('app.string.milestone_title'))
+              .fontSize(16)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(this.themeColors.textPrimary)
+              .width('100%')
+              .margin({ bottom: 8 })
+
+            ForEach(this.milestones, (milestone: LifeMilestone) => {
+              Row() {
+                Text(milestone.reached ? '✅' : '⏳')
+                  .fontSize(16)
+
+                Column() {
+                  Text(this.getMilestoneLabel(milestone.type))
+                    .fontSize(14)
+                    .fontColor(this.themeColors.textPrimary)
+                    .fontWeight(FontWeight.Medium)
+
+                  Text(milestone.reached ? $r('app.string.milestone_achieved') : $r('app.string.milestone_remaining', milestone.daysLeft))
+                    .fontSize(12)
+                    .fontColor(milestone.reached ? this.themeColors.success : this.themeColors.textSecondary)
+                    .margin({ top: 2 })
+                }
+                .layoutWeight(1)
+                .alignItems(HorizontalAlign.Start)
+                .margin({ left: 10 })
+
+                Text(milestone.date)
+                  .fontSize(12)
+                  .fontColor(this.themeColors.textSecondary)
+              }
+              .width('100%')
+              .padding({ top: 8, bottom: 8 })
+              .alignItems(VerticalAlign.Center)
+            }, (milestone: LifeMilestone) => milestone.type)
+          }
+          .width('100%')
+          .padding(16)
+          .backgroundColor(this.themeColors.cardBackground)
+          .borderRadius(16)
         }
         .width('100%')
         .padding({ left: 16, right: 16, bottom: 24 })
@@ -168,6 +242,27 @@ struct DashboardPage {
   // 数字格式化（ArkTS 兼容：不用 toLocaleString）
   private formatNumber(value: number): string {
     return value.toString()
+  }
+
+  // 里程碑 type → 资源文案
+  private getMilestoneLabel(type: string): string {
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    if (!rm) {
+      return type
+    }
+    switch (type) {
+      case 'days_10000':
+        return rm.getStringByNameSync('milestone_days_10000')
+      case 'age_18':
+        return rm.getStringByNameSync('milestone_age_18')
+      case 'age_50':
+        return rm.getStringByNameSync('milestone_age_50')
+      case 'half_target':
+        return rm.getStringByNameSync('milestone_half_target')
+      case 'target':
+      default:
+        return rm.getStringByNameSync('milestone_target')
+    }
   }
 
   // 统计卡片

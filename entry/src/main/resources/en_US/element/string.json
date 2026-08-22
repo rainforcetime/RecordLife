@@ -1543,6 +1543,46 @@
     {
       "name": "stat_days",
       "value": "days"
+    },
+    {
+      "name": "life_breakdown",
+      "value": "Time lived"
+    },
+    {
+      "name": "life_breakdown_format",
+      "value": "Lived %1$d y %2$d m %3$d d"
+    },
+    {
+      "name": "milestone_title",
+      "value": "Life milestones"
+    },
+    {
+      "name": "milestone_achieved",
+      "value": "Achieved"
+    },
+    {
+      "name": "milestone_remaining",
+      "value": "%d days left"
+    },
+    {
+      "name": "milestone_days_10000",
+      "value": "10,000th day"
+    },
+    {
+      "name": "milestone_age_18",
+      "value": "Age 18"
+    },
+    {
+      "name": "milestone_age_50",
+      "value": "Age 50"
+    },
+    {
+      "name": "milestone_half_target",
+      "value": "Half of target"
+    },
+    {
+      "name": "milestone_target",
+      "value": "Target age"
     }
   ]
 }
