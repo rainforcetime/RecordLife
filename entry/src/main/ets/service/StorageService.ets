@@ -74,7 +74,7 @@ export class StorageService {
   static async clearShareCache(context: common.Context): Promise<number> {
     try {
       let count = 0
-      const files = fileIo.listFileSync(context.cacheDir)
+      const files: string[] = fileIo.listFileSync(context.cacheDir)
       for (const fileName of files) {
         if (fileName.startsWith('share_') && fileName.endsWith('.jpg')) {
           fileIo.unlinkSync(context.cacheDir + '/' + fileName)
@@ -112,7 +112,7 @@ export class StorageService {
         return 0
       }
       let count = 0
-      const files = fileIo.listFileSync(dir)
+      const files: string[] = fileIo.listFileSync(dir)
       for (const fileName of files) {
         if (!fileName.endsWith('.jpg') && !fileName.endsWith('.png')) {
           continue
