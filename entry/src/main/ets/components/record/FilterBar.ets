@@ -237,14 +237,9 @@ export struct FilterBar {
       offset: { x: 0, y: 6 },
       enableArrow: true,
       arrowPointPosition: ArrowPointPosition.START,
-      maskColor: '#00000000',
-      backgroundBlurStyle: BlurStyle.NONE,
-      onStateChange: (e: PopupStateChangeEvent) => {
-        // 气泡关闭时同步复位状态，确保可再次点击弹出
-        if (e.isVisible === false) {
-          this.showFilterPopup = false
-        }
-      }
+      // 透明遮罩：点击外部关闭气泡，$$ 双向绑定自动复位状态（可再次点击弹出）
+      mask: { color: '#00000000' },
+      backgroundBlurStyle: BlurStyle.NONE
     })
   }
 
