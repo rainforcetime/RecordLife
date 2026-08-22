@@ -51,7 +51,7 @@ export struct AddRecordSection {
     Scroll() {
       Column() {
         // 标题
-        Text('➕ 记录此刻')
+        Text($r('app.string.record_now'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
@@ -59,7 +59,7 @@ export struct AddRecordSection {
           .margin({ bottom: 16 })
         
         // 文字输入区域
-        TextArea({ placeholder: '记录此刻的想法...', text: $$this.textContent })
+        TextArea({ placeholder: $r('app.string.record_now_placeholder'), text: $$this.textContent })
           .width('100%')
           .height(120)
           .backgroundColor(this.themeColors.cardBackground)
@@ -85,7 +85,7 @@ export struct AddRecordSection {
         .margin({ top: 16 })
         
         // 保存按钮
-        Button(this.isSaving ? '保存中...' : '保存记录')
+        Button(this.isSaving ? $r('app.string.saving_in_progress') : $r('app.string.save_record'))
           .width('100%')
           .height(44)
           .backgroundColor(this.themeColors.primary)
@@ -152,7 +152,7 @@ export struct AddRecordSection {
           Text('+')
             .fontSize(32)
             .fontColor(this.themeColors.textSecondary)
-          Text('添加图片')
+          Text($r('app.string.add_image'))
             .fontSize(12)
             .fontColor(this.themeColors.textSecondary)
             .margin({ top: 4 })
@@ -203,7 +203,7 @@ export struct AddRecordSection {
     } catch (error) {
       console.error('[AddRecordSection] 选择图片失败: ' + JSON.stringify(error))
       if (this.promptAction) {
-        ImagePickerUtils.showErrorToast(this.promptAction, '选择图片失败，请重试')
+        ImagePickerUtils.showErrorToast(this.promptAction, $r('app.string.pick_image_failed_retry'))
       }
     }
   }
@@ -219,7 +219,7 @@ export struct AddRecordSection {
     if (!this.viewModel || !this.promptAction) {
       if (this.promptAction) {
         try {
-          this.promptAction.showToast({ message: '数据管理器未初始化' })
+          this.promptAction.showToast({ message: $r('app.string.data_manager_not_initialized') })
         } catch (error) {
           console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
         }
@@ -245,7 +245,7 @@ export struct AddRecordSection {
       
       if (record) {
         try {
-          this.promptAction.showToast({ message: '记录保存成功' })
+          this.promptAction.showToast({ message: $r('app.string.record_save_success') })
         } catch (error) {
           console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
         }
@@ -265,7 +265,7 @@ export struct AddRecordSection {
         }
       } else {
         try {
-          this.promptAction.showToast({ message: '保存失败，请重试' })
+          this.promptAction.showToast({ message: $r('app.string.save_failed_retry') })
         } catch (error) {
           console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(error))
         }
@@ -273,7 +273,7 @@ export struct AddRecordSection {
     } catch (error) {
       console.error('[AddRecordSection] 保存失败: ' + JSON.stringify(error))
       try {
-        this.promptAction.showToast({ message: '保存失败: ' + (error as Error).message })
+        this.promptAction.showToast({ message: (this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager.getStringByNameSync('save_failed_prefix') + (error as Error).message })
       } catch (e) {
         console.error('[AddRecordSection] showToast failed: ' + JSON.stringify(e))
       }

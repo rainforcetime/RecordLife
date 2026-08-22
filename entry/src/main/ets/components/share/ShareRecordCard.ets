@@ -26,7 +26,7 @@ export struct ShareRecordCard {
             .fontSize(20)
           
           Column() {
-            Text('记录生活')
+            Text($r('app.string.record_life'))
               .fontSize(14)
               .fontWeight(FontWeight.Bold)
               .fontColor('#333333')
@@ -110,7 +110,7 @@ export struct ShareRecordCard {
         Blank()
         
         Row({ space: 4 }) {
-          Text('来自')
+          Text($r('app.string.from_prefix'))
             .fontSize(10)
             .fontColor('#CCCCCC')
           

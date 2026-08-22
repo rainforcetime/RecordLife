@@ -133,7 +133,7 @@ export struct CalendarMonthNavigator {
         .fontColor([this.themeColors.primary])
         .margin({ right: 4 })
       
-      Text('今天')
+      Text($r('app.string.today'))
         .fontSize(14)
         .fontColor(this.themeColors.primary)
         .fontWeight(FontWeight.Medium)

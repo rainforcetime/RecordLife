@@ -78,10 +78,10 @@ export struct AnimatedTimeValue {
   @Prop value: number = 0
   
   // 单位标签
-  @Prop label: string = ''
+  @Prop label: ResourceStr = ''
   
   // 描述文字
-  @Prop description: string = ''
+  @Prop description: ResourceStr = ''
   
   // 卡片背景色
   @Prop cardColor: string = '#FFE8E8'

@@ -11,7 +11,7 @@ export struct SearchBar {
   @Link isSearching: boolean
   
   // 占位符文本
-  @Prop placeholder: string = '搜索记录...'
+  @Prop placeholder: ResourceStr = $r('app.string.search_records')
   
   build() {
     Row() {
@@ -58,7 +58,7 @@ export struct SearchBar {
           }
           
           // 取消按钮
-          Text('取消')
+          Text($r('app.string.cancel'))
             .fontSize(14)
             .fontColor(this.themeColors.primary)
             .margin({ right: 12 })

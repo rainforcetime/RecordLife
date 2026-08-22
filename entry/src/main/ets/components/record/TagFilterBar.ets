@@ -79,7 +79,7 @@ export struct TagFilterBar {
     // 如果点击的是当前已选中的标签，取消选择（回到"全部"状态）
     if (this.isTagSelected(tagId)) {
       this.selectedTagIds = []
-      promptAction.showToast({ message: '已取消筛选', duration: 1500 })
+      promptAction.showToast({ message: $r('app.string.filter_cancelled'), duration: 1500 })
     } else {
       // 否则替换为新选择的标签（单选）
       this.selectedTagIds = [tagId]

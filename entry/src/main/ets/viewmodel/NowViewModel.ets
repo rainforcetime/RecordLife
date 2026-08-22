@@ -130,43 +130,44 @@ export class NowViewModel {
       console.error('[NowViewModel] 生成示例图片异常: ' + JSON.stringify(error))
     }
     
+    const rm = this.context?.resourceManager
     const sampleRecords: LifeRecord[] = [
       {
         id: this.generateId(),
         timestamp: now,
-        content: '欢迎使用 RecordLife！这是一个记录生活点滴的应用。点击下方按钮开始记录你的每一天吧！🎉',
+        content: rm?.getStringByNameSync('sample_record_1') ?? '',
         tags: ['life', 'entertainment']
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs,
-        content: '这是昨天的记录示例。你可以记录文字，也可以添加图片，还能添加对应的标签哦。',
+        content: rm?.getStringByNameSync('sample_record_2') ?? '',
         tags: ['life', 'study'],
         imagePaths: sampleImagePath ? [sampleImagePath] : undefined  // 添加示例图片
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 3,
-        content: '三天前的记录，记录会按时间近到远自动组织。支持添加多张图片哦（最多9张）！',
+        content: rm?.getStringByNameSync('sample_record_3') ?? '',
         tags: ['travel', 'food'],
         imagePaths: sampleImagePath ? [sampleImagePath,sampleImagePath,sampleImagePath,sampleImagePath] : undefined  // 添加示例图片
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 35,
-        content: '一个月前的记录，点击记录可以编辑或删除。',
+        content: rm?.getStringByNameSync('sample_record_4') ?? '',
         tags: ['work', 'health']
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 365,
-        content: '一年前的记录，记录会自动显示今天、昨天、N天前、月份、年份，方便回顾历史。',
+        content: rm?.getStringByNameSync('sample_record_5') ?? '',
         tags: ['family']
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 365 * 2,
-        content: '两年前的记录，RecordLife 帮你珍藏每一个美好瞬间。',
+        content: rm?.getStringByNameSync('sample_record_6') ?? '',
         tags: ['life']
       }
     ]

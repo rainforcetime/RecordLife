@@ -26,7 +26,7 @@ export struct BirthDateRow {
 
   build() {
     Row() {
-      Text('🎂 出生日期')
+      Text($r('app.string.birth_date_label'))
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
         .fontColor(this.themeColors.textPrimary)
@@ -73,7 +73,7 @@ export struct BirthDateRow {
   @Builder
   DatePickerSheet() {
     Column() {
-      Text('选择出生日期')
+      Text($r('app.string.select_birth_date'))
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.themeColors.textPrimary)
@@ -93,7 +93,7 @@ export struct BirthDateRow {
           }
         })
 
-      Button('确定')
+      Button($r('app.string.confirm'))
         .width('80%')
         .height(44)
         .backgroundColor(this.themeColors.error)

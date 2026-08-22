@@ -55,14 +55,14 @@ export struct ImageViewer {
       
       console.info('[ImageViewer] 图片保存成功')
       this.getUIContext().getPromptAction().showToast({
-        message: '已保存到图库',
+        message: $r('app.string.saved_to_gallery'),
         duration: 2000
       })
     } catch (error) {
       console.error('[ImageViewer] 保存图片失败: ' + JSON.stringify(error))
       try {
         this.getUIContext().getPromptAction().showToast({
-          message: '保存失败',
+          message: $r('app.string.save_failed'),
           duration: 2000
         })
       } catch (e) {
@@ -152,7 +152,7 @@ export struct ImageViewer {
                 await this.saveImageToGallery()
               } else {
                 this.getUIContext().getPromptAction().showToast({
-                  message: '授权失败',
+                  message: $r('app.string.authorization_failed'),
                   duration: 2000
                 })
               }

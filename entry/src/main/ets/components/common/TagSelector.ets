@@ -45,7 +45,7 @@ export struct TagSelector {
       // 标题
       if (!this.isCompact) {
         Row() {
-          Text('标签')
+          Text($r('app.string.tag_label'))
             .fontSize(14)
             .fontColor(this.themeColors.textSecondary)
           

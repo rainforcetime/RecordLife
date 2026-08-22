@@ -71,11 +71,7 @@ export class AppInfoManager {
    */
   private async getResourceString(resourceName: string, defaultValue: string): Promise<string> {
     try {
-      // 尝试从资源管理器读取
-      const resourceStr = $r(`app.string.${resourceName}`);
-      // 注意：在ArkTS中，$r返回的是Resource对象，需要通过特定方式获取值
-      // 这里暂时返回默认值，实际使用时UI组件可以直接使用$r
-      return defaultValue;
+      return getContext().resourceManager.getStringByNameSync(resourceName);
     } catch (error) {
       console.error(`读取资源字符串 ${resourceName} 失败: ` + JSON.stringify(error));
       return defaultValue;

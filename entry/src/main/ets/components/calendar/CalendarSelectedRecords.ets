@@ -94,7 +94,7 @@ export struct CalendarSelectedRecords {
         .fontColor([this.themeColors.primary])
         .margin({ right: 4 })
       
-      Text('全部')
+      Text($r('app.string.all'))
         .fontSize(13)
         .fontColor(this.themeColors.primary)
         .fontWeight(FontWeight.Medium)
@@ -233,11 +233,11 @@ export struct CalendarSelectedRecords {
         .fontColor([this.themeColors.textTertiary])
         .margin({ bottom: 12 })
       
-      Text('这一天没有记录')
+      Text($r('app.string.no_records_for_day'))
         .fontSize(15)
         .fontColor(this.themeColors.textSecondary)
       
-      Text('点击日期可添加新记录')
+      Text($r('app.string.add_record_for_day_hint'))
         .fontSize(13)
         .fontColor(this.themeColors.textTertiary)
         .margin({ top: 4 })

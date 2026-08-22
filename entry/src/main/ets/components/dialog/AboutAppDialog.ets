@@ -42,7 +42,7 @@ export struct AboutAppDialog {
   build() {
     Column() {
       // 标题
-      Text('关于应用')
+      Text($r('app.string.about_app'))
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.themeColors.textPrimary)
@@ -116,7 +116,7 @@ export struct AboutAppDialog {
       .padding({ top: 10, bottom: 10 })
 
       // 关闭按钮
-      Button('关闭')
+      Button($r('app.string.close'))
         .width('90%')
         .height(45)
         .fontSize(16)

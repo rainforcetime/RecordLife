@@ -2,1119 +2,1119 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "RecordLife主模块，提供生活记录功能"
+      "value": "RecordLife main module for recording life moments"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "活着应用主入口，记录生活的点点滴滴"
+      "value": "Main entry of Alive App, recording every moment of life"
     },
     {
       "name": "EntryAbility_label",
-      "value": "活着"
+      "value": "Alive"
     },
     {
       "name": "camera_reason",
-      "value": "用于拍摄照片记录生活"
+      "value": "Take photos to record life"
     },
     {
       "name": "write_image_reason",
-      "value": "用于保存图片到图库"
+      "value": "Save images to gallery"
     },
     {
       "name": "tab_home",
-      "value": "首页"
+      "value": "Home"
     },
     {
       "name": "tab_now",
-      "value": "现在"
+      "value": "Now"
     },
     {
       "name": "tab_account",
-      "value": "我的"
+      "value": "My"
     },
     {
       "name": "tab_more",
-      "value": "设置"
+      "value": "Settings"
     },
     {
       "name": "year",
-      "value": "年"
+      "value": "y"
     },
     {
       "name": "month",
-      "value": "月"
+      "value": "m"
     },
     {
       "name": "day",
-      "value": "天"
+      "value": "d"
     },
     {
       "name": "hour",
-      "value": "时"
+      "value": "h"
     },
     {
       "name": "minute",
-      "value": "分"
+      "value": "min"
     },
     {
       "name": "second",
-      "value": "秒"
+      "value": "s"
     },
     {
       "name": "years_old",
-      "value": "岁"
+      "value": "yrs"
     },
     {
       "name": "already_alive",
-      "value": "已存活"
+      "value": "Time Alive"
     },
     {
       "name": "your_birthday",
-      "value": "你的出生日期"
+      "value": "Your Birthday"
     },
     {
       "name": "birthday_selector_title",
-      "value": "选择出生日期"
+      "value": "Select Birth Date"
     },
     {
       "name": "life_target_age",
-      "value": "目标年龄"
+      "value": "Target Age"
     },
     {
       "name": "remaining_mode",
-      "value": "剩余模式"
+      "value": "Remaining"
     },
     {
       "name": "accumulated_mode",
-      "value": "累计模式"
+      "value": "Accumulated"
     },
     {
       "name": "switch_to_remaining",
-      "value": "切换到剩余模式"
+      "value": "Switch to Remaining Mode"
     },
     {
       "name": "switch_to_accumulated",
-      "value": "切换到累计模式"
+      "value": "Switch to Accumulated Mode"
     },
     {
       "name": "confirm",
-      "value": "确认"
+      "value": "Confirm"
     },
     {
       "name": "cancel",
-      "value": "取消"
+      "value": "Cancel"
     },
     {
       "name": "save",
-      "value": "保存"
+      "value": "Save"
     },
     {
       "name": "delete",
-      "value": "删除"
+      "value": "Delete"
     },
     {
       "name": "edit",
-      "value": "编辑"
+      "value": "Edit"
     },
     {
       "name": "search",
-      "value": "搜索"
+      "value": "Search"
     },
     {
       "name": "add_record",
-      "value": "添加记录"
+      "value": "Add Record"
     },
     {
       "name": "no_records",
-      "value": "暂无记录"
+      "value": "No Records"
     },
     {
       "name": "timeline",
-      "value": "时间线"
+      "value": "Timeline"
     },
     {
       "name": "now",
-      "value": "此刻"
+      "value": "Now"
     },
     {
       "name": "content_hint",
-      "value": "输入内容..."
+      "value": "Enter content..."
     },
     {
       "name": "add_image",
-      "value": "添加图片"
+      "value": "Add Image"
     },
     {
       "name": "edit_record",
-      "value": "编辑记录"
+      "value": "Edit Record"
     },
     {
       "name": "select_export_content",
-      "value": "选择导出内容"
+      "value": "Select Export Content"
     },
     {
       "name": "export_config",
-      "value": "导出配置"
+      "value": "Export Config"
     },
     {
       "name": "export_backup",
-      "value": "导出备份"
+      "value": "Export Backup"
     },
     {
       "name": "export_all",
-      "value": "导出全部"
+      "value": "Export All"
     },
     {
       "name": "export",
-      "value": "导出"
+      "value": "Export"
     },
     {
       "name": "import",
-      "value": "导入"
+      "value": "Import"
     },
     {
       "name": "backup",
-      "value": "备份"
+      "value": "Backup"
     },
     {
       "name": "reset_app",
-      "value": "重置应用"
+      "value": "Reset App"
     },
     {
       "name": "theme",
-      "value": "主题"
+      "value": "Theme"
     },
     {
       "name": "language",
-      "value": "语言"
+      "value": "Language"
     },
     {
       "name": "light",
-      "value": "浅色"
+      "value": "Light"
     },
     {
       "name": "dark",
-      "value": "深色"
+      "value": "Dark"
     },
     {
       "name": "follow_system",
-      "value": "跟随系统"
+      "value": "Follow System"
     },
     {
       "name": "account",
-      "value": "账号"
+      "value": "Account"
     },
     {
       "name": "personal_info",
-      "value": "个人资料"
+      "value": "Personal Info"
     },
     {
       "name": "data_statistics",
-      "value": "数据统计"
+      "value": "Data Statistics"
     },
     {
       "name": "tag_management",
-      "value": "标签管理"
+      "value": "Tag Management"
     },
     {
       "name": "about_app",
-      "value": "关于应用"
+      "value": "About App"
     },
     {
       "name": "storage_management",
-      "value": "存储管理"
+      "value": "Storage Management"
     },
     {
       "name": "tag_management_title",
-      "value": "标签管理"
+      "value": "Tag Management"
     },
     {
       "name": "preset_tags_hint",
-      "value": "预设标签不可修改，以下为您自定义的标签"
+      "value": "Preset tags cannot be modified. Below are your custom tags"
     },
     {
       "name": "add_custom_tag",
-      "value": "添加自定义标签"
+      "value": "Add Custom Tag"
     },
     {
       "name": "no_custom_tags",
-      "value": "暂无自定义标签"
+      "value": "No Custom Tags"
     },
     {
       "name": "add_first_tag",
-      "value": "添加第一个标签"
+      "value": "Add First Tag"
     },
     {
       "name": "new_tag",
-      "value": "新建标签"
+      "value": "New Tag"
     },
     {
       "name": "edit_tag",
-      "value": "编辑标签"
+      "value": "Edit Tag"
     },
     {
       "name": "tag_name",
-      "value": "标签名称"
+      "value": "Tag Name"
     },
     {
       "name": "tag_name_placeholder",
-      "value": "输入标签名称"
+      "value": "Enter tag name"
     },
     {
       "name": "tag_color",
-      "value": "标签颜色"
+      "value": "Tag Color"
     },
     {
       "name": "tag_icon",
-      "value": "标签图标（可选）"
+      "value": "Tag Icon"
     },
     {
       "name": "no_icon",
-      "value": "无图标"
+      "value": "No Icon"
     },
     {
       "name": "tag_preview",
-      "value": "标签预览"
+      "value": "Tag Preview"
     },
     {
       "name": "preview",
-      "value": "预览"
+      "value": "Preview"
     },
     {
       "name": "version",
-      "value": "版本"
+      "value": "Version"
     },
     {
       "name": "days_used",
-      "value": "已使用"
+      "value": "Days Used"
     },
     {
       "name": "app_description",
-      "value": "应用描述"
+      "value": "Description"
     },
     {
       "name": "developer",
-      "value": "开发者"
+      "value": "Developer"
     },
     {
       "name": "website",
-      "value": "官方网站"
+      "value": "Website"
     },
     {
       "name": "close",
-      "value": "关闭"
+      "value": "Close"
     },
     {
       "name": "image_storage",
-      "value": "图片存储"
+      "value": "Image Storage"
     },
     {
       "name": "total_images",
-      "value": "图片总数"
+      "value": "Total Images"
     },
     {
       "name": "total_size",
-      "value": "总大小"
+      "value": "Total Size"
     },
     {
       "name": "available_space",
-      "value": "可用空间"
+      "value": "Available Space"
     },
     {
       "name": "male",
-      "value": "男"
+      "value": "Male"
     },
     {
       "name": "female",
-      "value": "女"
+      "value": "Female"
     },
     {
       "name": "gender_other",
-      "value": "其他"
+      "value": "Other"
     },
     {
       "name": "confirm_reset",
-      "value": "确认重置"
+      "value": "Confirm Reset"
     },
     {
       "name": "reset_confirm_message",
-      "value": "确定要重置所有配置吗？此操作不可撤销。"
+      "value": "Are you sure to reset all configurations? This operation cannot be undone."
     },
     {
       "name": "reset_success",
-      "value": "重置成功"
+      "value": "Reset Successful"
     },
     {
       "name": "import_success",
-      "value": "导入成功"
+      "value": "Import Successful"
     },
     {
       "name": "import_failed",
-      "value": "导入失败"
+      "value": "Import Failed"
     },
     {
       "name": "export_success",
-      "value": "导出成功"
+      "value": "Export Successful"
     },
     {
       "name": "export_failed",
-      "value": "导出失败"
+      "value": "Export Failed"
     },
     {
       "name": "backup_success",
-      "value": "备份成功"
+      "value": "Backup Successful"
     },
     {
       "name": "backup_failed",
-      "value": "备份失败"
+      "value": "Backup Failed"
     },
     {
       "name": "restore_success",
-      "value": "恢复成功"
+      "value": "Restore Successful"
     },
     {
       "name": "restore_failed",
-      "value": "恢复失败"
+      "value": "Restore Failed"
     },
     {
       "name": "preparing_restart",
-      "value": "准备重启应用"
+      "value": "Preparing to restart app"
     },
     {
       "name": "select_image_failed",
-      "value": "选择图片失败，请重试"
+      "value": "Failed to select image, please retry"
     },
     {
       "name": "calculation_hint",
-      "value": "计算中..."
+      "value": "Calculating..."
     },
     {
       "name": "settings",
-      "value": "设置"
+      "value": "Settings"
     },
     {
       "name": "edit_profile",
-      "value": "编辑资料"
+      "value": "Edit Profile"
     },
     {
       "name": "profile_name",
-      "value": "姓名"
+      "value": "Name"
     },
     {
       "name": "profile_gender",
-      "value": "性别"
+      "value": "Gender"
     },
     {
       "name": "profile_birthday",
-      "value": "生日"
+      "value": "Birthday"
     },
     {
       "name": "profile_avatar",
-      "value": "头像"
+      "value": "Avatar"
     },
     {
       "name": "user_name_default",
-      "value": "张三"
+      "value": "User"
     },
     {
       "name": "app_name",
-      "value": "活着"
+      "value": "Alive"
     },
     {
       "name": "app_desc",
-      "value": "记录生活，珍惜每一刻"
+      "value": "Record life, cherish every moment"
     },
     {
       "name": "edit_profile_title",
-      "value": "编辑个人资料"
+      "value": "Edit Profile"
     },
     {
       "name": "edit_name_hint",
-      "value": "请输入你的姓名"
+      "value": "Please enter your name"
     },
     {
       "name": "select_avatar",
-      "value": "选择头像"
+      "value": "Select Avatar"
     },
     {
       "name": "manage_tags",
-      "value": "管理自定义标签，添加或编辑个人标签"
+      "value": "Manage custom tags, add or edit personal tags"
     },
     {
       "name": "import_export_config",
-      "value": "导入/导出配置、备份/恢复记录、重置应用"
+      "value": "Import/Export config, Backup/Restore records, Reset app"
     },
     {
       "name": "non_accumulated",
-      "value": "非累计"
+      "value": "Non-accumulated"
     },
     {
       "name": "remaining_calc_mode",
-      "value": "剩余计算方式"
+      "value": "Remaining Calculation"
     },
     {
       "name": "alive_calc_mode",
-      "value": "存活计算方式"
+      "value": "Alive Calculation"
     },
     {
       "name": "remaining_total_years",
-      "value": "剩余总年数"
+      "value": "Remaining Years"
     },
     {
       "name": "remaining_total_months",
-      "value": "剩余总月数"
+      "value": "Remaining Months"
     },
     {
       "name": "remaining_total_days",
-      "value": "剩余总天数"
+      "value": "Remaining Days"
     },
     {
       "name": "current_years",
-      "value": "已经存活"
+      "value": "Years Alive"
     },
     {
       "name": "current_months",
-      "value": "累计月数"
+      "value": "Accumulated Months"
     },
     {
       "name": "current_days",
-      "value": "累计天数"
+      "value": "Accumulated Days"
     },
     {
       "name": "current_hours",
-      "value": "当前小时数"
+      "value": "Current Hours"
     },
     {
       "name": "current_minutes",
-      "value": "当前分钟数"
+      "value": "Current Minutes"
     },
     {
       "name": "current_seconds",
-      "value": "当前秒数"
+      "value": "Current Seconds"
     },
     {
       "name": "remaining_hours",
-      "value": "剩余小时数"
+      "value": "Remaining Hours"
     },
     {
       "name": "remaining_minutes",
-      "value": "剩余分钟数"
+      "value": "Remaining Minutes"
     },
     {
       "name": "remaining_seconds",
-      "value": "剩余秒数"
+      "value": "Remaining Seconds"
     },
     {
       "name": "non_accumulated_years",
-      "value": "当前年数"
+      "value": "Current Years"
     },
     {
       "name": "non_accumulated_months",
-      "value": "当前月数"
+      "value": "Current Months"
     },
     {
       "name": "non_accumulated_days",
-      "value": "当前天数"
+      "value": "Current Days"
     },
     {
       "name": "years",
-      "value": "年"
+      "value": "yrs"
     },
     {
       "name": "months",
-      "value": "月"
+      "value": "mos"
     },
     {
       "name": "days",
-      "value": "日"
+      "value": "days"
     },
     {
       "name": "hours",
-      "value": "小时"
+      "value": "hrs"
     },
     {
       "name": "minutes",
-      "value": "分钟"
+      "value": "mins"
     },
     {
       "name": "seconds",
-      "value": "秒"
+      "value": "secs"
     },
     {
       "name": "remaining_years",
-      "value": "剩余年数"
+      "value": "Remaining Years"
     },
     {
       "name": "remaining_months",
-      "value": "剩余月数"
+      "value": "Remaining Months"
     },
     {
       "name": "remaining_days",
-      "value": "剩余天数"
+      "value": "Remaining Days"
     },
     {
       "name": "remaining_hours_short",
-      "value": "剩余小时"
+      "value": "Remaining Hours"
     },
     {
       "name": "remaining_minutes_short",
-      "value": "剩余分钟"
+      "value": "Remaining Minutes"
     },
     {
       "name": "current_hours_short",
-      "value": "当前小时"
+      "value": "Current Hours"
     },
     {
       "name": "current_minutes_short",
-      "value": "当前分钟"
+      "value": "Current Minutes"
     },
     {
       "name": "current_seconds_short",
-      "value": "当前秒数"
+      "value": "Current Seconds"
     },
     {
       "name": "remaining_total_hours",
-      "value": "剩余总小时数"
+      "value": "Remaining Total Hours"
     },
     {
       "name": "remaining_total_minutes",
-      "value": "剩余总分钟数"
+      "value": "Remaining Total Minutes"
     },
     {
       "name": "remaining_total_seconds",
-      "value": "剩余总秒数"
+      "value": "Remaining Total Seconds"
     },
     {
       "name": "accumulated_hours",
-      "value": "累计小时数"
+      "value": "Accumulated Hours"
     },
     {
       "name": "accumulated_minutes",
-      "value": "累计分钟数"
+      "value": "Accumulated Minutes"
     },
     {
       "name": "accumulated_seconds",
-      "value": "累计秒数"
+      "value": "Accumulated Seconds"
     },
     {
       "name": "share",
-      "value": "分享"
+      "value": "Share"
     },
     {
       "name": "sharing_in_progress",
-      "value": "分享中..."
+      "value": "Sharing..."
     },
     {
       "name": "share_title",
-      "value": "生命时间分享"
+      "value": "Life Time Share"
     },
     {
       "name": "share_description",
-      "value": "来自 RecordLife 的生命时间记录"
+      "value": "Life time record from RecordLife"
     },
     {
       "name": "theme_settings",
-      "value": "主题设置"
+      "value": "Theme Settings"
     },
     {
       "name": "storage_space",
-      "value": "存储空间"
+      "value": "Storage"
     },
     {
       "name": "more",
-      "value": "更多"
+      "value": "More"
     },
     {
       "name": "loading",
-      "value": "加载中..."
+      "value": "Loading..."
     },
     {
       "name": "now_moment",
-      "value": "此刻"
+      "value": "Now"
     },
     {
       "name": "username",
-      "value": "用户名"
+      "value": "Username"
     },
     {
       "name": "birth_date",
-      "value": "出生日期"
+      "value": "Birth Date"
     },
     {
       "name": "gender",
-      "value": "性别"
+      "value": "Gender"
     },
     {
       "name": "record_life",
-      "value": "记录生活"
+      "value": "Record Life"
     },
     {
       "name": "living",
-      "value": "活着"
+      "value": "Living"
     },
     {
       "name": "from_prefix",
-      "value": "来自"
+      "value": "from"
     },
     {
       "name": "stored_images",
-      "value": "存储图片"
+      "value": "Stored Images"
     },
     {
       "name": "no_images",
-      "value": "暂无图片"
+      "value": "No images"
     },
     {
       "name": "no_images_desc",
-      "value": "记录图片目录中没有找到图片文件"
+      "value": "No image files found in the record image directory"
     },
     {
       "name": "tag_label",
-      "value": "标签"
+      "value": "Tag"
     },
     {
       "name": "target_age",
-      "value": "🎯 目标年龄"
+      "value": "🎯 Target Age"
     },
     {
       "name": "set_target_age",
-      "value": "设置目标年龄"
+      "value": "Set target age"
     },
     {
       "name": "age_unit",
-      "value": "岁"
+      "value": "yrs"
     },
     {
       "name": "select_birth_date",
-      "value": "选择出生日期"
+      "value": "Select birth date"
     },
     {
       "name": "birth_date_label",
-      "value": "🎂 出生日期"
+      "value": "🎂 Birth Date"
     },
     {
       "name": "input_content",
-      "value": "输入内容..."
+      "value": "Enter content..."
     },
     {
       "name": "search_records",
-      "value": "搜索记录..."
+      "value": "Search records..."
     },
     {
       "name": "please_input_content",
-      "value": "请输入内容或添加图片"
+      "value": "Please enter content or add an image"
     },
     {
       "name": "edit_success",
-      "value": "修改成功"
+      "value": "Edit successful"
     },
     {
       "name": "edit_failed",
-      "value": "修改失败"
+      "value": "Edit failed"
     },
     {
       "name": "operation_failed",
-      "value": "操作失败"
+      "value": "Operation failed"
     },
     {
       "name": "delete_record",
-      "value": "删除记录"
+      "value": "Delete Record"
     },
     {
       "name": "delete_record_confirm",
-      "value": "确定要删除这条记录吗？此操作不可恢复。"
+      "value": "Are you sure you want to delete this record? This action cannot be undone."
     },
     {
       "name": "delete_success",
-      "value": "删除成功"
+      "value": "Deleted successfully"
     },
     {
       "name": "delete_failed",
-      "value": "删除失败"
+      "value": "Delete failed"
     },
     {
       "name": "saved_to_gallery",
-      "value": "已保存到图库"
+      "value": "Saved to gallery"
     },
     {
       "name": "save_failed",
-      "value": "保存失败"
+      "value": "Save failed"
     },
     {
       "name": "authorization_failed",
-      "value": "授权失败"
+      "value": "Authorization failed"
     },
     {
       "name": "input_username",
-      "value": "请输入用户名"
+      "value": "Please enter username"
     },
     {
       "name": "user_config",
-      "value": "用户配置"
+      "value": "User Config"
     },
     {
       "name": "now_record_backup",
-      "value": "此刻记录备份"
+      "value": "Now Record Backup"
     },
     {
       "name": "all",
-      "value": "所有"
+      "value": "All"
     },
     {
       "name": "select_import_content",
-      "value": "选择导入内容"
+      "value": "Select import content"
     },
     {
       "name": "manager_not_initialized",
-      "value": "管理器未初始化"
+      "value": "Manager not initialized"
     },
     {
       "name": "config_manager_not_initialized",
-      "value": "配置管理器未初始化"
+      "value": "Config manager not initialized"
     },
     {
       "name": "config_export_success",
-      "value": "配置导出成功"
+      "value": "Config exported successfully"
     },
     {
       "name": "export_failed_prefix",
-      "value": "导出失败: "
+      "value": "Export failed: "
     },
     {
       "name": "config_import_success",
-      "value": "配置导入成功，应用即将重启"
+      "value": "Config imported successfully, app will restart"
     },
     {
       "name": "config_invalid",
-      "value": "配置文件格式无效"
+      "value": "Invalid config file format"
     },
     {
       "name": "import_failed_prefix",
-      "value": "导入失败: "
+      "value": "Import failed: "
     },
     {
       "name": "reset_confirm",
-      "value": "确定要重置应用吗？此操作将清除所有用户数据（包括此刻记录）并恢复默认设置，不可恢复。"
+      "value": "Are you sure you want to reset the app? This will clear all user data (including now records) and restore default settings. This cannot be undone."
     },
     {
       "name": "reset_failed",
-      "value": "重置失败，请重试"
+      "value": "Reset failed, please retry"
     },
     {
       "name": "reset_failed_prefix",
-      "value": "重置失败: "
+      "value": "Reset failed: "
     },
     {
       "name": "pick_image_failed",
-      "value": "选择图片失败，请重试"
+      "value": "Failed to pick image, please retry"
     },
     {
       "name": "camera_cancelled",
-      "value": "拍照取消或失败"
+      "value": "Camera cancelled or failed"
     },
     {
       "name": "camera_failed",
-      "value": "拍照失败，请重试"
+      "value": "Camera failed, please retry"
     },
     {
       "name": "no_image_selected",
-      "value": "未选择图片"
+      "value": "No image selected"
     },
     {
       "name": "backup_create_failed",
-      "value": "创建备份失败"
+      "value": "Failed to create backup"
     },
     {
       "name": "backup_export_success",
-      "value": "备份导出成功"
+      "value": "Backup exported successfully"
     },
     {
       "name": "backup_import_success",
-      "value": "备份导入成功，应用即将重启"
+      "value": "Backup imported successfully, app will restart"
     },
     {
       "name": "backup_invalid",
-      "value": "备份文件格式无效或已损坏"
+      "value": "Invalid or corrupted backup file"
     },
     {
       "name": "image_count_unit",
-      "value": "张"
+      "value": "images"
     },
     {
       "name": "record_count_unit",
-      "value": "条记录"
+      "value": "records"
     },
     {
       "name": "config_count_unit",
-      "value": "项配置"
+      "value": "items"
     },
     {
       "name": "empty_now_hint",
-      "value": "点击下方按钮记录此刻"
+      "value": "Tap the button below to record this moment"
     },
     {
       "name": "image_preview",
-      "value": "图片预览"
+      "value": "Image Preview"
     },
     {
       "name": "select_image",
-      "value": "选择图片"
+      "value": "Select Image"
     },
     {
       "name": "take_photo",
-      "value": "拍照"
+      "value": "Take Photo"
     },
     {
       "name": "unspecified",
-      "value": "未指定"
+      "value": "Unspecified"
     },
     {
       "name": "total_storage",
-      "value": "总空间"
+      "value": "Total"
     },
     {
       "name": "used_storage",
-      "value": "已用空间"
+      "value": "Used"
     },
     {
       "name": "available_storage",
-      "value": "可用空间"
+      "value": "Available"
     },
     {
       "name": "record_images",
-      "value": "记录图片"
+      "value": "Record Images"
     },
     {
       "name": "config_files",
-      "value": "配置文件"
+      "value": "Config Files"
     },
     {
       "name": "backup_files",
-      "value": "备份文件"
+      "value": "Backup Files"
     },
     {
       "name": "clear_cache",
-      "value": "清除缓存"
+      "value": "Clear Cache"
     },
     {
       "name": "clear_cache_confirm",
-      "value": "确定要清除缓存吗？"
+      "value": "Are you sure you want to clear the cache?"
     },
     {
       "name": "clear_cache_success",
-      "value": "缓存已清除"
+      "value": "Cache cleared"
     },
     {
       "name": "storage_analysis",
-      "value": "存储分析"
+      "value": "Storage Analysis"
     },
     {
       "name": "file_details",
-      "value": "文件详情"
+      "value": "File Details"
     },
     {
       "name": "delete_confirm_file",
-      "value": "确定要删除此文件吗？"
+      "value": "Are you sure you want to delete this file?"
     },
     {
       "name": "delete_file_success",
-      "value": "文件已删除"
+      "value": "File deleted"
     },
     {
       "name": "delete_file_failed",
-      "value": "删除文件失败"
+      "value": "Failed to delete file"
     },
     {
       "name": "theme_settings_saved",
-      "value": "主题设置已保存"
+      "value": "Theme settings saved"
     },
     {
       "name": "theme_settings_save_failed",
-      "value": "主题保存失败，请重试"
+      "value": "Failed to save theme, please retry"
     },
     {
       "name": "save_success",
-      "value": "保存成功"
+      "value": "Saved successfully"
     },
     {
       "name": "calculating",
-      "value": "计算中..."
+      "value": "Calculating..."
     },
     {
       "name": "light_mode",
-      "value": "浅色模式"
+      "value": "Light Mode"
     },
     {
       "name": "dark_mode",
-      "value": "深色模式"
+      "value": "Dark Mode"
     },
     {
       "name": "more_settings",
-      "value": "更多设置"
+      "value": "More Settings"
     },
     {
       "name": "app_slogan",
-      "value": "记录生活，珍惜每一刻"
+      "value": "Record life, cherish every moment"
     },
     {
       "name": "edit_failed_prefix",
-      "value": "修改失败: "
+      "value": "Edit failed: "
     },
     {
       "name": "delete_failed_prefix",
-      "value": "删除失败: "
+      "value": "Delete failed: "
     },
     {
       "name": "no_valid_data",
-      "value": "未找到有效数据"
+      "value": "No valid data found"
     },
     {
       "name": "input_tag_name",
-      "value": "输入标签名称"
+      "value": "Enter tag name"
     },
     {
       "name": "tag_icon_optional",
-      "value": "标签图标（可选）"
+      "value": "Tag Icon (optional)"
     },
     {
       "name": "filter_cancelled",
-      "value": "已取消筛选"
+      "value": "Filter cancelled"
     },
     {
       "name": "no_matching_records",
-      "value": "没有找到相关记录"
+      "value": "No matching records found"
     },
     {
       "name": "no_records_hint",
-      "value": "点击右下角的按钮开始记录你的生活"
+      "value": "Tap the button in the bottom right to start recording your life"
     },
     {
       "name": "favorites",
-      "value": "收藏"
+      "value": "Favorites"
     },
     {
       "name": "favorited",
-      "value": "已收藏"
+      "value": "Favorited"
     },
     {
       "name": "no_records_for_day",
-      "value": "这一天没有记录"
+      "value": "No records for this day"
     },
     {
       "name": "add_record_for_day_hint",
-      "value": "点击日期可添加新记录"
+      "value": "Tap a date to add a new record"
     },
     {
       "name": "today",
-      "value": "今天"
+      "value": "Today"
     },
     {
       "name": "record_now",
-      "value": "➕ 记录此刻"
+      "value": "➕ Record Now"
     },
     {
       "name": "record_now_placeholder",
-      "value": "记录此刻的想法..."
+      "value": "Record your thoughts..."
     },
     {
       "name": "data_manager_not_initialized",
-      "value": "数据管理器未初始化"
+      "value": "Data manager not initialized"
     },
     {
       "name": "record_save_success",
-      "value": "记录保存成功"
+      "value": "Record saved successfully"
     },
     {
       "name": "save_failed_retry",
-      "value": "保存失败，请重试"
+      "value": "Save failed, please retry"
     },
     {
       "name": "sample_record_1",
-      "value": "欢迎使用 RecordLife！这是一个记录生活点滴的应用。点击下方按钮开始记录你的每一天吧！🎉"
+      "value": "Welcome to RecordLife! This is an app to record life moments. Tap the button below to start recording your everyday life! 🎉"
     },
     {
       "name": "sample_record_2",
-      "value": "这是昨天的记录示例。你可以记录文字，也可以添加图片，还能添加对应的标签哦。"
+      "value": "This is a sample record from yesterday. You can record text, add images, and add tags."
     },
     {
       "name": "sample_record_3",
-      "value": "三天前的记录，记录会按时间近到远自动组织。支持添加多张图片哦（最多9张）！"
+      "value": "A record from 3 days ago. Records are automatically organized from recent to old. Supports multiple images (up to 9)!"
     },
     {
       "name": "sample_record_4",
-      "value": "一个月前的记录，点击记录可以编辑或删除。"
+      "value": "A record from a month ago. Tap a record to edit or delete it."
     },
     {
       "name": "sample_record_5",
-      "value": "一年前的记录，记录会自动显示今天、昨天、N天前、月份、年份，方便回顾历史。"
+      "value": "A record from a year ago. Records automatically show today, yesterday, N days ago, months, and years for easy review."
     },
     {
       "name": "sample_record_6",
-      "value": "两年前的记录，RecordLife 帮你珍藏每一个美好瞬间。"
+      "value": "A record from 2 years ago. RecordLife helps you cherish every beautiful moment."
     },
     {
       "name": "export_summary",
-      "value": "导出用户配置、此刻记录备份或所有数据"
+      "value": "Export user config, now record backup, or all data"
     },
     {
       "name": "import_summary",
-      "value": "导入用户配置、此刻记录备份或所有数据"
+      "value": "Import user config, now record backup, or all data"
     },
     {
       "name": "reset_summary",
-      "value": "恢复默认设置"
+      "value": "Restore default settings"
     },
     {
       "name": "save_record",
-      "value": "保存记录"
+      "value": "Save Record"
     },
     {
       "name": "saving_in_progress",
-      "value": "保存中..."
+      "value": "Saving..."
     },
     {
       "name": "remaining_time",
-      "value": "剩余时间"
+      "value": "Remaining Time"
     },
     {
       "name": "alive_time",
-      "value": "已存活时间"
+      "value": "Alive Time"
     },
     {
       "name": "import_success_prefix",
-      "value": "导入成功: "
+      "value": "Import success: "
     },
     {
       "name": "import_success_suffix",
-      "value": "，应用即将重启"
+      "value": ", app will restart"
     },
     {
       "name": "import_separator",
-      "value": "、"
+      "value": ", "
     },
     {
       "name": "save_failed_prefix",
-      "value": "保存失败: "
+      "value": "Save failed: "
     },
     {
       "name": "pick_image_failed_retry",
-      "value": "选择图片失败，请重试"
+      "value": "Failed to pick image, please retry"
     },
     {
       "name": "share_description_default",
-      "value": "来自 RecordLife 的记录分享"
+      "value": "Record sharing from RecordLife"
     },
     {
       "name": "share_record_title",
-      "value": "记录分享"
+      "value": "Record Share"
     },
     {
       "name": "unpinned_success",
-      "value": "已取消收藏"
+      "value": "Unfavorited"
     },
     {
       "name": "pinned_success",
-      "value": "已添加收藏"
+      "value": "Favorited"
     }
   ]
 }

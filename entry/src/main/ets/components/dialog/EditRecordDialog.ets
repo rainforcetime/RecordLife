@@ -65,7 +65,7 @@ export struct EditRecordDialog {
   build() {
     Scroll() {
       Column() {
-        Text('编辑记录')
+        Text($r('app.string.edit_record'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
@@ -73,7 +73,7 @@ export struct EditRecordDialog {
           .margin({ bottom: 16 })
         
         // 文字内容输入
-        TextArea({ placeholder: '输入内容...', text: $$this.editContent })
+        TextArea({ placeholder: $r('app.string.input_content'), text: $$this.editContent })
           .width('100%')
           .height(100)
           .backgroundColor(this.themeColors.background)
@@ -94,7 +94,7 @@ export struct EditRecordDialog {
         
         // 操作按钮
         Row() {
-          Button('取消')
+          Button($r('app.string.cancel'))
             .layoutWeight(1)
             .height(44)
             .backgroundColor(this.themeColors.background)
@@ -104,7 +104,7 @@ export struct EditRecordDialog {
               this.onCancel()
             })
           
-          Button('保存')
+          Button($r('app.string.save'))
             .layoutWeight(1)
             .height(44)
             .backgroundColor(this.themeColors.primary)
@@ -171,7 +171,7 @@ export struct EditRecordDialog {
           Text('+')
             .fontSize(32)
             .fontColor(this.themeColors.textSecondary)
-          Text('添加图片')
+          Text($r('app.string.add_image'))
             .fontSize(12)
             .fontColor(this.themeColors.textSecondary)
             .margin({ top: 4 })
@@ -220,7 +220,7 @@ export struct EditRecordDialog {
     } catch (error) {
       console.error('[EditRecordDialog] 选择图片失败: ' + JSON.stringify(error))
       if (this.promptAction) {
-        ImagePickerUtils.showErrorToast(this.promptAction, '选择图片失败，请重试')
+        ImagePickerUtils.showErrorToast(this.promptAction, $r('app.string.pick_image_failed_retry'))
       }
     }
   }

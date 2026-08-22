@@ -58,7 +58,7 @@ export class AccountUtils {
   }
 
   // 安全显示 Toast 提示
-  static showToastSafely(promptAction: PromptAction, message: string, duration: number = 2000) {
+  static showToastSafely(promptAction: PromptAction, message: ResourceStr, duration: number = 2000) {
     try {
       promptAction.showToast({
         message: message,

@@ -325,13 +325,13 @@ export struct HomePage {
         Column() {
           // 标题区域
           Column() {
-            Text('活着')
+            Text($r('app.string.app_name'))
               .fontSize(32)
               .fontWeight(FontWeight.Bold)
               .fontColor(this.themeColors.textPrimary)
               .letterSpacing(2)
 
-            Text('记录生命的每一刻')
+            Text($r('app.string.app_desc'))
               .fontSize(14)
               .fontColor(this.themeColors.textSecondary)
               .margin({ top: 6 })
@@ -347,10 +347,23 @@ export struct HomePage {
         Column() {
           // 标题
           Row() {
-            Text(this.isRemainingMode ? '⏳ 剩余时间' : '⏱️ 存活时间')
-              .fontSize(16)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(this.themeColors.textPrimary)
+            if (this.isRemainingMode) {
+              Text() {
+                Span('⏳ ')
+                Span($r('app.string.remaining_mode'))
+              }
+                .fontSize(16)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(this.themeColors.textPrimary)
+            } else {
+              Text() {
+                Span('⏱️ ')
+                Span($r('app.string.already_alive'))
+              }
+                .fontSize(16)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(this.themeColors.textPrimary)
+            }
             
             // 分享按钮
             Button({ type: ButtonType.Circle }) {
@@ -370,7 +383,7 @@ export struct HomePage {
             
             // 主模式切换栏（已存活/剩余）
             Row() {
-              Text('已存活')
+              Text($r('app.string.already_alive'))
                 .fontSize(12)
                 .fontColor(!this.isRemainingMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(!this.isRemainingMode ? FontWeight.Medium : FontWeight.Normal)
@@ -388,7 +401,7 @@ export struct HomePage {
                   }
                 })
               
-              Text('剩余')
+              Text($r('app.string.remaining_mode'))
                 .fontSize(12)
                 .fontColor(this.isRemainingMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(this.isRemainingMode ? FontWeight.Medium : FontWeight.Normal)
@@ -415,14 +428,14 @@ export struct HomePage {
 
           // 累计模式切换栏
           Row() {
-            Text(this.isRemainingMode ? '剩余计算方式' : '存活计算方式')
+            Text(this.isRemainingMode ? $r('app.string.remaining_calc_mode') : $r('app.string.alive_calc_mode'))
               .fontSize(14)
               .fontColor(this.themeColors.textSecondary)
             
             Blank()
             
             Row() {
-              Text('累计模式')
+              Text($r('app.string.accumulated_mode'))
                 .fontSize(12)
                 .fontColor(this.isAccumulatedMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(this.isAccumulatedMode ? FontWeight.Medium : FontWeight.Normal)
@@ -440,7 +453,7 @@ export struct HomePage {
                   }
                 })
               
-              Text('非累计模式')
+              Text($r('app.string.non_accumulated'))
                 .fontSize(12)
                 .fontColor(!this.isAccumulatedMode ? '#FFFFFF' : this.themeColors.textSecondary)
                 .fontWeight(!this.isAccumulatedMode ? FontWeight.Medium : FontWeight.Normal)
@@ -472,8 +485,8 @@ export struct HomePage {
               Column() {
                 TimeCard({
                   value: this.timeData.years,
-                  label: '年',
-                  description: this.isRemainingMode ? '剩余年数' : '已经存活',
+                  label: $r('app.string.years'),
+                  description: this.isRemainingMode ? $r('app.string.remaining_years') : $r('app.string.current_years'),
                   cardColor: this.getYearCardColors().cardColor,
                   valueColor: this.getYearCardColors().valueColor,
                   valueFontSize: 28
@@ -485,10 +498,10 @@ export struct HomePage {
               Column() {
                 TimeCard({
                   value: this.timeData.months,
-                  label: '月',
+                  label: $r('app.string.months'),
                   description: this.isAccumulatedMode ? 
-                    (this.isRemainingMode ? '剩余总月数' : '累计月数') : 
-                    (this.isRemainingMode ? '剩余月数' : '当前月数'),
+                    (this.isRemainingMode ? $r('app.string.remaining_total_months') : $r('app.string.current_months')) : 
+                    (this.isRemainingMode ? $r('app.string.remaining_months') : $r('app.string.non_accumulated_months')),
                   cardColor: this.getMonthCardColors().cardColor,
                   valueColor: this.getMonthCardColors().valueColor,
                   valueFontSize: 28
@@ -500,10 +513,10 @@ export struct HomePage {
               Column() {
                 TimeCard({
                   value: this.timeData.days,
-                  label: '日',
+                  label: $r('app.string.days'),
                   description: this.isAccumulatedMode ? 
-                    (this.isRemainingMode ? '剩余总天数' : '累计天数') : 
-                    (this.isRemainingMode ? '剩余天数' : '当前天数'),
+                    (this.isRemainingMode ? $r('app.string.remaining_total_days') : $r('app.string.current_days')) : 
+                    (this.isRemainingMode ? $r('app.string.remaining_days') : $r('app.string.non_accumulated_days')),
                   cardColor: this.getDayCardColors().cardColor,
                   valueColor: this.getDayCardColors().valueColor,
                   valueFontSize: 28
@@ -519,10 +532,10 @@ export struct HomePage {
               Column() {
                 TimeCard({
                   value: this.timeData.hours,
-                  label: '小时',
+                  label: $r('app.string.hours'),
                   description: this.isAccumulatedMode ? 
-                    (this.isRemainingMode ? '剩余总小时数' : '累计小时数') : 
-                    (this.isRemainingMode ? '剩余小时' : '当前小时'),
+                    (this.isRemainingMode ? $r('app.string.remaining_total_hours') : $r('app.string.accumulated_hours')) : 
+                    (this.isRemainingMode ? $r('app.string.remaining_hours_short') : $r('app.string.current_hours_short')),
                   cardColor: this.getHourCardColors().cardColor,
                   valueColor: this.getHourCardColors().valueColor
                 })
@@ -537,10 +550,10 @@ export struct HomePage {
               Column() {
                 TimeCard({
                   value: this.timeData.minutes,
-                  label: '分钟',
+                  label: $r('app.string.minutes'),
                   description: this.isAccumulatedMode ? 
-                    (this.isRemainingMode ? '剩余总分钟数' : '累计分钟数') : 
-                    (this.isRemainingMode ? '剩余分钟' : '当前分钟'),
+                    (this.isRemainingMode ? $r('app.string.remaining_total_minutes') : $r('app.string.accumulated_minutes')) : 
+                    (this.isRemainingMode ? $r('app.string.remaining_minutes_short') : $r('app.string.current_minutes_short')),
                   cardColor: this.getMinuteCardColors().cardColor,
                   valueColor: this.getMinuteCardColors().valueColor
                 })
@@ -555,10 +568,10 @@ export struct HomePage {
               Column() {
                 TimeCard({
                   value: this.timeData.seconds,
-                  label: '秒',
+                  label: $r('app.string.seconds'),
                   description: this.isAccumulatedMode ? 
-                    (this.isRemainingMode ? '剩余总秒数' : '累计秒数') : 
-                    (this.isRemainingMode ? '剩余秒数' : '当前秒数'),
+                    (this.isRemainingMode ? $r('app.string.remaining_total_seconds') : $r('app.string.accumulated_seconds')) : 
+                    (this.isRemainingMode ? $r('app.string.remaining_seconds') : $r('app.string.current_seconds_short')),
                   cardColor: this.getSecondCardColors().cardColor,
                   valueColor: this.getSecondCardColors().valueColor
                 })
@@ -629,7 +642,7 @@ export struct HomePage {
         
         // 操作按钮
         Row({ space: 12 }) {
-          Button('取消')
+          Button($r('app.string.cancel'))
             .layoutWeight(1)
             .height(44)
             .fontSize(16)
@@ -641,7 +654,7 @@ export struct HomePage {
               this.showShareDialog = false;
             })
           
-          Button(this.isSharing ? '分享中...' : '分享')
+          Button(this.isSharing ? $r('app.string.sharing_in_progress') : $r('app.string.share'))
             .layoutWeight(1)
             .height(44)
             .fontSize(16)
@@ -691,12 +704,13 @@ export struct HomePage {
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
       
       // 执行分享
+      const rm = context.resourceManager;
       const success = await ShareUtils.shareComponent(
         this.getUIContext(),
         'share-home-card',
         context,
-        '生命时间分享',
-        '来自 RecordLife 的生命时间记录'
+        rm.getStringByNameSync('share_title'),
+        rm.getStringByNameSync('share_description')
       );
       
       if (success) {

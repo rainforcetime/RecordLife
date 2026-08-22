@@ -3,6 +3,46 @@
     {
       "name": "start_window_background",
       "value": "#000000"
+    },
+    {
+      "name": "divider",
+      "value": "#33FFFFFF"
+    },
+    {
+      "name": "overlay_mask",
+      "value": "#80FFFFFF"
+    },
+    {
+      "name": "shadow_light",
+      "value": "#33FFFFFF"
+    },
+    {
+      "name": "shadow_medium",
+      "value": "#4DFFFFFF"
+    },
+    {
+      "name": "white",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "black",
+      "value": "#000000"
+    },
+    {
+      "name": "error_light",
+      "value": "#4DCF6679"
+    },
+    {
+      "name": "success_light",
+      "value": "#4D4CAF50"
+    },
+    {
+      "name": "warning_light",
+      "value": "#4DFF9800"
+    },
+    {
+      "name": "info_light",
+      "value": "#4D2196F3"
     }
   ]
 }

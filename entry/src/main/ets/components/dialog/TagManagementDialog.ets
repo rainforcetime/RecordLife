@@ -185,7 +185,7 @@ export struct TagManagementDialog {
     Column() {
       // 标题
       Row() {
-        Text('标签管理')
+        Text($r('app.string.tag_management'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
@@ -204,7 +204,7 @@ export struct TagManagementDialog {
       .margin({ bottom: 16 })
 
       // 说明文字
-      Text('预设标签不可修改，以下为您自定义的标签')
+      Text($r('app.string.preset_tags_hint'))
         .fontSize(13)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
@@ -264,7 +264,7 @@ export struct TagManagementDialog {
                 .fontSize(18)
                 .fontColor([this.themeColors.primary])
 
-              Text('添加自定义标签')
+              Text($r('app.string.add_custom_tag'))
                 .fontSize(15)
                 .fontColor(this.themeColors.primary)
                 .margin({ left: 8 })
@@ -289,11 +289,11 @@ export struct TagManagementDialog {
           Text('🏷️')
             .fontSize(40)
 
-          Text('暂无自定义标签')
+          Text($r('app.string.no_custom_tags'))
             .fontSize(15)
             .fontColor(this.themeColors.textSecondary)
 
-          Button('添加第一个标签')
+          Button($r('app.string.add_first_tag'))
             .fontSize(14)
             .fontColor(this.themeColors.primary)
             .backgroundColor(this.hexToRgba(this.themeColors.primary, 0.1))
@@ -327,7 +327,7 @@ export struct TagManagementDialog {
             this.cancelEdit()
           })
 
-        Text(this.isNewTag ? '新建标签' : '编辑标签')
+        Text(this.isNewTag ? $r('app.string.new_tag') : $r('app.string.edit_tag'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
@@ -335,7 +335,7 @@ export struct TagManagementDialog {
           .layoutWeight(1)
 
         // 保存按钮
-        Text('保存')
+        Text($r('app.string.save'))
           .fontSize(16)
           .fontColor(this.editTagName.trim().length > 0 ? this.themeColors.primary : this.themeColors.textTertiary)
           .fontWeight(FontWeight.Medium)
@@ -352,13 +352,13 @@ export struct TagManagementDialog {
       .margin({ bottom: 16 })
 
       // 名称输入
-      Text('标签名称')
+      Text($r('app.string.tag_name'))
         .fontSize(13)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
         .margin({ bottom: 8 })
 
-      TextInput({ text: $$this.editTagName, placeholder: '输入标签名称' })
+      TextInput({ text: $$this.editTagName, placeholder: $r('app.string.input_tag_name') })
         .width('100%')
         .height(44)
         .backgroundColor(this.themeColors.background)
@@ -373,7 +373,7 @@ export struct TagManagementDialog {
         })
 
       // 颜色选择
-      Text('标签颜色')
+      Text($r('app.string.tag_color'))
         .fontSize(13)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
@@ -432,7 +432,7 @@ export struct TagManagementDialog {
       }
 
       // 图标选择
-      Text('标签图标（可选）')
+      Text($r('app.string.tag_icon_optional'))
         .fontSize(13)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
@@ -444,7 +444,7 @@ export struct TagManagementDialog {
             .fontSize(20)
         }
 
-        Text(this.editingTag.icon ? this.editingTag.icon : '无图标')
+        Text(this.editingTag.icon ? this.editingTag.icon : $r('app.string.no_icon'))
           .fontSize(14)
           .fontColor(this.editingTag.icon ? this.themeColors.textPrimary : this.themeColors.textTertiary)
           .margin({ left: 8 })
@@ -509,7 +509,7 @@ export struct TagManagementDialog {
       }
 
       // 预览
-      Text('预览')
+      Text($r('app.string.preview'))
         .fontSize(13)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
@@ -521,7 +521,7 @@ export struct TagManagementDialog {
             .fontSize(14)
         }
 
-        Text(this.editTagName || '标签预览')
+        Text(this.editTagName ? this.editTagName : $r('app.string.tag_preview'))
           .fontSize(14)
           .fontColor(this.editTagName ? '#FFFFFF' : this.themeColors.textTertiary)
           .margin({ left: this.editingTag.icon ? 4 : 0 })

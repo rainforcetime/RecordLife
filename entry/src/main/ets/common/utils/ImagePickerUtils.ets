@@ -8,7 +8,7 @@ import { PromptAction } from '@kit.ArkUI'
 export interface ImagePickResult {
   success: boolean
   uri?: string
-  errorMessage?: string
+  errorMessage?: ResourceStr
 }
 
 // 图片选择方式
@@ -38,7 +38,7 @@ export class ImagePickerUtils {
       console.error(`[ImagePickerUtils] 选择图片失败: ${JSON.stringify(error)}`)
       return {
         success: false,
-        errorMessage: '选择图片失败，请重试'
+        errorMessage: $r('app.string.pick_image_failed')
       }
     }
   }
@@ -74,13 +74,13 @@ export class ImagePickerUtils {
 
       return {
         success: false,
-        errorMessage: '拍照取消或失败'
+        errorMessage: $r('app.string.camera_cancelled')
       }
     } catch (error) {
       console.error('[ImagePickerUtils] 拍照失败: ' + JSON.stringify(error))
       return {
         success: false,
-        errorMessage: '拍照失败，请重试'
+        errorMessage: $r('app.string.camera_failed')
       }
     }
   }
@@ -117,13 +117,13 @@ export class ImagePickerUtils {
 
       return {
         success: false,
-        errorMessage: '未选择图片'
+        errorMessage: $r('app.string.no_image_selected')
       }
     } catch (error) {
       console.error('[ImagePickerUtils] 从相册选择失败: ' + JSON.stringify(error))
       return {
         success: false,
-        errorMessage: '选择图片失败，请重试'
+        errorMessage: $r('app.string.pick_image_failed')
       }
     }
   }
@@ -133,7 +133,7 @@ export class ImagePickerUtils {
    * @param promptAction PromptAction 对象（从组件的 this.getUIContext().getPromptAction() 获取）
    * @param message 错误消息
    */
-  static showErrorToast(promptAction: PromptAction, message: string): void {
+  static showErrorToast(promptAction: PromptAction, message: ResourceStr): void {
     try {
       promptAction.showToast({ message: message })
     } catch (error) {

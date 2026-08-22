@@ -57,7 +57,7 @@ export class MorePageBackupHandler {
       const zipPath = await backupManager.createBackup()
       
       if (!zipPath) {
-        promptAction.showToast({ message: '创建备份失败' })
+        promptAction.showToast({ message: $r('app.string.backup_create_failed') })
         return
       }
       
@@ -90,7 +90,7 @@ export class MorePageBackupHandler {
         fileIo.unlinkSync(zipPath)
         
         console.info('[MorePageBackupHandler] 备份导出成功: ' + saveUri)
-        promptAction.showToast({ message: '备份导出成功' })
+        promptAction.showToast({ message: $r('app.string.backup_export_success') })
       } else {
         // 用户取消，删除临时备份文件
         fileIo.unlinkSync(zipPath)
@@ -99,7 +99,7 @@ export class MorePageBackupHandler {
     } catch (error) {
       console.error('[MorePageBackupHandler] 导出备份失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: '导出失败: ' + (error as Error).message })
+        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('export_failed_prefix') + (error as Error).message })
       } catch (e) {
         console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }
@@ -148,7 +148,7 @@ export class MorePageBackupHandler {
         
         if (success) {
           console.info('[MorePageBackupHandler] 备份导入成功')
-          promptAction.showToast({ message: '备份导入成功，应用即将重启' })
+          promptAction.showToast({ message: $r('app.string.backup_import_success') })
           
           // 延迟1秒后重启应用，让用户看到提示
           setTimeout(() => {
@@ -156,7 +156,7 @@ export class MorePageBackupHandler {
           }, 1000)
         } else {
           console.error('[MorePageBackupHandler] 备份导入失败')
-          promptAction.showToast({ message: '备份文件格式无效或已损坏' })
+          promptAction.showToast({ message: $r('app.string.backup_invalid') })
         }
       } else {
         console.info('[MorePageBackupHandler] 用户取消导入')
@@ -164,7 +164,7 @@ export class MorePageBackupHandler {
     } catch (error) {
       console.error('[MorePageBackupHandler] 导入备份失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: '导入失败: ' + (error as Error).message })
+        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('import_failed_prefix') + (error as Error).message })
       } catch (e) {
         console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }
@@ -283,7 +283,7 @@ export class MorePageBackupHandler {
         fileIo.closeSync(destFile)
         
         console.info('[MorePageBackupHandler] 所有数据导出成功: ' + saveUri)
-        promptAction.showToast({ message: '导出成功' })
+        promptAction.showToast({ message: $r('app.string.export_success') })
       } else {
         console.info('[MorePageBackupHandler] 用户取消导出')
       }
@@ -297,7 +297,7 @@ export class MorePageBackupHandler {
     } catch (error) {
       console.error('[MorePageBackupHandler] 导出所有数据失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: '导出失败: ' + (error as Error).message })
+        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('export_failed_prefix') + (error as Error).message })
       } catch (e) {
         console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }
@@ -448,24 +448,25 @@ export class MorePageBackupHandler {
       
       // 7. 显示结果
       if (configImported || recordsImported) {
+        const rm = context.resourceManager
         const messages: string[] = []
-        if (configImported) messages.push('用户配置')
-        if (recordsImported) messages.push('此刻记录')
+        if (configImported) messages.push(rm.getStringByNameSync('user_config'))
+        if (recordsImported) messages.push(rm.getStringByNameSync('now_record_backup'))
         
-        promptAction.showToast({ message: `导入成功: ${messages.join('、')}，应用即将重启` })
+        promptAction.showToast({ message: rm.getStringByNameSync('import_success_prefix') + messages.join(rm.getStringByNameSync('import_separator')) + rm.getStringByNameSync('import_success_suffix') })
         
         // 延迟1秒后重启应用，让用户看到提示
         setTimeout(() => {
           MorePageBackupHandler.restartApp(context)
         }, 1000)
       } else {
-        promptAction.showToast({ message: '未找到有效数据' })
+        promptAction.showToast({ message: $r('app.string.no_valid_data') })
       }
       
     } catch (error) {
       console.error('[MorePageBackupHandler] 导入所有数据失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: '导入失败: ' + (error as Error).message })
+        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('import_failed_prefix') + (error as Error).message })
       } catch (e) {
         console.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }

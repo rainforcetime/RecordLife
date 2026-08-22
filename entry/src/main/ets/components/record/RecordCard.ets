@@ -67,7 +67,7 @@ export struct RecordCard {
             SymbolGlyph($r('sys.symbol.pin_fill'))
               .fontSize(14)
               .fontColor([this.themeColors.primary])
-            Text('已收藏')
+            Text($r('app.string.favorited'))
               .fontSize(12)
               .fontColor(this.themeColors.primary)
               .fontWeight(FontWeight.Medium)
@@ -347,7 +347,7 @@ export struct RecordCard {
 
         // 操作按钮
         Row({ space: 12 }) {
-          Button('取消')
+          Button($r('app.string.cancel'))
             .layoutWeight(1)
             .height(44)
             .fontSize(16)
@@ -359,7 +359,7 @@ export struct RecordCard {
               this.showShareDialog = false
             })
 
-          Button(this.isSharing ? '分享中...' : '分享')
+          Button(this.isSharing ? $r('app.string.sharing_in_progress') : $r('app.string.share'))
             .layoutWeight(1)
             .height(44)
             .fontSize(16)
@@ -404,8 +404,8 @@ export struct RecordCard {
         this.getUIContext(),
         this.shareCardId,
         context,
-        '记录分享',
-        '来自 RecordLife 的记录分享'
+        context.resourceManager.getStringByNameSync('share_record_title'),
+        context.resourceManager.getStringByNameSync('share_description_default')
       )
       
       if (success) {

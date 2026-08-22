@@ -65,14 +65,14 @@ export class MorePageConfigHandler {
         fileIo.closeSync(file)
         
         console.info('[MorePageConfigHandler] 配置导出成功: ' + saveUri)
-        promptAction.showToast({ message: '配置导出成功' })
+        promptAction.showToast({ message: $r('app.string.config_export_success') })
       } else {
         console.info('[MorePageConfigHandler] 用户取消导出')
       }
     } catch (error) {
       console.error('[MorePageConfigHandler] 导出配置失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: '导出失败: ' + (error as Error).message })
+        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('export_failed_prefix') + (error as Error).message })
       } catch (toastError) {
         console.error('[MorePageConfigHandler] showToast 失败: ' + JSON.stringify(toastError))
       }
@@ -118,7 +118,7 @@ export class MorePageConfigHandler {
         
         if (success) {
           console.info('[MorePageConfigHandler] 配置导入成功')
-          promptAction.showToast({ message: '配置导入成功，应用即将重启' })
+          promptAction.showToast({ message: $r('app.string.config_import_success') })
           
           // 延迟1秒后重启应用，让用户看到提示
           setTimeout(() => {
@@ -126,7 +126,7 @@ export class MorePageConfigHandler {
           }, 1000)
         } else {
           console.error('[MorePageConfigHandler] 配置导入失败：格式无效')
-          promptAction.showToast({ message: '配置文件格式无效' })
+          promptAction.showToast({ message: $r('app.string.config_invalid') })
         }
       } else {
         console.info('[MorePageConfigHandler] 用户取消导入')
@@ -134,7 +134,7 @@ export class MorePageConfigHandler {
     } catch (error) {
       console.error('[MorePageConfigHandler] 导入配置失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: '导入失败: ' + (error as Error).message })
+        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('import_failed_prefix') + (error as Error).message })
       } catch (toastError) {
         console.error('[MorePageConfigHandler] showToast 失败: ' + JSON.stringify(toastError))
       }
@@ -236,16 +236,16 @@ export class MorePageConfigHandler {
     uiContext: UIContext
   ): Promise<void> {
     uiContext.showAlertDialog({
-      title: '重置应用',
-      message: '确定要重置应用吗？此操作将清除所有用户数据（包括此刻记录）并恢复默认设置，不可恢复。',
+      title: $r('app.string.reset_app'),
+      message: $r('app.string.reset_confirm'),
       primaryButton: {
-        value: '取消',
+        value: $r('app.string.cancel'),
         action: () => {
           console.info('[MorePageConfigHandler] 用户取消重置')
         }
       },
       secondaryButton: {
-        value: '确定',
+        value: $r('app.string.confirm'),
         action: async () => {
           console.info('[MorePageConfigHandler] 开始重置应用')
           
@@ -259,7 +259,7 @@ export class MorePageConfigHandler {
             
             if (success) {
               console.info('[MorePageConfigHandler] 应用重置成功')
-              promptAction.showToast({ message: '应用已重置，即将重启' })
+              promptAction.showToast({ message: $r('app.string.reset_success') })
               
               // 延迟1秒后重启应用，让用户看到提示
               setTimeout(() => {
@@ -267,11 +267,11 @@ export class MorePageConfigHandler {
               }, 1000)
             } else {
               console.error('[MorePageConfigHandler] 应用重置失败')
-              promptAction.showToast({ message: '重置失败，请重试' })
+              promptAction.showToast({ message: $r('app.string.reset_failed') })
             }
           } catch (error) {
             console.error('[MorePageConfigHandler] 重置应用异常: ' + JSON.stringify(error))
-            promptAction.showToast({ message: '重置失败: ' + (error as Error).message })
+            promptAction.showToast({ message: context.resourceManager.getStringByNameSync('reset_failed_prefix') + (error as Error).message })
           }
         }
       }

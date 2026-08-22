@@ -216,9 +216,9 @@ export struct AccountPage {
     const success = await this.viewModel.onThemeChange(value)
     
     if (success) {
-      AccountUtils.showToastSafely(this.promptAction, '主题设置已保存')
+      AccountUtils.showToastSafely(this.promptAction, $r('app.string.theme_settings_saved'))
     } else {
-      AccountUtils.showToastSafely(this.promptAction, '主题保存失败，请重试')
+      AccountUtils.showToastSafely(this.promptAction, $r('app.string.theme_settings_save_failed'))
     }
   }
   
@@ -244,13 +244,13 @@ export struct AccountPage {
       }
       
       console.info('用户资料保存成功')
-      AccountUtils.showToastSafely(this.promptAction, '保存成功')
+      AccountUtils.showToastSafely(this.promptAction, $r('app.string.save_success'))
       
       // 通知其他页面刷新（如 HomePage 的出生日期显示）
       RefreshManager.getInstance().refresh()
     } else {
       console.error('用户资料保存失败')
-      AccountUtils.showToastSafely(this.promptAction, '保存失败')
+      AccountUtils.showToastSafely(this.promptAction, $r('app.string.save_failed'))
     }
   }
   
@@ -346,7 +346,7 @@ export struct AccountPage {
           .fontColor([this.themeColors.primary])
           .margin({ right: 8 })
         
-        Text('设置')
+        Text($r('app.string.settings'))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
@@ -356,7 +356,7 @@ export struct AccountPage {
       
       // 主题设置（选择器）
       SettingItemWithSelector({
-        label: '主题设置',
+        label: $r('app.string.theme_settings'),
         currentValue: this.currentTheme,
         options: ['跟随系统', '浅色模式', '深色模式'],
         onSelect: (value: string) => {
@@ -371,7 +371,7 @@ export struct AccountPage {
       
       // 存储空间（信息展示）
       SettingItemWithInfo({
-        label: '存储空间',
+        label: $r('app.string.storage_space'),
         info: this.statisticsInfo.storageSize
       })
       .onClick(() => {
@@ -385,8 +385,8 @@ export struct AccountPage {
       
       // 标签管理
       SettingItem({
-        label: '标签管理',
-        summary: '管理自定义标签，添加或编辑个人标签'
+        label: $r('app.string.tag_management'),
+        summary: $r('app.string.manage_tags')
       })
       .onClick(() => {
         this.tagManagementDialogController.open()
@@ -399,8 +399,8 @@ export struct AccountPage {
       
       // 更多设置
       SettingItem({
-        label: '更多',
-        summary: '导入/导出配置、备份/恢复记录、重置应用'
+        label: $r('app.string.more'),
+        summary: $r('app.string.import_export_config')
       })
       .onClick(() => {
         this.onMoreSettings()
@@ -413,7 +413,7 @@ export struct AccountPage {
       
       // 关于应用（信息展示）
       SettingItemWithInfo({
-        label: '关于应用',
+        label: $r('app.string.about_app'),
         info: `版本 ${this.appInfo.appVersion}`
       })
       .onClick(() => {

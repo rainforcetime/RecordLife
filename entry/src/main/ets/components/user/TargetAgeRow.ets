@@ -20,7 +20,7 @@ export struct TargetAgeRow {
 
   build() {
     Row() {
-      Text('🎯 目标年龄')
+      Text($r('app.string.target_age'))
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
         .fontColor(this.themeColors.textPrimary)
@@ -68,7 +68,7 @@ export struct TargetAgeRow {
   @Builder
   AgePickerSheet() {
     Column() {
-      Text('设置目标年龄')
+      Text($r('app.string.set_target_age'))
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.themeColors.textPrimary)
@@ -107,11 +107,11 @@ export struct TargetAgeRow {
       }
       .margin({ bottom: 20 })
 
-      Text('岁')
+      Text($r('app.string.age_unit'))
         .fontSize(16)
         .fontColor(this.themeColors.textSecondary)
 
-      Button('确定')
+      Button($r('app.string.confirm'))
         .width('80%')
         .height(44)
         .backgroundColor(this.themeColors.success)

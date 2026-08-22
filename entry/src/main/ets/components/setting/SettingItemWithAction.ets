@@ -3,8 +3,8 @@ import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 
 @Component
 export struct SettingItemWithAction {
-  label: string = ''
-  summary: string = ''
+  label: ResourceStr = ''
+  summary: ResourceStr = ''
   isDestructive: boolean = false
   // 直接从 AppStorage 监听主题变化
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)

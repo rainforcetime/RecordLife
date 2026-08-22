@@ -181,7 +181,7 @@ export struct UserInfoSection {
             .fontSize(16)
             .fontColor([this.getAccentColor()])
             .margin({ right: 6 })
-          Text('编辑资料')
+          Text($r('app.string.edit_profile'))
             .fontSize(15)
             .fontColor(this.getAccentColor())
             .fontWeight(FontWeight.Medium)

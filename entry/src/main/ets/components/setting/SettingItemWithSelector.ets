@@ -3,7 +3,7 @@ import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 
 @Component
 export struct SettingItemWithSelector {
-  label: string = ''
+  label: ResourceStr = ''
   @Prop currentValue: string = ''
   options: string[] = []
   // 直接从 AppStorage 监听主题变化

@@ -40,7 +40,7 @@ export struct EditProfileDialog {
   build() {
     Column() {
       // 标题
-      Text('编辑资料')
+      Text($r('app.string.edit_profile'))
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.themeColors.textPrimary)
@@ -48,13 +48,13 @@ export struct EditProfileDialog {
 
       // 用户名输入
       Column() {
-        Text('用户名')
+        Text($r('app.string.username'))
           .fontSize(14)
           .fontColor(this.themeColors.textSecondary)
           .width('100%')
           .margin({ bottom: 8 })
 
-        TextInput({ text: this.editName, placeholder: '请输入用户名' })
+        TextInput({ text: this.editName, placeholder: $r('app.string.input_username') })
           .fontSize(16)
           .height(45)
           .backgroundColor(this.themeColors.background)
@@ -70,7 +70,7 @@ export struct EditProfileDialog {
 
       // 出生日期选择
       Column() {
-        Text('出生日期')
+        Text($r('app.string.birth_date'))
           .fontSize(14)
           .fontColor(this.themeColors.textSecondary)
           .width('100%')
@@ -99,7 +99,7 @@ export struct EditProfileDialog {
 
       // 性别选择
       Column() {
-        Text('性别')
+        Text($r('app.string.gender'))
           .fontSize(14)
           .fontColor(this.themeColors.textSecondary)
           .width('100%')
@@ -137,7 +137,7 @@ export struct EditProfileDialog {
 
       // 操作按钮
       Row() {
-        Button('取消')
+        Button($r('app.string.cancel'))
           .fontSize(16)
           .backgroundColor(this.themeColors.border)
           .fontColor(this.themeColors.textPrimary)
@@ -150,7 +150,7 @@ export struct EditProfileDialog {
 
         Blank().width(20)
 
-        Button('保存')
+        Button($r('app.string.save'))
           .fontSize(16)
           .backgroundColor(this.themeColors.primary)
           .fontColor(Color.White)

@@ -246,7 +246,7 @@ export struct TimelineSection {
       
       if (this.searchKeyword.length > 0) {
         // 搜索无结果
-        Text('没有找到相关记录')
+        Text($r('app.string.no_matching_records'))
           .fontSize(20)
           .fontColor(this.themeColors.textPrimary)
           .fontWeight(FontWeight.Medium)
@@ -259,13 +259,13 @@ export struct TimelineSection {
           .lineHeight(22)
       } else {
         // 无记录
-        Text('还没有记录')
+        Text($r('app.string.no_records'))
           .fontSize(20)
           .fontColor(this.themeColors.textPrimary)
           .fontWeight(FontWeight.Medium)
           .margin({ bottom: 8 })
         
-        Text('点击右下角的按钮开始记录你的生活')
+        Text($r('app.string.no_records_hint'))
           .fontSize(14)
           .fontColor(this.themeColors.textSecondary)
           .textAlign(TextAlign.Center)
@@ -288,7 +288,7 @@ export struct TimelineSection {
         SymbolGlyph($r('sys.symbol.pin_fill'))
           .fontSize(18)
           .fontColor([this.themeColors.primary])
-        Text('收藏')
+        Text($r('app.string.favorites'))
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
           .fontColor(this.themeColors.primary)

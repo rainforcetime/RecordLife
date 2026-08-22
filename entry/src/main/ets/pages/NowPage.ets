@@ -1,4 +1,5 @@
 // 现在页面：pages/NowPage.ets
+import { common } from '@kit.AbilityKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { TimelineData, LifeRecord, getTagNameById, Tag } from '../common/types'
 import { NowViewModel } from '../viewmodel/NowViewModel'
@@ -129,7 +130,7 @@ struct NowPage {
         Column() {
           // 页面标题和视图切换
           Row() {
-            Text('此刻')
+            Text($r('app.string.now_moment'))
               .fontSize(28)
               .fontWeight(FontWeight.Bold)
               .fontColor(this.themeColors.textPrimary)
@@ -188,7 +189,7 @@ struct NowPage {
             SearchBar({
               searchText: $searchText,
               isSearching: $isSearching,
-              placeholder: '搜索记录...'
+              placeholder: $r('app.string.search_records')
             })
             .margin({ bottom: 8 })
             
@@ -515,7 +516,7 @@ struct NowPage {
     // 至少需要文字或图片
     if (this.editContent.trim().length === 0 && this.editImagePaths.length === 0) {
       try {
-        this.promptAction.showToast({ message: '请输入内容或添加图片' })
+        this.promptAction.showToast({ message: $r('app.string.please_input_content') })
       } catch (error) {
         console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
       }
@@ -533,7 +534,7 @@ struct NowPage {
       
       if (success) {
         try {
-          this.promptAction.showToast({ message: '修改成功' })
+          this.promptAction.showToast({ message: $r('app.string.edit_success') })
         } catch (error) {
           console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
         }
@@ -546,7 +547,7 @@ struct NowPage {
         RefreshManager.getInstance().refresh()
       } else {
         try {
-          this.promptAction.showToast({ message: '修改失败' })
+          this.promptAction.showToast({ message: $r('app.string.edit_failed') })
         } catch (error) {
           console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
         }
@@ -554,7 +555,7 @@ struct NowPage {
     } catch (error) {
       console.error('[NowPage] 保存编辑失败: ' + JSON.stringify(error))
       try {
-        this.promptAction.showToast({ message: '修改失败: ' + (error as Error).message })
+        this.promptAction.showToast({ message: (this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager.getStringByNameSync('edit_failed_prefix') + (error as Error).message })
       } catch (e) {
         console.error('[NowPage] showToast failed: ' + JSON.stringify(e))
       }
@@ -574,7 +575,7 @@ struct NowPage {
       if (success) {
         try {
           this.promptAction.showToast({
-            message: wasPinned ? '已取消收藏' : '已添加收藏'
+            message: wasPinned ? $r('app.string.unpinned_success') : $r('app.string.pinned_success')
           })
         } catch (error) {
           console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
@@ -583,7 +584,7 @@ struct NowPage {
         this.refreshTimeline()
       } else {
         try {
-          this.promptAction.showToast({ message: '操作失败' })
+          this.promptAction.showToast({ message: $r('app.string.operation_failed') })
         } catch (error) {
           console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
         }
@@ -597,16 +598,16 @@ struct NowPage {
   // 删除记录
   private onDeleteRecord(record: LifeRecord) {
     this.getUIContext().showAlertDialog({
-      title: '删除记录',
-      message: '确定要删除这条记录吗？此操作不可恢复。',
+      title: $r('app.string.delete_record'),
+      message: $r('app.string.delete_record_confirm'),
       primaryButton: {
-        value: '取消',
+        value: $r('app.string.cancel'),
         action: () => {
           console.info('[NowPage] 取消删除')
         }
       },
       secondaryButton: {
-        value: '删除',
+        value: $r('app.string.delete'),
         fontColor: this.themeColors.error,
         action: async () => {
           if (!this.viewModel || !this.promptAction) {
@@ -618,7 +619,7 @@ struct NowPage {
             
             if (success) {
               try {
-                this.promptAction.showToast({ message: '删除成功' })
+                this.promptAction.showToast({ message: $r('app.string.delete_success') })
               } catch (error) {
                 console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
               }
@@ -626,7 +627,7 @@ struct NowPage {
               RefreshManager.getInstance().refresh()
             } else {
               try {
-                this.promptAction.showToast({ message: '删除失败' })
+                this.promptAction.showToast({ message: $r('app.string.delete_failed') })
               } catch (error) {
                 console.error('[NowPage] showToast failed: ' + JSON.stringify(error))
               }
@@ -634,7 +635,7 @@ struct NowPage {
           } catch (error) {
             console.error('[NowPage] 删除失败: ' + JSON.stringify(error))
             try {
-              this.promptAction.showToast({ message: '删除失败: ' + (error as Error).message })
+              this.promptAction.showToast({ message: (this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager.getStringByNameSync('delete_failed_prefix') + (error as Error).message })
             } catch (e) {
               console.error('[NowPage] showToast failed: ' + JSON.stringify(e))
             }

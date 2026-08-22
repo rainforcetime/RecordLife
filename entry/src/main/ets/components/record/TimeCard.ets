@@ -6,11 +6,11 @@ export struct TimeCard {
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
   
   @Prop @Watch('onValueChange') value: number = 0
-  @Prop label: string = ''
-  @Prop description: string = ''
-  @Prop cardColor: string = '#FFFFFF'
-  @Prop valueColor: string = '#333333'
-  @Prop labelColor: string = '#666666'
+  @Prop label: ResourceStr = ''
+  @Prop description: ResourceStr = ''
+  @Prop cardColor: string = ''
+  @Prop valueColor: string = ''
+  @Prop labelColor: string = ''
   @Prop valueFontSize: number = 36
   
   // 动画状态
@@ -42,14 +42,14 @@ export struct TimeCard {
       // 单位标签
       Text(this.label)
         .fontSize(14)
-        .fontColor(this.labelColor)
+        .fontColor(this.labelColor || this.themeColors.textSecondary)
         .margin({ bottom: 6 })
 
       // 数值显示（带动画）
       Text(`${this.displayValue}`)
         .fontSize(this.valueFontSize)
         .fontWeight(FontWeight.Bold)
-        .fontColor(this.valueColor)
+        .fontColor(this.valueColor || this.themeColors.textPrimary)
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .margin({ bottom: 4 })
@@ -70,7 +70,7 @@ export struct TimeCard {
     .width('100%')
     .height(110)
     .justifyContent(FlexAlign.Center)
-    .backgroundColor(this.cardColor)
+    .backgroundColor(this.cardColor || this.themeColors.cardBackground)
     .borderRadius(16)
     .padding(12)
     .shadow({

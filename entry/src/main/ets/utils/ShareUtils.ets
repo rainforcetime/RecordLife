@@ -124,8 +124,8 @@ export class ShareUtils {
         const shareData: systemShare.SharedData = new systemShare.SharedData({
           utd: utdTypeId,
           uri: fileUri.getUriFromPath(imagePath),
-          title: title || '记录分享',
-          description: description || '来自 RecordLife 的记录分享'
+          title: title || context.resourceManager.getStringByNameSync('share_record_title'),
+          description: description || context.resourceManager.getStringByNameSync('share_description_default')
         })
         
         // 创建分享控制器

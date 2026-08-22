@@ -19,13 +19,13 @@ struct ExportOptionDialog {
 
   build() {
     Column() {
-      Text('选择导出内容')
+      Text($r('app.string.select_export_content'))
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.themeColors.textPrimary)
         .margin({ bottom: 20 })
 
-      Button('用户配置')
+      Button($r('app.string.user_config'))
         .width('100%')
         .height(44)
         .backgroundColor(this.themeColors.cardBackground)
@@ -38,7 +38,7 @@ struct ExportOptionDialog {
 
       Blank().height(12)
 
-      Button('此刻记录备份')
+      Button($r('app.string.now_record_backup'))
         .width('100%')
         .height(44)
         .backgroundColor(this.themeColors.cardBackground)
@@ -51,7 +51,7 @@ struct ExportOptionDialog {
 
       Blank().height(12)
 
-      Button('所有')
+      Button($r('app.string.all'))
         .width('100%')
         .height(44)
         .backgroundColor(this.themeColors.cardBackground)
@@ -64,7 +64,7 @@ struct ExportOptionDialog {
 
       Blank().height(12)
 
-      Button('取消')
+      Button($r('app.string.cancel'))
         .width('100%')
         .height(44)
         .backgroundColor(this.themeColors.divider)
@@ -92,13 +92,13 @@ struct ImportOptionDialog {
 
   build() {
     Column() {
-      Text('选择导入内容')
+      Text($r('app.string.select_import_content'))
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.themeColors.textPrimary)
         .margin({ bottom: 20 })
 
-      Button('用户配置')
+      Button($r('app.string.user_config'))
         .width('100%')
         .height(44)
         .backgroundColor(this.themeColors.cardBackground)
@@ -111,7 +111,7 @@ struct ImportOptionDialog {
 
       Blank().height(12)
 
-      Button('此刻记录备份')
+      Button($r('app.string.now_record_backup'))
         .width('100%')
         .height(44)
         .backgroundColor(this.themeColors.cardBackground)
@@ -124,7 +124,7 @@ struct ImportOptionDialog {
 
       Blank().height(12)
 
-      Button('所有')
+      Button($r('app.string.all'))
         .width('100%')
         .height(44)
         .backgroundColor(this.themeColors.cardBackground)
@@ -137,7 +137,7 @@ struct ImportOptionDialog {
 
       Blank().height(12)
 
-      Button('取消')
+      Button($r('app.string.cancel'))
         .width('100%')
         .height(44)
         .backgroundColor(this.themeColors.divider)
@@ -230,7 +230,7 @@ struct MorePage {
             this.goBack()
           })
         
-        Text('更多')
+        Text($r('app.string.more'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
@@ -267,8 +267,8 @@ struct MorePage {
     Column() {
       // 导出
       SettingItemWithAction({
-        label: '导出',
-        summary: '导出用户配置、此刻记录备份或所有数据',
+        label: $r('app.string.export'),
+        summary: $r('app.string.export_summary'),
         onAction: () => {
           this.showExportDialog()
         }
@@ -280,8 +280,8 @@ struct MorePage {
       
       // 导入
       SettingItemWithAction({
-        label: '导入',
-        summary: '导入用户配置、此刻记录备份或所有数据',
+        label: $r('app.string.import'),
+        summary: $r('app.string.import_summary'),
         onAction: () => {
           this.showImportDialog()
         }
@@ -293,8 +293,8 @@ struct MorePage {
       
       // 重置应用
       SettingItemWithAction({
-        label: '重置应用',
-        summary: '恢复默认设置',
+        label: $r('app.string.reset_app'),
+        summary: $r('app.string.reset_summary'),
         isDestructive: true,
         onAction: () => {
           this.onResetApp()
@@ -332,7 +332,7 @@ struct MorePage {
   private async onExportConfig() {
     if (!this.configManager || !this.context) {
       try {
-        this.promptAction.showToast({ message: '管理器未初始化' })
+        this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
         console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
@@ -346,7 +346,7 @@ struct MorePage {
   private async onImportConfig() {
     if (!this.configManager || !this.context) {
       try {
-        this.promptAction.showToast({ message: '配置管理器未初始化' })
+        this.promptAction.showToast({ message: $r('app.string.config_manager_not_initialized') })
       } catch (error) {
         console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
@@ -360,7 +360,7 @@ struct MorePage {
   private async onExportBackup() {
     if (!this.backupManager || !this.context) {
       try {
-        this.promptAction.showToast({ message: '管理器未初始化' })
+        this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
         console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
@@ -374,7 +374,7 @@ struct MorePage {
   private async onImportBackup() {
     if (!this.backupManager || !this.context) {
       try {
-        this.promptAction.showToast({ message: '管理器未初始化' })
+        this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
         console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
@@ -388,7 +388,7 @@ struct MorePage {
   private async onExportAll() {
     if (!this.configManager || !this.context) {
       try {
-        this.promptAction.showToast({ message: '管理器未初始化' })
+        this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
         console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
@@ -402,7 +402,7 @@ struct MorePage {
   private async onImportAll() {
     if (!this.configManager || !this.context) {
       try {
-        this.promptAction.showToast({ message: '管理器未初始化' })
+        this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
         console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }
@@ -416,7 +416,7 @@ struct MorePage {
   private async onResetApp() {
     if (!this.configManager || !this.context) {
       try {
-        this.promptAction.showToast({ message: '管理器未初始化' })
+        this.promptAction.showToast({ message: $r('app.string.manager_not_initialized') })
       } catch (error) {
         console.error('MorePage: showToast 失败: ' + JSON.stringify(error))
       }

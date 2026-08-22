@@ -36,7 +36,7 @@ export struct ShareHomeCard {
             .fontSize(20)
           
           Column() {
-            Text('活着')
+            Text($r('app.string.living'))
               .fontSize(14)
               .fontWeight(FontWeight.Bold)
               .fontColor('#333333')
@@ -79,14 +79,14 @@ export struct ShareHomeCard {
         
         // 模式标签
         Row({ space: 8 }) {
-          Text(this.isRemainingMode ? '⏳ 剩余时间' : '⏱️ 已存活时间')
+          Text(this.isRemainingMode ? $r('app.string.remaining_time') : $r('app.string.alive_time'))
             .fontSize(12)
             .fontColor('#FFFFFF')
             .backgroundColor(this.isRemainingMode ? '#4CAF50' : '#F44336')
             .padding({ left: 10, right: 10, top: 4, bottom: 4 })
             .borderRadius(12)
           
-          Text(this.isAccumulatedMode ? '累计模式' : '非累计模式')
+          Text(this.isAccumulatedMode ? $r('app.string.accumulated_mode') : $r('app.string.non_accumulated'))
             .fontSize(12)
             .fontColor('#FFFFFF')
             .backgroundColor('#2196F3')
@@ -149,7 +149,7 @@ export struct ShareHomeCard {
         Blank()
         
         Row({ space: 4 }) {
-          Text('来自')
+          Text($r('app.string.from_prefix'))
             .fontSize(10)
             .fontColor('#CCCCCC')
           

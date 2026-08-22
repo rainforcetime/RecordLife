@@ -183,7 +183,7 @@ struct StorageImagePage {
           .fontColor([this.themeColors.primary])
           .margin({ right: 12 })
         
-        Text('存储图片')
+        Text($r('app.string.stored_images'))
           .fontSize(22)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
@@ -213,7 +213,7 @@ struct StorageImagePage {
             .height(48)
             .color(this.themeColors.primary)
           
-          Text('加载中...')
+          Text($r('app.string.loading'))
             .fontSize(16)
             .fontColor(this.themeColors.textSecondary)
             .margin({ top: 16 })
@@ -228,12 +228,12 @@ struct StorageImagePage {
             .fontSize(64)
             .fontColor([this.themeColors.textSecondary])
           
-          Text('暂无图片')
+          Text($r('app.string.no_images'))
             .fontSize(18)
             .fontColor(this.themeColors.textSecondary)
             .margin({ top: 16 })
           
-          Text('记录图片目录中没有找到图片文件')
+          Text($r('app.string.no_images_desc'))
             .fontSize(14)
             .fontColor(this.themeColors.textTertiary)
             .margin({ top: 8 })
