@@ -1,5 +1,6 @@
 // 新增记录区域组件：components/AddRecordSection.ets
 import { common } from '@kit.AbilityKit'
+import { BusinessError } from '@kit.BasicServicesKit'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { LifeRecord, ImageInfo } from '../../common/types'
@@ -59,7 +60,7 @@ export struct AddRecordSection {
     // 加载记录模板（更新计划三期）
     TemplateService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext).then((ts) => {
       this.templates = ts.getTemplates()
-    }).catch((error) => {
+    }).catch((error: BusinessError) => {
       Logger.error('[AddRecordSection] 加载模板失败: ' + JSON.stringify(error))
     })
   }
