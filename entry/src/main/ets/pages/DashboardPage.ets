@@ -3,8 +3,7 @@ import { router } from '@kit.ArkUI'
 import { common } from '@kit.AbilityKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { ConfigManager } from '../config/ConfigManager'
-import { RecordRepository } from '../repository/RecordRepository'
-import { LifeRecord } from '../model/RecordModel'
+import { NowViewModel } from '../viewmodel/NowViewModel'
 import { StatisticsUtils, LifeStatistics, LifeProgress } from '../model/StatisticsModel'
 import { TimeUtils } from '../common/utils/TimeUtils'
 import { Logger } from '../common/utils/Logger'
@@ -37,11 +36,13 @@ struct DashboardPage {
       const configManager = await ConfigManager.getInstance(context)
       this.targetAge = configManager.getTargetAge()
 
-      // 加载全部记录并统计
-      const records: LifeRecord[] = await RecordRepository.getRecords(context)
+      // 从 NowViewModel 取记录（与时间线一致的数据源，避免单独读持久化的时序问题）
+      const viewModel = await NowViewModel.getInstance(context)
+      const records = viewModel.getRecords()
+      Logger.info('[DashboardPage] 加载记录: ' + records.length + ' 条')
       this.statistics = StatisticsUtils.calculateStatistics(records)
       this.lifeProgress = StatisticsUtils.getLifeProgress(configManager.getBirthDate(), this.targetAge, TimeUtils.now())
-      Logger.info('[DashboardPage] 统计完成: ' + this.statistics.totalRecords + ' 条记录')
+      Logger.info('[DashboardPage] 统计完成: ' + this.statistics.totalRecords + ' 条 / ' + this.statistics.activeDays + ' 天')
     } catch (error) {
       Logger.error('[DashboardPage] 加载统计失败: ' + JSON.stringify(error))
     }
@@ -97,7 +98,7 @@ struct DashboardPage {
               .height(110)
 
               Column() {
-                Text(this.lifeProgress.livedDays.toLocaleString())
+                Text(this.formatNumber(this.lifeProgress.livedDays))
                   .fontSize(28)
                   .fontWeight(FontWeight.Bold)
                   .fontColor(this.themeColors.textPrimary)
@@ -126,21 +127,21 @@ struct DashboardPage {
 
           // 数据统计卡片网格
           Row({ space: 10 }) {
-            this.StatCard($r('app.string.stat_total_records'), this.statistics.totalRecords.toLocaleString())
-            this.StatCard($r('app.string.stat_active_days'), this.statistics.activeDays.toLocaleString())
+            this.StatCard($r('app.string.stat_total_records'), this.formatNumber(this.statistics.totalRecords))
+            this.StatCard($r('app.string.stat_active_days'), this.formatNumber(this.statistics.activeDays))
           }
           .width('100%')
           .margin({ bottom: 10 })
 
           Row({ space: 10 }) {
             this.StatCard($r('app.string.stat_avg_per_day'), this.statistics.averagePerDay.toFixed(1))
-            this.StatCard($r('app.string.stat_longest_streak'), this.statistics.longestStreak.toLocaleString())
+            this.StatCard($r('app.string.stat_longest_streak'), this.formatNumber(this.statistics.longestStreak))
           }
           .width('100%')
           .margin({ bottom: 10 })
 
           Row({ space: 10 }) {
-            this.StatCard($r('app.string.stat_total_chars'), this.statistics.totalCharacters.toLocaleString())
+            this.StatCard($r('app.string.stat_total_chars'), this.formatNumber(this.statistics.totalCharacters))
             this.StatCard($r('app.string.stat_first_date'), this.statistics.firstRecordDate.length > 0 ? this.statistics.firstRecordDate : '-')
           }
           .width('100%')
@@ -148,7 +149,7 @@ struct DashboardPage {
 
           Row({ space: 10 }) {
             this.StatCard($r('app.string.stat_last_date'), this.statistics.lastRecordDate.length > 0 ? this.statistics.lastRecordDate : '-')
-            this.StatCard($r('app.string.stat_target_age'), this.targetAge.toLocaleString())
+            this.StatCard($r('app.string.stat_target_age'), this.formatNumber(this.targetAge))
           }
           .width('100%')
         }
@@ -162,6 +163,11 @@ struct DashboardPage {
     .width('100%')
     .height('100%')
     .backgroundColor(this.themeColors.background)
+  }
+
+  // 数字格式化（ArkTS 兼容：不用 toLocaleString）
+  private formatNumber(value: number): string {
+    return value.toString()
   }
 
   // 统计卡片
