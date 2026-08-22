@@ -70,7 +70,7 @@ export struct ShareHomeCard {
           Text('🎯')
             .fontSize(14)
           
-          Text(`目标年龄: ${this.targetAge}岁`)
+          Text($r('app.string.target_age_label', this.targetAge))
             .fontSize(13)
             .fontColor('#666666')
         }

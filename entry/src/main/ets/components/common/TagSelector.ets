@@ -52,7 +52,7 @@ export struct TagSelector {
           Blank()
           
           if (this.selectedTagIds.length > 0) {
-            Text(`已选 ${this.selectedTagIds.length} 个`)
+            Text($r('app.string.selected_tags', this.selectedTagIds.length))
               .fontSize(12)
               .fontColor(this.themeColors.textSecondary)
           }

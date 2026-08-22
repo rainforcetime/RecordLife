@@ -499,10 +499,11 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 
 ## 12. 资源体系（国际化）
 
-### 12.1 `string.json`（base 中文 1120 行 / en_US 英文，约 280 个 key，一一对应）
+### 12.1 `string.json`（base 中文 / en_US 英文，约 300+ 个 key，一一对应）
 
 - 命名规范：小写 snake_case；系统约定名（`module_desc`、`EntryAbility_label`）；权限理由 `*_reason`；导航 `tab_*`；功能域前缀分组（`tag_*`、`profile_*`、`remaining_*`/`accumulated_*`/`current_*`/`non_accumulated_*`、`share_*`、`theme_*`、`storage_*`/`clear_cache_*`、`import_*`/`export_*`/`backup_*`/`reset_*`/`restore_*`、`sample_record_1~6`）；语义后缀 `_success/_failed/_hint/_placeholder/_title/_label/_desc/_prefix/_suffix/_confirm/_unit/_short`。
-- ⚠️ 仍有少量硬编码中文残留（重构 B2）：`ThemeConfig.getDisplayName`（'浅色模式' 等，ThemeConfig.ets:132-142）、`AccountUtils.themeToDisplay/displayToTheme/convertGenderToDisplay`（AccountUtils.ets:7-58）、`AccountViewModel.loadUserProfile` 默认值（'用户名'/'其他'，:41-47）、`CalendarUtils.getWeekdayText`（'周日'…，:146）、`MorePageBackupHandler` 部分 `getStringByNameSync('...')` 直接按名取（这些 key 名未走 `$r()` 编译期校验）。
+- ✅ 拼接文本国际化已完成（P6 轮次 14）：含动态值的中文拼接（`共 X 条记录` / `X年X月X日` / `今天/昨天/N天前` / `已使用 X / 可用 Y` / 星期标题等）全部改为 `$r('app.string.key', args)` 或 `getStringByNameSync(key, ...args)`，资源带 `%1$d`/`%2$d`/`%s` 占位符，base/en_US 双语言一一对应。
+- ⚠️ 仍有意保留的硬编码（重构 B2 残余）：`ThemeConfig.getDisplayName`（'浅色模式' 等，ThemeConfig.ets:132-142）、`AccountUtils.themeToDisplay/displayToTheme/convertGenderToDisplay`（'浅色模式'/'男'/'女' 等，AccountUtils.ets:7-58——「显示↔存储」双向映射，资源化需重构映射逻辑）、`AccountViewModel.loadUserProfile` 默认值（'用户名'/'其他'，:41-47）、`MorePageBackupHandler` 部分 `getStringByNameSync('...')` 直接按名取（这些 key 名未走 `$r()` 编译期校验）。
 
 ### 12.2 权限（module.json5）
 

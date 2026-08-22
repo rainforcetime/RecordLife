@@ -93,17 +93,6 @@ export class TimeUtils {
   }
 
   /**
-   * 格式化日期为中文显示格式（UTC+8时区）
-   */
-  static formatDateCN(date: Date): string {
-    const beijingTime = new Date(date.getTime() + TIMEZONE_OFFSET_MS);
-    const year = beijingTime.getUTCFullYear();
-    const month = (beijingTime.getUTCMonth() + 1).toString().padStart(2, '0');
-    const day = beijingTime.getUTCDate().toString().padStart(2, '0');
-    return `${year}年${month}月${day}日`;
-  }
-
-  /**
    * 解析日期字符串为Date对象（按UTC+8时区解析）
    * @param dateStr 格式：YYYY-MM-DD
    * @returns Date对象（内部存储UTC时间戳，表示北京时间的0点）

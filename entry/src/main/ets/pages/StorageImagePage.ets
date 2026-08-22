@@ -192,7 +192,7 @@ struct StorageImagePage {
         
         // 图片数量标签
         if (!this.isLoading && this.imageList.length > 0) {
-          Text(`${this.imageList.length} 张`)
+          Text($r('app.string.image_count', this.imageList.length))
             .fontSize(14)
             .fontColor(this.themeColors.textSecondary)
             .backgroundColor(this.themeColors.cardBackground)
@@ -267,7 +267,7 @@ struct StorageImagePage {
       // 底部存储空间统计
       if (!this.isLoading && this.freeStorageSize > 0) {
         Row() {
-          Text(`已使用 ${this.formatFileSize(this.totalImageSize)} / 可用 ${this.formatFileSize(this.freeStorageSize)}`)
+          Text($r('app.string.storage_used_available', this.formatFileSize(this.totalImageSize), this.formatFileSize(this.freeStorageSize)))
             .fontSize(13)
             .fontColor(this.themeColors.textSecondary)
         }

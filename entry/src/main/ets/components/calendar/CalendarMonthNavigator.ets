@@ -77,12 +77,12 @@ export struct CalendarMonthNavigator {
   @Builder
   CurrentYearMonth() {
     Column() {
-      Text(`${this.currentYear}年`)
+      Text($r('app.string.year_value', this.currentYear))
         .fontSize(14)
         .fontColor(this.themeColors.textSecondary)
         .height(18)
       
-      Text(`${this.currentMonth}月`)
+      Text($r('app.string.month_value', this.currentMonth))
         .fontSize(24)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.themeColors.textPrimary)

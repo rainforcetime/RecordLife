@@ -56,7 +56,7 @@ export struct CalendarSelectedRecords {
     Row() {
       Column() {
         Row() {
-          Text(`${this.selectedMonth}月${this.selectedDay}日`)
+          Text($r('app.string.date_md', this.selectedMonth, this.selectedDay))
             .fontSize(18)
             .fontWeight(FontWeight.Bold)
             .fontColor(this.themeColors.textPrimary)
@@ -68,7 +68,7 @@ export struct CalendarSelectedRecords {
             .margin({ left: 8 })
         }
         
-        Text(`${this.selectedRecords.length} 条记录`)
+        Text($r('app.string.record_count', this.selectedRecords.length))
           .fontSize(13)
           .fontColor(this.themeColors.textSecondary)
           .margin({ top: 4 })
@@ -105,7 +105,7 @@ export struct CalendarSelectedRecords {
     .borderRadius(16)
     .onClick(() => {
       if (this.onRecordsClick) {
-        const dateStr = `${this.selectedYear}年${this.selectedMonth}月${this.selectedDay}日`
+        const dateStr = this.buildSelectedDateStr()
         this.onRecordsClick(this.selectedRecords, dateStr)
       }
     })
@@ -204,7 +204,7 @@ export struct CalendarSelectedRecords {
   @Builder
   MoreRecordsHint() {
     Row() {
-      Text(`还有 ${this.selectedRecords.length - 3} 条记录`)
+      Text($r('app.string.more_records', this.selectedRecords.length - 3))
         .fontSize(13)
         .fontColor(this.themeColors.textSecondary)
       
@@ -218,7 +218,7 @@ export struct CalendarSelectedRecords {
     .justifyContent(FlexAlign.Center)
     .onClick(() => {
       if (this.onRecordsClick) {
-        const dateStr = `${this.selectedYear}年${this.selectedMonth}月${this.selectedDay}日`
+        const dateStr = this.buildSelectedDateStr()
         this.onRecordsClick(this.selectedRecords, dateStr)
       }
     })
@@ -248,7 +248,19 @@ export struct CalendarSelectedRecords {
   
   // 获取星期文本
   private get weekdayText(): string {
-    return CalendarUtils.getWeekdayText(this.selectedYear, this.selectedMonth, this.selectedDay)
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    if (!rm) {
+      return ''
+    }
+    const weekdays = rm.getStringArrayByNameSync('weekdays')
+    const date = new Date(this.selectedYear, this.selectedMonth - 1, this.selectedDay)
+    return weekdays[date.getDay()]
+  }
+
+  // 构建选中日期完整字符串（国际化，UTC+8 日期分量）
+  private buildSelectedDateStr(): string {
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    return rm ? rm.getStringByNameSync('date_ymd_full', this.selectedYear, this.selectedMonth, this.selectedDay) : ''
   }
   
   // 获取记录图标背景色

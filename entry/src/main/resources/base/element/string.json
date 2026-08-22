@@ -1115,6 +1115,112 @@
     {
       "name": "pinned_success",
       "value": "已添加收藏"
+    },
+    {
+      "name": "date_ymd_full",
+      "value": "%1$d年%2$d月%3$d日"
+    },
+    {
+      "name": "date_md",
+      "value": "%1$d月%2$d日"
+    },
+    {
+      "name": "date_md_prefixed",
+      "value": "· %1$d月%2$d日"
+    },
+    {
+      "name": "year_value",
+      "value": "%d年"
+    },
+    {
+      "name": "month_value",
+      "value": "%d月"
+    },
+    {
+      "name": "record_count",
+      "value": "%d 条记录"
+    },
+    {
+      "name": "record_count_simple",
+      "value": "%d 条"
+    },
+    {
+      "name": "total_records",
+      "value": "共 %d 条记录"
+    },
+    {
+      "name": "found_records",
+      "value": "找到 %d 条相关记录"
+    },
+    {
+      "name": "more_records",
+      "value": "还有 %d 条记录"
+    },
+    {
+      "name": "selected_tags",
+      "value": "已选 %d 个"
+    },
+    {
+      "name": "yesterday",
+      "value": "昨天"
+    },
+    {
+      "name": "day_before_yesterday",
+      "value": "前天"
+    },
+    {
+      "name": "days_ago",
+      "value": "%d天前"
+    },
+    {
+      "name": "no_matching_records_detail",
+      "value": "没有包含\"%s\"的记录"
+    },
+    {
+      "name": "storage_used_available",
+      "value": "已使用 %1$s / 可用 %2$s"
+    },
+    {
+      "name": "image_count",
+      "value": "%d 张"
+    },
+    {
+      "name": "target_age_label",
+      "value": "目标年龄: %d 岁"
+    },
+    {
+      "name": "age_years",
+      "value": "%d 岁"
+    },
+    {
+      "name": "usage_days",
+      "value": "%d 天"
+    },
+    {
+      "name": "usage_label",
+      "value": "已使用"
+    },
+    {
+      "name": "app_desc_label",
+      "value": "应用描述"
+    },
+    {
+      "name": "developer_label",
+      "value": "开发者"
+    },
+    {
+      "name": "website_label",
+      "value": "官方网站"
+    },
+    {
+      "name": "weekdays",
+      "type": "array",
+      "value": ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+    },
+    {
+      "name": "week_short",
+      "type": "array",
+      "value": ["日", "一", "二", "三", "四", "五", "六"]
     }
   ]
 }

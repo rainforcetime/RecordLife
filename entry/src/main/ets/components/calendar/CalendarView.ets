@@ -76,6 +76,12 @@ export struct CalendarView {
     this.selectedRecords = day?.records || []
     console.info(`[CalendarView] 更新选中记录缓存: ${this.selectedRecords.length} 条`)
   }
+
+  // 星期标题（国际化：读 week_short 数组资源）
+  private getWeekdayHeaders(): string[] {
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    return rm ? rm.getStringArrayByNameSync('week_short') : []
+  }
   
   build() {
     Column() {
@@ -130,7 +136,7 @@ export struct CalendarView {
   @Builder
   WeekdayHeader() {
     Row() {
-      ForEach(['日', '一', '二', '三', '四', '五', '六'], (day: string, index: number) => {
+      ForEach(this.getWeekdayHeaders(), (day: string, index: number) => {
         Text(day)
           .fontSize(13)
           .fontWeight(FontWeight.Medium)

@@ -136,19 +136,6 @@ export class CalendarUtils {
   }
   
   /**
-   * 获取星期文本
-   * @param year 年份
-   * @param month 月份
-   * @param day 日期
-   * @returns 星期文本
-   */
-  static getWeekdayText(year: number, month: number, day: number): string {
-    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-    const date = new Date(year, month - 1, day)
-    return weekdays[date.getDay()]
-  }
-  
-  /**
    * 格式化时间
    * @param timestamp 时间戳
    * @returns 格式化后的时间字符串

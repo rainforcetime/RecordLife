@@ -1115,6 +1115,112 @@
     {
       "name": "pinned_success",
       "value": "Favorited"
+    },
+    {
+      "name": "date_ymd_full",
+      "value": "%1$d/%2$d/%3$d"
+    },
+    {
+      "name": "date_md",
+      "value": "%1$d/%2$d"
+    },
+    {
+      "name": "date_md_prefixed",
+      "value": "· %1$d/%2$d"
+    },
+    {
+      "name": "year_value",
+      "value": "%d"
+    },
+    {
+      "name": "month_value",
+      "value": "%d"
+    },
+    {
+      "name": "record_count",
+      "value": "%d records"
+    },
+    {
+      "name": "record_count_simple",
+      "value": "%d"
+    },
+    {
+      "name": "total_records",
+      "value": "%d records in total"
+    },
+    {
+      "name": "found_records",
+      "value": "%d matching records"
+    },
+    {
+      "name": "more_records",
+      "value": "%d more records"
+    },
+    {
+      "name": "selected_tags",
+      "value": "%d selected"
+    },
+    {
+      "name": "yesterday",
+      "value": "Yesterday"
+    },
+    {
+      "name": "day_before_yesterday",
+      "value": "Day before yesterday"
+    },
+    {
+      "name": "days_ago",
+      "value": "%d days ago"
+    },
+    {
+      "name": "no_matching_records_detail",
+      "value": "No records containing \"%s\""
+    },
+    {
+      "name": "storage_used_available",
+      "value": "Used %1$s / Free %2$s"
+    },
+    {
+      "name": "image_count",
+      "value": "%d images"
+    },
+    {
+      "name": "target_age_label",
+      "value": "Target age: %d"
+    },
+    {
+      "name": "age_years",
+      "value": "%d years old"
+    },
+    {
+      "name": "usage_days",
+      "value": "%d days"
+    },
+    {
+      "name": "usage_label",
+      "value": "Used"
+    },
+    {
+      "name": "app_desc_label",
+      "value": "Description"
+    },
+    {
+      "name": "developer_label",
+      "value": "Developer"
+    },
+    {
+      "name": "website_label",
+      "value": "Website"
+    },
+    {
+      "name": "weekdays",
+      "type": "array",
+      "value": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    },
+    {
+      "name": "week_short",
+      "type": "array",
+      "value": ["Su", "M", "Tu", "W", "Th", "F", "Sa"]
     }
   ]
 }

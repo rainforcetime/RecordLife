@@ -19,9 +19,13 @@ export struct BirthDateRow {
     });
   }
 
-  // 格式化日期显示（使用UTC+8时区）
+  // 格式化日期显示（使用UTC+8时区，国际化）
   private formatDate(date: Date): string {
-    return TimeUtils.formatDateCN(date);
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    if (!rm) {
+      return '';
+    }
+    return rm.getStringByNameSync('date_ymd_full', TimeUtils.getFullYear(date), TimeUtils.getMonth(date) + 1, TimeUtils.getDate(date));
   }
 
   build() {

@@ -80,28 +80,28 @@ export struct AboutAppDialog {
       // 应用信息列表
       Column() {
         // 已使用天数
-        this.InfoItem('已使用', `${this.usageDays} 天`)
+        this.InfoItem($r('app.string.usage_label'), $r('app.string.usage_days', this.usageDays))
 
         Divider()
           .color(this.themeColors.divider)
           .margin({ left: 15 })
 
         // 应用描述
-        this.InfoItem('应用描述', this.appInfo.description)
+        this.InfoItem($r('app.string.app_desc_label'), this.appInfo.description)
 
         Divider()
           .color(this.themeColors.divider)
           .margin({ left: 15 })
 
         // 开发者
-        this.InfoItem('开发者', this.appInfo.developer)
+        this.InfoItem($r('app.string.developer_label'), this.appInfo.developer)
 
         Divider()
           .color(this.themeColors.divider)
           .margin({ left: 15 })
 
         // 官网
-        this.InfoItem('官方网站', this.appInfo.website, () => {
+        this.InfoItem($r('app.string.website_label'), this.appInfo.website, () => {
           let context = this.getUIContext().getHostContext() as common.UIAbilityContext
           context.openLink(this.appInfo.website, { appLinkingOnly: false })
             .catch((error: BusinessError) => {
@@ -134,7 +134,7 @@ export struct AboutAppDialog {
   }
 
   @Builder
-  InfoItem(label: string, value: string, onClick?: () => void) {
+  InfoItem(label: ResourceStr, value: ResourceStr, onClick?: () => void) {
     Row() {
       Text(label)
         .fontSize(14)

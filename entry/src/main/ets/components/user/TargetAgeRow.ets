@@ -28,7 +28,7 @@ export struct TargetAgeRow {
       Blank()
 
       // 目标年龄显示
-      Text(`${this.targetAge} 岁`)
+      Text($r('app.string.age_years', this.targetAge))
         .fontSize(15)
         .fontColor(this.themeColors.success)
         .margin({ right: 12 })

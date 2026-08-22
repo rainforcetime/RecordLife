@@ -115,6 +115,12 @@ export struct TimelineSection {
     return false
   }
 
+  // 读取格式化字符串资源（国际化；占位符 %d/%s 由参数填充）
+  private getString(name: string, ...args: Array<string | number>): string {
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    return rm ? rm.getStringByNameSync(name, ...args) : ''
+  }
+
   // 构建扁平化的日期分组数据
   private buildDateGroups() {
     const groups: DateGroup[] = []
@@ -160,19 +166,19 @@ export struct TimelineSection {
 
             let dateStr = ''
             if (diffDays === 0) {
-              dateStr = '今天'
+              dateStr = this.getString('today')
             } else if (diffDays === 1) {
-              dateStr = '昨天'
+              dateStr = this.getString('yesterday')
             } else if (diffDays === 2) {
-              dateStr = '前天'
+              dateStr = this.getString('day_before_yesterday')
             } else if (diffDays < 7) {
-              dateStr = `${diffDays}天前`
+              dateStr = this.getString('days_ago', diffDays)
             } else {
               // 非本年显示年份，本年只显示月日
               if (yearNode.year !== now.getFullYear()) {
-                dateStr = `${yearNode.year}年${monthNode.month}月${dayNode.day}日`
+                dateStr = this.getString('date_ymd_full', yearNode.year, monthNode.month, dayNode.day)
               } else {
-                dateStr = `${monthNode.month}月${dayNode.day}日`
+                dateStr = this.getString('date_md', monthNode.month, dayNode.day)
               }
             }
 
@@ -252,7 +258,7 @@ export struct TimelineSection {
           .fontWeight(FontWeight.Medium)
           .margin({ bottom: 8 })
         
-        Text(`没有包含"${this.searchKeyword}"的记录`)
+        Text($r('app.string.no_matching_records_detail', this.searchKeyword))
           .fontSize(14)
           .fontColor(this.themeColors.textSecondary)
           .textAlign(TextAlign.Center)
@@ -373,7 +379,7 @@ export struct TimelineSection {
         .margin({ left: 10 })
       
       // 完整日期（小字）
-      Text(`· ${group.month}月${group.day}日`)
+      Text($r('app.string.date_md_prefixed', group.month, group.day))
         .fontSize(14)
         .fontColor(this.themeColors.textSecondary)
         .margin({ left: 6 })
@@ -383,7 +389,7 @@ export struct TimelineSection {
       // 记录数量徽章
       if (group.records.length > 1) {
         Row() {
-          Text(`${group.records.length} 条`)
+          Text($r('app.string.record_count_simple', group.records.length))
             .fontSize(12)
             .fontColor(this.themeColors.primary)
             .fontWeight(FontWeight.Medium)

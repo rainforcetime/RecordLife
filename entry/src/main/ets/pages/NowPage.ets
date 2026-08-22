@@ -206,7 +206,7 @@ struct NowPage {
                   .fontSize(16)
                   .fontColor([this.themeColors.primary])
                 
-                Text(`找到 ${this.getFilteredRecordCount()} 条相关记录`)
+                Text($r('app.string.found_records', this.getFilteredRecordCount()))
                   .fontSize(14)
                   .fontColor(this.themeColors.textSecondary)
                   .margin({ left: 6 })
@@ -217,7 +217,7 @@ struct NowPage {
               // 无搜索时显示总记录数
               if (this.timelineData.years.length > 0) {
                 Row() {
-                  Text(`共 ${this.getTotalRecordCount()} 条记录`)
+                  Text($r('app.string.total_records', this.getTotalRecordCount()))
                     .fontSize(14)
                     .fontColor(this.themeColors.textSecondary)
                 }

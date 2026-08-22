@@ -723,6 +723,35 @@ entry/src/main/ets/
 
 **下一轮计划**：用户实机验证结果回填后，P8 标记完成，重构收官。
 
+### 轮次 14 — 2026-08-22（B2 残留清理：拼接文本国际化）
+
+> 前置：用户实机验证 P8 静态预检轮次 13 ✅。
+
+**本轮目标**：将用户可见的含动态值拼接中文文本全部国际化（B2 残留清理），消除 UI 层中文硬编码。
+
+**涉及文件**（13 .ets + 2 string.json）：
+- 资源：`base/element/string.json`、`en_US/element/string.json` 新增 26 个带占位符 key（`date_ymd_full` / `date_md` / `record_count` / `total_records` / `found_records` / `more_records` / `selected_tags` / `days_ago` / `storage_used_available` / `image_count` / `target_age_label` / `age_years` / `usage_days` / 星期数组 `weekdays`/`week_short` 等）+ 复用已有 `today`
+- 日历：`CalendarMonthNavigator`（年月）、`CalendarView`（星期标题→资源数组）、`CalendarSelectedRecords`（日期标题/记录数/更多提示/完整日期/星期）、`CalendarUtils`（删除 `getWeekdayText`）
+- 时间线：`TimelineSection`（今天/昨天/前天/N天前/年月日 dateStr → `getString` helper + 资源；3 处 Text → `$r` 带参）、`TagSelector`（已选数）、`NowPage`（找到/共记录数）
+- 其余：`StorageImagePage`（图片数/存储使用）、`ShareHomeCard`（目标年龄）、`TargetAgeRow`（年龄）、`AboutAppDialog`（4 个 label + 使用天数，`InfoItem` 签名改 `ResourceStr`）、`BirthDateRow`（日期→资源）、`TimeUtils`（删除死代码 `formatDateCN`）
+
+**方案要点**：
+- `Text($r('app.string.key', arg1, arg2))` 带占位符参数（`%1$d`/`%2$d`/`%s`）
+- 字符串变量场景用 `this.getUIContext().getHostContext()?.resourceManager.getStringByNameSync(key, ...args)`
+- 星期用 `getStringArrayByNameSync('weekdays'/'week_short')` 数组资源
+
+**已完成**：
+- [x] UI 拼接中文清零（grep 验证：仅剩 console 调试日志，B3 范畴）
+- [x] 资源双语言完整（python 校验：无重复 key、26 新增 + 复用 today）
+- [x] 静态验证通过
+
+**遗留问题**：
+- ⚠️ 需 DevEco 编译 + 实机回归：日历视图（星期标题/日期）、时间线日期描述（今天/昨天/N天前）、搜索无结果文案、账号关于页、图片存储页、分享卡片、目标年龄——中英文各看一遍
+- `AccountUtils` 主题/性别显示映射（'浅色模式'/'男' 等）仍为硬编码——属"显示↔存储"双向映射，资源化需重构映射逻辑，文档已记录有意保留
+- `AccountViewModel` 默认值（'用户名'/'其他'/'计算中...'）仍为硬编码——默认兜底值，已记录
+
+**下一轮计划**：P8 实机全量回归（含中英文文案检查）→ 收官
+
 ### 10.3 数据兼容性验证记录
 
 | 验证时间 | 备份文件来源 | 导入结果 | 验证人 | 备注 |
