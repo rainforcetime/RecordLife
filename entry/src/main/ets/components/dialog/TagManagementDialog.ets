@@ -306,22 +306,26 @@ export struct TagManagementDialog {
   build() {
     // CustomDialog 弹窗背景透明，需最外层容器自带背景（Tab 栏 + 内容整体不透明）
     Column() {
+      // Scroll 只能有一个内容子节点，用 Column 包裹全部内容
       Scroll() {
-        if (this.isEditing) {
-          // 标签编辑视图全屏
-          this.TagEditView()
-        } else {
-          // 管理分页 Tab（标签 / 心情 / 模板）
-          this.TabBarRow()
-
-          if (this.currentTab === 0) {
-            this.TagListView()
-          } else if (this.currentTab === 1) {
-            this.MoodView()
+        Column() {
+          if (this.isEditing) {
+            // 标签编辑视图全屏
+            this.TagEditView()
           } else {
-            this.TemplateView()
+            // 管理分页 Tab（标签 / 心情 / 模板）
+            this.TabBarRow()
+
+            if (this.currentTab === 0) {
+              this.TagListView()
+            } else if (this.currentTab === 1) {
+              this.MoodView()
+            } else {
+              this.TemplateView()
+            }
           }
         }
+        .width('100%')
       }
       .scrollBar(BarState.Off)
       .width('100%')
