@@ -611,6 +611,8 @@ export struct HomePage {
             .width('100%')
           }
           .width('100%')
+          }
+          .width('100%')
           .padding(20)
           .margin({ top: 16 })
           .backgroundColor(this.themeColors.cardBackground)
@@ -621,10 +623,10 @@ export struct HomePage {
             offsetX: 0,
             offsetY: 4
           })
+        }
         .width('100%')
         .backgroundColor(this.themeColors.background)
         .padding({ left: 16, right: 16, bottom: 16 })
-      }
       }
       .width('100%')
       .height('100%')
