@@ -1,18 +1,15 @@
 // NowPage 业务逻辑类：viewmodel/NowViewModel.ets
 import { common } from '@kit.AbilityKit'
-import preferences from '@ohos.data.preferences'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { LifeRecord, TimelineYear, TimelineMonth, TimelineDay, TimelineData } from '../common/types'
 import { TimeUtils } from '../common/utils/TimeUtils'
 import { ImageGenerator } from '../utils/ImageGenerator'
+import { RecordRepository } from '../repository/RecordRepository'
 
 // 生活记录数据管理类
 export class NowViewModel {
   private static instance: NowViewModel | null = null
   private context: common.UIAbilityContext | null = null
-  private prefs: preferences.Preferences | null = null
-  private readonly STORE_NAME = 'now_page_records'
-  private readonly RECORDS_KEY = 'life_records'
   
   // 记录数据
   private records: LifeRecord[] = []
@@ -24,7 +21,7 @@ export class NowViewModel {
     if (!NowViewModel.instance) {
       NowViewModel.instance = new NowViewModel()
       await NowViewModel.instance.init()
-    } else if (!NowViewModel.instance.prefs) {
+    } else if (!NowViewModel.instance.context) {
       await NowViewModel.instance.init()
     }
     return NowViewModel.instance
@@ -55,10 +52,6 @@ export class NowViewModel {
         
         this.context = uiContext
         
-        // 获取 Preferences
-        this.prefs = await preferences.getPreferences(uiContext, this.STORE_NAME)
-        console.info('[NowViewModel] Preferences 获取成功')
-        
         // 加载记录
         await this.loadRecords()
         console.info('[NowViewModel] 记录加载完成，数量: ' + this.records.length)
@@ -74,15 +67,15 @@ export class NowViewModel {
   
   // 加载记录
   private async loadRecords(): Promise<void> {
-    if (!this.prefs) {
+    if (!this.context) {
       this.records = []
       return
     }
     
     try {
-      const recordsStr = await this.prefs.get(this.RECORDS_KEY, '') as string
-      if (recordsStr) {
-        this.records = JSON.parse(recordsStr) as LifeRecord[]
+      const records = await RecordRepository.getRecords(this.context)
+      if (records.length > 0) {
+        this.records = records
         // 按时间戳降序排序（最新的在前）
         this.records.sort((a, b) => b.timestamp - a.timestamp)
       } else {
@@ -180,22 +173,22 @@ export class NowViewModel {
   // 保存记录
   private async saveRecords(): Promise<boolean> {
     // 如果 prefs 未初始化，尝试重新初始化
-    if (!this.prefs) {
-      console.warn('[NowViewModel] prefs 未初始化，尝试重新初始化')
+    if (!this.context) {
+      console.warn('[NowViewModel] context 未初始化，尝试重新初始化')
       await this.init()
     }
     
-    if (!this.prefs) {
-      console.error('[NowViewModel] prefs 仍然未初始化，保存失败')
+    if (!this.context) {
+      console.error('[NowViewModel] context 仍然未初始化，保存失败')
       return false
     }
     
     try {
-      const recordsStr = JSON.stringify(this.records)
-      await this.prefs.put(this.RECORDS_KEY, recordsStr)
-      await this.prefs.flush()
-      console.info('[NowViewModel] 记录保存成功，数量: ' + this.records.length)
-      return true
+      const success = await RecordRepository.saveRecords(this.context, this.records)
+      if (success) {
+        console.info('[NowViewModel] 记录保存成功，数量: ' + this.records.length)
+      }
+      return success
     } catch (error) {
       console.error('[NowViewModel] 保存记录失败: ' + JSON.stringify(error))
       return false

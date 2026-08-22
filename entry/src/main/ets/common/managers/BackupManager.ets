@@ -5,7 +5,7 @@ import { fileIo } from '@kit.CoreFileKit'
 import { util } from '@kit.ArkTS'
 import { LifeRecord } from '../types'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
-import preferences from '@ohos.data.preferences'
+import { RecordRepository } from '../../repository/RecordRepository'
 import { AppInfoManager } from '../../config/AppInfoConfig'
 
 // 备份元数据结构
@@ -280,19 +280,11 @@ export class BackupManager {
     }
     
     try {
-      const STORE_NAME = 'now_page_records'
-      const RECORDS_KEY = 'life_records'
-      
-      // 获取 Preferences 实例
-      const prefs = await preferences.getPreferences(this.context, STORE_NAME)
-      
-      // 保存记录
-      const recordsStr = JSON.stringify(records)
-      await prefs.put(RECORDS_KEY, recordsStr)
-      await prefs.flush()
-      
-      console.info(`[BackupManager] 已恢复 ${records.length} 条记录到 Preferences`)
-      return true
+      const success = await RecordRepository.saveRecords(this.context, records)
+      if (success) {
+        console.info(`[BackupManager] 已恢复 ${records.length} 条记录到 Preferences`)
+      }
+      return success
     } catch (error) {
       console.error('[BackupManager] 恢复记录到 Preferences 失败: ' + JSON.stringify(error))
       return false

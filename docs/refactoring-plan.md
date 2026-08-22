@@ -433,7 +433,42 @@ entry/src/main/ets/
 - `common/types.ets` 和 `config/UserConfig.ets` 保留为 re-export barrel，后续可逐步迁移 import 路径至 `model/` 后删除
 - `AccountViewModel.ets` 仍 re-export `AccountProfile` / `AccountDataStatistics` 供 `AccountPage.ets` 使用，后续 P4 瘦身时可改为直接 import
 
-**下一轮计划**：P2 — Model / Repository 层抽取（新建 `repository/`，封装 Preferences 读写）
+**下一轮计划**：P2 — Model / Repository 层抽取（新建 `repository/`，封装 Preferences 读写）— **已完成，见轮次 3**
+
+### 轮次 3 — 2026-08-22（P2 Repository 层重构）
+
+**本轮目标**：创建 `repository/` 目录，将所有 Preferences 访问收敛至仓库层，消除 store/key 常量散落与重复的 restore 逻辑（解决 A2 / A3 部分）。
+
+**涉及文件**：
+- `repository/RecordRepository.ets`（新增）— 封装 `now_page_records` store 读写：`getRecords()` / `saveRecords()` / `clearRecords()`
+- `repository/ConfigRepository.ets`（新增）— 封装 `record_life_config` store 读写：`getConfigString()` / `saveConfigString()`
+- `config/ConfigManager.ets`（修改）— 移除 `import preferences`、`private preferences` 字段、`CONFIG_KEY` / `STORE_NAME` 常量；改用 `ConfigRepository` + `this.context`
+- `viewmodel/NowViewModel.ets`（修改）— 移除 `import preferences`、`private prefs` 字段、`STORE_NAME` / `RECORDS_KEY` 常量；改用 `RecordRepository`
+- `common/managers/BackupManager.ets`（修改）— 移除 `import preferences`；`restoreRecordsToPreferences` 改用 `RecordRepository.saveRecords()`
+- `common/handlers/MorePageBackupHandler.ets`（修改）— 同上
+- `common/handlers/MorePageConfigHandler.ets`（修改）— 移除 `import preferences`；`deleteAllRecords` 改用 `RecordRepository.clearRecords()`
+
+**已完成**：
+- [x] 创建 `repository/` 目录（2 文件）
+- [x] `RecordRepository`：封装 `getRecords` / `saveRecords` / `clearRecords`，内部完成 JSON 序列化/反序列化
+- [x] `ConfigRepository`：封装 `getConfigString` / `saveConfigString`，仅做字符串读写（业务逻辑仍由 ConfigManager 处理）
+- [x] 迁移 ConfigManager：`this.preferences` → `this.context`，所有读写改走 `ConfigRepository`
+- [x] 迁移 NowViewModel：`this.prefs` → `this.context`，所有读写改走 `RecordRepository`
+- [x] 迁移 BackupManager / MorePageBackupHandler / MorePageConfigHandler：消除重复的 `STORE_NAME` / `RECORDS_KEY` 常量与 `preferences.getPreferences()` 调用
+- [x] 编译通过（`Build success`）
+- [x] 更新 `docs/technical-reference.md` §4.1 / §4.2 / §14
+
+**消除的问题**：
+- `@ohos.data.preferences` 直接 import：5 处 → 2 处（仅 repository 层）
+- store/key 常量散落：4 处 → 2 处（集中定义在 repository 层）
+- `restoreRecordsToPreferences` 重复逻辑：2 处独立实现 → 统一调用 `RecordRepository.saveRecords()`
+
+**遗留问题**：
+- `ConfigManager` 仍直接 `import common from '@ohos.app.ability.common'`（旧式 import，B4 / P7 范畴）
+- `NowViewModel` 仍直接 `import fileIo`（文件操作未抽象，属 P4 范畴）
+- repository 层尚未有单测覆盖（C2 / P4 范畴）
+
+**下一轮计划**：P3 — 主题服务重构（ThemeConfig 动态分发 → 资源系统 `$r` 引用）；或 P4 — ViewModel 瘦身 / fileIo 抽象
 
 ### 10.3 数据兼容性验证记录
 

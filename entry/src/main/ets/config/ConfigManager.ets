@@ -4,9 +4,9 @@
  * 使用 HarmonyOS Preferences API 进行持久化存储
  */
 
-import preferences from '@ohos.data.preferences';
 import common from '@ohos.app.ability.common';
 import { UserConfig, UserProfile, AppSettings, BackupConfig, DataStatistics, ConfigMetadata, createDefaultConfig, createDefaultConfigSync, validateConfig } from './UserConfig';
+import { ConfigRepository } from '../repository/ConfigRepository';
 import { Tag } from '../common/types';
 import { TimeUtils } from '../common/utils/TimeUtils';
 import { AppInfoManager } from './AppInfoConfig';
@@ -26,10 +26,8 @@ interface ExportData {
 
 export class ConfigManager {
   private static instance: ConfigManager | null = null;
-  private preferences: preferences.Preferences | null = null;
+  private context: common.UIAbilityContext | null = null;
   private config: UserConfig | null = null;
-  private readonly CONFIG_KEY = 'user_config';
-  private readonly STORE_NAME = 'record_life_config';
 
   private constructor() {}
 
@@ -38,9 +36,9 @@ export class ConfigManager {
     if (!ConfigManager.instance) {
       ConfigManager.instance = new ConfigManager();
       await ConfigManager.instance.init();
-    } else if (!ConfigManager.instance.preferences) {
-      // 如果 instance 存在但 preferences 未初始化，重新初始化
-      console.info('ConfigManager.getInstance: preferences 未初始化，重新初始化');
+    } else if (!ConfigManager.instance.context) {
+      // 如果 instance 存在但 context 未初始化，重新初始化
+      console.info('ConfigManager.getInstance: context 未初始化，重新初始化');
       await ConfigManager.instance.init();
     }
     return ConfigManager.instance;
@@ -63,7 +61,7 @@ export class ConfigManager {
       }
       
       if (!uiContext) {
-        console.warn('ConfigManager.init: uiContext 不存在，延迟初始化 preferences');
+        console.warn('ConfigManager.init: uiContext 不存在，延迟初始化');
         // 创建默认配置，但不返回，等待下次初始化
         if (!this.config) {
           this.config = await createDefaultConfig();
@@ -71,9 +69,8 @@ export class ConfigManager {
         return;
       }
       
-      console.info('ConfigManager.init: 开始获取 Preferences')
-      this.preferences = await preferences.getPreferences(uiContext, this.STORE_NAME);
-      console.info('ConfigManager.init: Preferences 获取成功 - ' + (this.preferences ? '是' : '否'))
+      console.info('ConfigManager.init: 保存 context')
+      this.context = uiContext;
       
       // 加载配置
       await this.loadConfig();
@@ -87,13 +84,13 @@ export class ConfigManager {
 
   // 从存储加载配置
   private async loadConfig(): Promise<void> {
-    if (!this.preferences) {
+    if (!this.context) {
       this.config = await createDefaultConfig();
       return;
     }
 
     try {
-      const configStr = await this.preferences.get(this.CONFIG_KEY, '') as string;
+      const configStr = await ConfigRepository.getConfigString(this.context);
       if (configStr) {
         const parsedConfig = JSON.parse(configStr) as UserConfig;
         
@@ -130,9 +127,9 @@ export class ConfigManager {
   // 添加自定义标签
   async addCustomTag(tag: Tag): Promise<boolean> {
     console.info('[ConfigManager] addCustomTag 开始, tag: ' + JSON.stringify(tag))
-    console.info('[ConfigManager] addCustomTag config: ' + (this.config ? '存在' : 'null') + ', preferences: ' + (this.preferences ? '存在' : 'null'))
-    if (!this.config || !this.preferences) {
-      console.warn('[ConfigManager] addCustomTag 失败: config或preferences为null')
+    console.info('[ConfigManager] addCustomTag config: ' + (this.config ? '存在' : 'null') + ', context: ' + (this.context ? '存在' : 'null'))
+    if (!this.config || !this.context) {
+      console.warn('[ConfigManager] addCustomTag 失败: config或context为null')
       return false;
     }
     const customTags = this.config.settings.customTags || [];
@@ -146,7 +143,7 @@ export class ConfigManager {
 
   // 更新自定义标签
   async updateCustomTag(tag: Tag): Promise<boolean> {
-    if (!this.config || !this.preferences) {
+    if (!this.config || !this.context) {
       return false;
     }
     const tags = this.config.settings.customTags || [];
@@ -160,7 +157,7 @@ export class ConfigManager {
 
   // 删除自定义标签
   async deleteCustomTag(id: string): Promise<boolean> {
-    if (!this.config || !this.preferences) {
+    if (!this.config || !this.context) {
       return false;
     }
     const tags = (this.config.settings.customTags || []).filter(t => t.id !== id);
@@ -170,7 +167,7 @@ export class ConfigManager {
 
   // 保存整个自定义标签列表
   async saveCustomTags(tags: Tag[]): Promise<boolean> {
-    if (!this.config || !this.preferences) {
+    if (!this.config || !this.context) {
       return false;
     }
     this.config.settings.customTags = tags;
@@ -180,11 +177,11 @@ export class ConfigManager {
   // 保存配置到存储
   async saveConfig(): Promise<boolean> {
     console.info('saveConfig 开始')
-    console.info('this.preferences: ' + (this.preferences ? '存在' : '不存在'))
+    console.info('this.context: ' + (this.context ? '存在' : '不存在'))
     console.info('this.config: ' + (this.config ? '存在' : '不存在'))
     
-    if (!this.preferences || !this.config) {
-      console.error('saveConfig: preferences 或 config 不存在')
+    if (!this.context || !this.config) {
+      console.error('saveConfig: context 或 config 不存在')
       return false;
     }
 
@@ -195,13 +192,10 @@ export class ConfigManager {
       const configStr = JSON.stringify(this.config);
       console.info('saveConfig: 配置字符串长度: ' + configStr.length)
       
-      await this.preferences.put(this.CONFIG_KEY, configStr);
-      console.info('saveConfig: put 成功')
+      const success = await ConfigRepository.saveConfigString(this.context, configStr);
+      console.info('saveConfig: 保存 ' + (success ? '成功' : '失败'))
       
-      await this.preferences.flush();
-      console.info('saveConfig: flush 成功')
-      
-      return true;
+      return success;
     } catch (error) {
       console.error('Save config failed:', error);
       return false;
@@ -256,15 +250,15 @@ export class ConfigManager {
   async setTheme(theme: string): Promise<boolean> {
     console.info('ConfigManager.setTheme 开始, theme: ' + theme)
     console.info('this.config: ' + (this.config ? '存在' : '不存在'))
-    console.info('this.preferences: ' + (this.preferences ? '存在' : '不存在'))
+    console.info('this.context: ' + (this.context ? '存在' : '不存在'))
     
     if (!this.config) {
       console.error('ConfigManager.setTheme: config 不存在')
       return false;
     }
 
-    if (!this.preferences) {
-      console.error('ConfigManager.setTheme: preferences 不存在')
+    if (!this.context) {
+      console.error('ConfigManager.setTheme: context 不存在')
       return false;
     }
 
@@ -484,7 +478,7 @@ export class ConfigManager {
 
   // 设置累计模式
   async setIsAccumulatedMode(isAccumulatedMode: boolean): Promise<boolean> {
-    if (!this.config || !this.preferences) {
+    if (!this.config || !this.context) {
       return false;
     }
     this.config.settings.isAccumulatedMode = isAccumulatedMode;
@@ -493,7 +487,7 @@ export class ConfigManager {
 
   // 设置剩余模式
   async setIsRemainingMode(isRemainingMode: boolean): Promise<boolean> {
-    if (!this.config || !this.preferences) {
+    if (!this.config || !this.context) {
       return false;
     }
     this.config.settings.isRemainingMode = isRemainingMode;
@@ -513,7 +507,7 @@ export class ConfigManager {
 
   // 设置目标年龄
   async setTargetAge(targetAge: number): Promise<boolean> {
-    if (!this.config || !this.preferences) {
+    if (!this.config || !this.context) {
       return false;
     }
     this.config.settings.targetAge = targetAge;

@@ -7,7 +7,7 @@ import { PromptAction, UIContext } from '@kit.ArkUI'
 import { ConfigManager } from '../../config/ConfigManager'
 import { RefreshManager } from '../managers/RefreshManager'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
-import preferences from '@ohos.data.preferences'
+import { RecordRepository } from '../../repository/RecordRepository'
 
 export class MorePageConfigHandler {
   /**
@@ -185,11 +185,7 @@ export class MorePageConfigHandler {
       }
       
       // 4. 清空 Preferences 中的记录数据
-      const STORE_NAME = 'now_page_records'
-      const RECORDS_KEY = 'life_records'
-      const prefs = await preferences.getPreferences(context, STORE_NAME)
-      await prefs.put(RECORDS_KEY, '[]')
-      await prefs.flush()
+      await RecordRepository.clearRecords(context)
       
       console.info('[MorePageConfigHandler] 记录数据已清空')
       

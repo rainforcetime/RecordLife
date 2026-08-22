@@ -5,7 +5,7 @@ import { fileIo } from '@kit.CoreFileKit'
 import { zlib } from '@kit.BasicServicesKit'
 import { PromptAction } from '@kit.ArkUI'
 import { util } from '@kit.ArkTS'
-import preferences from '@ohos.data.preferences'
+import { RecordRepository } from '../../repository/RecordRepository'
 import { BackupManager } from '../managers/BackupManager'
 import { RefreshManager } from '../managers/RefreshManager'
 import { MorePageHelper } from '../utils/MorePageHelper'
@@ -481,16 +481,11 @@ export class MorePageBackupHandler {
     records: LifeRecord[]
   ): Promise<boolean> {
     try {
-      const STORE_NAME = 'now_page_records'
-      const RECORDS_KEY = 'life_records'
-      
-      const prefs = await preferences.getPreferences(context, STORE_NAME)
-      const recordsStr = JSON.stringify(records)
-      await prefs.put(RECORDS_KEY, recordsStr)
-      await prefs.flush()
-      
-      console.info(`[MorePageBackupHandler] 已恢复 ${records.length} 条记录到 Preferences`)
-      return true
+      const success = await RecordRepository.saveRecords(context, records)
+      if (success) {
+        console.info(`[MorePageBackupHandler] 已恢复 ${records.length} 条记录到 Preferences`)
+      }
+      return success
     } catch (error) {
       console.error('[MorePageBackupHandler] 恢复记录到 Preferences 失败: ' + JSON.stringify(error))
       return false
