@@ -88,8 +88,8 @@ export struct FilterBar {
   // 筛选变化回调
   onChange?: () => void
 
-  // 筛选弹窗开关（更新计划五期）
-  @State private showFilterSheet: boolean = false
+  // 筛选气泡开关（更新计划五期：紧贴按钮向下弹出）
+  @State private showFilterPopup: boolean = false
 
   // 可用标签（内部动态加载）
   @State availableTags: Tag[] = DEFAULT_TAGS
@@ -198,46 +198,48 @@ export struct FilterBar {
   }
 
   build() {
-    // 筛选入口按钮（点击打开筛选弹窗，替代长距离横向滑动，更新计划五期）
+    // 筛选入口胶囊按钮（此刻右侧；点击向下弹出筛选气泡）
     Row() {
-      Row() {
-        Text('☰')
-          .fontSize(15)
-          .fontColor(this.themeColors.primary)
+      Text('☰')
+        .fontSize(15)
+        .fontColor(this.themeColors.primary)
 
-        Text(this.getFilterSummary())
-          .fontSize(14)
-          .fontColor(this.themeColors.primary)
-          .fontWeight(FontWeight.Medium)
-          .margin({ left: 6 })
+      Text(this.getFilterSummary())
+        .fontSize(14)
+        .fontColor(this.themeColors.primary)
+        .fontWeight(FontWeight.Medium)
+        .margin({ left: 6 })
 
-        // 筛选计数徽标（有筛选时显示）
-        if (this.getFilterCount() > 0) {
-          Text(this.getFilterCount().toString())
-            .fontSize(11)
-            .fontColor('#FFFFFF')
-            .textAlign(TextAlign.Center)
-            .width(18)
-            .height(18)
-            .borderRadius(9)
-            .backgroundColor(this.themeColors.primary)
-            .margin({ left: 4 })
-        }
+      // 筛选计数徽标（有筛选时显示）
+      if (this.getFilterCount() > 0) {
+        Text(this.getFilterCount().toString())
+          .fontSize(11)
+          .fontColor('#FFFFFF')
+          .textAlign(TextAlign.Center)
+          .width(18)
+          .height(18)
+          .borderRadius(9)
+          .backgroundColor(this.themeColors.primary)
+          .margin({ left: 4 })
       }
-      .padding({ left: 14, right: 14, top: 7, bottom: 7 })
-      .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
-      .borderRadius(16)
-      .onClick(() => {
-        this.showFilterSheet = true
-      })
-      .bindSheet($$this.showFilterSheet, this.FilterSheetBuilder(), {
-        height: '65%',
-        backgroundColor: this.themeColors.cardBackground,
-        dragBar: true
-      })
     }
-    .width('100%')
-    .justifyContent(FlexAlign.Start)
+    .padding({ left: 14, right: 14, top: 7, bottom: 7 })
+    .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
+    .borderRadius(16)
+    .onClick(() => {
+      this.showFilterPopup = true
+    })
+    .bindPopup($$this.showFilterPopup, {
+      builder: () => {
+        this.FilterSheetBuilder()
+      },
+      placement: Placement.Bottom,
+      offsetY: 6,
+      enableArrow: true,
+      arrowPointPosition: ArrowPointPosition.START,
+      maskColor: '#00000000',
+      backgroundBlurStyle: BlurStyle.NONE
+    })
   }
 
   // 筛选入口摘要（无筛选显示「筛选」）
@@ -330,12 +332,10 @@ export struct FilterBar {
         }, (tag: Tag) => `filter-${tag.id}`)
       }
       .width('100%')
-
-      Blank()
     }
-    .width('100%')
-    .height('100%')
-    .padding({ left: 20, right: 20, top: 4, bottom: 24 })
+    .padding({ left: 16, right: 16, top: 8, bottom: 16 })
+    .constraintSize({ maxWidth: '90%', maxHeight: '60%' })
     .backgroundColor(this.themeColors.cardBackground)
+    .borderRadius(14)
   }
 }

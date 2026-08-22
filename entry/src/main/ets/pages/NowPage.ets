@@ -158,6 +158,14 @@ struct NowPage {
               .fontSize(28)
               .fontWeight(FontWeight.Bold)
               .fontColor(this.themeColors.textPrimary)
+
+            // 筛选按钮（此刻右侧，点击向下弹出筛选气泡，更新计划五期）
+            FilterBar({
+              selectedTagIds: $filterTagIds,
+              filterMood: $filterMood,
+              tagVersion: this.tagVersion
+            })
+            .margin({ left: 12 })
             
             Blank()
             
@@ -214,14 +222,6 @@ struct NowPage {
               searchText: $searchText,
               isSearching: $isSearching,
               placeholder: $r('app.string.search_records')
-            })
-            .margin({ bottom: 8 })
-            
-            // 统一筛选栏（标签 + 心情，更新计划二期）
-            FilterBar({
-              selectedTagIds: $filterTagIds,
-              filterMood: $filterMood,
-              tagVersion: this.tagVersion
             })
             .margin({ bottom: 8 })
             
