@@ -63,6 +63,9 @@ export struct TagManagementDialog {
   @State private editTemplateContent: string = ''
   private templateService: TemplateService | null = null
 
+  // 管理分页（0=标签 1=心情 2=模板，更新计划三期：拆分臃肿弹窗）
+  @State private currentTab: number = 0
+
   async aboutToAppear() {
     Logger.info('[TagMgmtDialog] aboutToAppear 开始')
     this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
@@ -301,17 +304,57 @@ export struct TagManagementDialog {
   }
 
   build() {
-    // 整体可滚动（输入法弹出时表单不被遮挡，更新计划三期模板表单）
+    // 整体可滚动（输入法弹出时表单不被遮挡）
     Scroll() {
       if (this.isEditing) {
+        // 标签编辑视图全屏
         this.TagEditView()
       } else {
-        this.TagListView()
+        // 管理分页 Tab（标签 / 心情 / 模板）
+        this.TabBarRow()
+
+        if (this.currentTab === 0) {
+          this.TagListView()
+        } else if (this.currentTab === 1) {
+          this.MoodView()
+        } else {
+          this.TemplateView()
+        }
       }
     }
     .scrollBar(BarState.Off)
     .width('100%')
     .constraintSize({ maxHeight: '85%' })
+  }
+
+  // 管理分页 Tab 栏
+  @Builder
+  TabBarRow() {
+    Row() {
+      this.TabItem($r('app.string.tag_management'), 0)
+      this.TabItem($r('app.string.mood_management'), 1)
+      this.TabItem($r('app.string.record_template'), 2)
+    }
+    .width('100%')
+    .padding({ left: 20, right: 20, top: 16, bottom: 8 })
+  }
+
+  @Builder
+  TabItem(label: ResourceStr, tabIndex: number) {
+    Column() {
+      Text(label)
+        .fontSize(15)
+        .fontColor(this.currentTab === tabIndex ? this.themeColors.primary : this.themeColors.textSecondary)
+        .fontWeight(this.currentTab === tabIndex ? FontWeight.Bold : FontWeight.Normal)
+        .padding({ left: 10, right: 10, top: 6, bottom: 6 })
+        .backgroundColor(this.currentTab === tabIndex ? this.hexToRgba(this.themeColors.primary, 0.12) : 'transparent')
+        .borderRadius(14)
+        .onClick(() => {
+          this.currentTab = tabIndex
+        })
+    }
+    .layoutWeight(1)
+    .alignItems(HorizontalAlign.Center)
   }
 
   // 标签列表视图
@@ -442,34 +485,55 @@ export struct TagManagementDialog {
         .padding({ top: 24, bottom: 24 })
       }
 
-      // ==================== 心情管理（更新计划二期） ====================
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ top: 8, bottom: 16 })
+    }
+    .width('100%')
+    .padding(20)
+    .backgroundColor(this.themeColors.cardBackground)
+    .borderRadius(15)
+  }
 
+  // 心情管理视图（更新计划二期，Tab 分页）
+  @Builder
+  MoodView() {
+    Column() {
+      // 标题
       Row() {
         Text($r('app.string.mood_management'))
-          .fontSize(16)
+          .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
-          .layoutWeight(1)
 
-        // 添加心情按钮
-        SymbolGlyph($r('sys.symbol.plus'))
-          .fontSize(18)
-          .fontColor([this.themeColors.primary])
+        Blank()
+
+        // 关闭按钮
+        SymbolGlyph($r('sys.symbol.xmark'))
+          .fontSize(20)
+          .fontColor([this.themeColors.iconColor])
           .onClick(() => {
-            this.showMoodPicker = !this.showMoodPicker
+            this.controller.close()
           })
       }
       .width('100%')
-      .margin({ bottom: 8 })
+      .margin({ bottom: 12 })
 
-      Text($r('app.string.mood_custom_hint'))
-        .fontSize(12)
-        .fontColor(this.themeColors.textSecondary)
-        .width('100%')
-        .margin({ bottom: 12 })
+      // 添加心情按钮
+      Row() {
+        SymbolGlyph($r('sys.symbol.plus'))
+          .fontSize(18)
+          .fontColor([this.themeColors.primary])
+
+        Text($r('app.string.mood_custom_hint'))
+          .fontSize(13)
+          .fontColor(this.themeColors.primary)
+          .margin({ left: 8 })
+      }
+      .width('100%')
+      .height(44)
+      .alignItems(VerticalAlign.Center)
+      .margin({ bottom: 12 })
+      .onClick(() => {
+        this.showMoodPicker = !this.showMoodPicker
+      })
 
       // 心情列表（预置 + 自定义）
       Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
@@ -542,29 +606,36 @@ export struct TagManagementDialog {
         .width('100%')
         .margin({ bottom: 8 })
       }
+    }
+    .width('100%')
+    .padding(20)
+    .backgroundColor(this.themeColors.cardBackground)
+    .borderRadius(15)
+  }
 
-      // ==================== 记录模板（更新计划三期） ====================
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ top: 8, bottom: 16 })
-
+  // 记录模板视图（更新计划三期，Tab 分页）
+  @Builder
+  TemplateView() {
+    Column() {
+      // 标题
       Row() {
         Text($r('app.string.record_template'))
-          .fontSize(16)
+          .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
-          .layoutWeight(1)
+
+        Blank()
 
         // 添加模板按钮
         SymbolGlyph($r('sys.symbol.plus'))
-          .fontSize(18)
+          .fontSize(20)
           .fontColor([this.themeColors.primary])
           .onClick(() => {
             this.startAddTemplate()
           })
       }
       .width('100%')
-      .margin({ bottom: 8 })
+      .margin({ bottom: 12 })
 
       Text($r('app.string.template_hint'))
         .fontSize(12)
