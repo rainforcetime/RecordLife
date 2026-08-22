@@ -383,6 +383,28 @@
 
 **下一轮计划**：四期 — 引导页（首装标记 + EntryAbility 路由 + 滑动页，无系统能力依赖）
 
+### 轮次 8 — 2026-08-22（四期收官：引导页）
+
+**本轮目标**：四期剩余功能——引导页（首次安装启动展示应用介绍），四期全部收口。
+
+**涉及文件**：
+- `repository/GuideRepository.ets`（新建：`hasSeenGuide`/`markGuideSeen`/`clearGuideFlag`，独立 store `app_meta`）
+- `pages/GuidePage.ets`（新建：@Entry，4 页 Swiper（emoji + 标题 + 描述）+ 圆点指示器 + 最后一页「开始使用」/其余「跳过」；完成后 markGuideSeen + `router.replaceUrl` 到 Index）
+- `entryability/EntryAbility.ets`（onWindowStageCreate 改 async：检查引导标记，未看过 → 加载 GuidePage）
+- `resources/base/profile/main_pages.json`（+pages/GuidePage）
+- `common/handlers/MorePageConfigHandler.ets`（resetApp 清除引导标记，重置后重新展示引导）
+- `resources/base|en_US/element/string.json`（+10 key：guide_*，372 key × 2）
+
+**已完成**：
+- [x] 首次安装（无标记）→ 引导页；之后启动直接进主页
+- [x] 4 页滑动 + 圆点指示（当前页高亮伸长）+ 跳过/开始使用
+- [x] 重置应用清除引导标记（与示例数据重置行为一致）
+
+**遗留问题**：
+- 待 DevEco 编译 + 实机验证：首装显示引导、滑动/跳过/开始、二次启动跳过、重置后重现
+
+**下一轮计划**：五期 — 数据看板（🔥，聚合统计纯函数化）、生命进度可视化、统计面板
+
 ---
 
 ## 8. 验证记录

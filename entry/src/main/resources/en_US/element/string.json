@@ -1447,6 +1447,46 @@
     {
       "name": "personalization_summary",
       "value": "Manage tags, moods & templates"
+    },
+    {
+      "name": "guide_title_1",
+      "value": "Capture the moment"
+    },
+    {
+      "name": "guide_desc_1",
+      "value": "Record life with text, images, tags & moods"
+    },
+    {
+      "name": "guide_title_2",
+      "value": "Timeline & Calendar"
+    },
+    {
+      "name": "guide_desc_2",
+      "value": "Browse memories chronologically or by calendar"
+    },
+    {
+      "name": "guide_title_3",
+      "value": "Cherish every moment"
+    },
+    {
+      "name": "guide_desc_3",
+      "value": "Home shows your time alive since birth"
+    },
+    {
+      "name": "guide_title_4",
+      "value": "Safe backup"
+    },
+    {
+      "name": "guide_desc_4",
+      "value": "Backup & restore, privacy mode protects your life"
+    },
+    {
+      "name": "guide_start",
+      "value": "Get started"
+    },
+    {
+      "name": "guide_skip",
+      "value": "Skip"
     }
   ]
 }

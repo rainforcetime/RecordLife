@@ -9,6 +9,7 @@ import { ConfigTransferService } from '../../service/ConfigTransferService'
 import { RefreshManager } from '../managers/RefreshManager'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { RecordRepository } from '../../repository/RecordRepository'
+import { GuideRepository } from '../../repository/GuideRepository'
 import { Logger } from '../../common/utils/Logger'
 
 export class MorePageConfigHandler {
@@ -254,6 +255,9 @@ export class MorePageConfigHandler {
             // 1. 删除此刻记录数据
             const recordsDeleted = await MorePageConfigHandler.deleteAllRecords(context)
             Logger.info(`[MorePageConfigHandler] 删除了 ${recordsDeleted} 条记录`)
+            
+            // 1.5 清除引导标记（重置后重新展示引导页，更新计划四期）
+            await GuideRepository.clearGuideFlag(context)
             
             // 2. 重置配置
             const success = await configManager.resetToDefault()

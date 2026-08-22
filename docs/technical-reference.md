@@ -164,7 +164,7 @@ interface DateDifference { years; months; days }
 | 文件 | 类 | 职责 | 方法 |
 | --- | --- | --- | --- |
 | `repository/ConfigRepository.ets` | `ConfigRepository`（全静态） | 封装 `record_life_config` store 读写 | `getConfigString(ctx): Promise<string>`、`saveConfigString(ctx, str): Promise<boolean>` |
-| `repository/RecordRepository.ets` | `RecordRepository`（全静态） | 封装 `now_page_records` store 读写 + 清空 | `getRecords(ctx): Promise<LifeRecord[]>`、`saveRecords(ctx, records): Promise<boolean>`、`clearRecords(ctx): Promise<boolean>` |
+| `repository/RecordRepository.ets` | `RecordRepository`（全静态） | 封装 `now_page_records` store 读写 + 清空 + 示例标记（更新计划） | `getRecords(ctx): Promise<LifeRecord[]>`、`saveRecords(ctx, records): Promise<boolean>`、`clearRecords(ctx): Promise<boolean>`、`isSampleDataInitialized`/`markSampleDataInitialized`/`clearSampleDataFlag` |
 
 - **设计原则**：无状态静态方法，每次调用内部 `preferences.getPreferences()` 获取缓存实例；不持有 `Preferences` 引用。
 - **`RecordRepository.getRecords()`** 内部完成 `JSON.parse`，返回 `LifeRecord[]`（空数据或异常返回 `[]`）；排序等业务逻辑仍由 `NowViewModel` 处理。

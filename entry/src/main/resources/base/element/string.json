@@ -1447,6 +1447,46 @@
     {
       "name": "personalization_summary",
       "value": "管理标签、心情与记录模板"
+    },
+    {
+      "name": "guide_title_1",
+      "value": "记录此刻"
+    },
+    {
+      "name": "guide_desc_1",
+      "value": "用文字、图片、标签与心情，记录生活点滴"
+    },
+    {
+      "name": "guide_title_2",
+      "value": "时间轴与日历"
+    },
+    {
+      "name": "guide_desc_2",
+      "value": "按时间浏览回忆，日历视图一目了然"
+    },
+    {
+      "name": "guide_title_3",
+      "value": "珍惜每一刻"
+    },
+    {
+      "name": "guide_desc_3",
+      "value": "首页展示出生至今的存活时间"
+    },
+    {
+      "name": "guide_title_4",
+      "value": "安全备份"
+    },
+    {
+      "name": "guide_desc_4",
+      "value": "数据备份与恢复，隐私模式守护你的生活"
+    },
+    {
+      "name": "guide_start",
+      "value": "开始使用"
+    },
+    {
+      "name": "guide_skip",
+      "value": "跳过"
     }
   ]
 }

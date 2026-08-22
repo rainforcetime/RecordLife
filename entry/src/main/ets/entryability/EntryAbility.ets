@@ -4,6 +4,7 @@ import { window } from '@kit.ArkUI';
 import { ConfigManager } from '../config/ConfigManager';
 import { ThemeManager } from '../config/ThemeManager';
 import { ThemeColors } from '../config/ThemeConfig';
+import { GuideRepository } from '../repository/GuideRepository';
 
 const DOMAIN = 0x0000;
 
@@ -79,11 +80,22 @@ export default class EntryAbility extends UIAbility {
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onDestroy');
   }
 
-  onWindowStageCreate(windowStage: window.WindowStage): void {
+  async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
     // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
 
-    windowStage.loadContent('pages/Index', (err) => {
+    // 首次安装显示引导页（更新计划四期）
+    let page = 'pages/Index';
+    try {
+      const hasSeenGuide = await GuideRepository.hasSeenGuide(this.context);
+      if (!hasSeenGuide) {
+        page = 'pages/GuidePage';
+      }
+    } catch (err) {
+      hilog.error(DOMAIN, 'testTag', 'Failed to check guide flag. Cause: %{public}s', JSON.stringify(err));
+    }
+
+    windowStage.loadContent(page, (err) => {
       if (err.code) {
         hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
         return;
