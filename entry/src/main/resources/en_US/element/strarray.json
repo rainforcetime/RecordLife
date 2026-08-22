@@ -1,0 +1,56 @@
+{
+  "strarray": [
+    {
+      "name": "weekdays",
+      "value": [
+        {
+          "value": "Sun"
+        },
+        {
+          "value": "Mon"
+        },
+        {
+          "value": "Tue"
+        },
+        {
+          "value": "Wed"
+        },
+        {
+          "value": "Thu"
+        },
+        {
+          "value": "Fri"
+        },
+        {
+          "value": "Sat"
+        }
+      ]
+    },
+    {
+      "name": "week_short",
+      "value": [
+        {
+          "value": "Su"
+        },
+        {
+          "value": "M"
+        },
+        {
+          "value": "Tu"
+        },
+        {
+          "value": "W"
+        },
+        {
+          "value": "Th"
+        },
+        {
+          "value": "F"
+        },
+        {
+          "value": "Sa"
+        }
+      ]
+    }
+  ]
+}

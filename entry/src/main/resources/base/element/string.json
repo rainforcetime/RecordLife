@@ -1211,16 +1211,6 @@
     {
       "name": "website_label",
       "value": "官方网站"
-    },
-    {
-      "name": "weekdays",
-      "type": "array",
-      "value": ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
-    },
-    {
-      "name": "week_short",
-      "type": "array",
-      "value": ["日", "一", "二", "三", "四", "五", "六"]
     }
   ]
 }

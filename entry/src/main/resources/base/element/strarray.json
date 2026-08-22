@@ -1,0 +1,56 @@
+{
+  "strarray": [
+    {
+      "name": "weekdays",
+      "value": [
+        {
+          "value": "周日"
+        },
+        {
+          "value": "周一"
+        },
+        {
+          "value": "周二"
+        },
+        {
+          "value": "周三"
+        },
+        {
+          "value": "周四"
+        },
+        {
+          "value": "周五"
+        },
+        {
+          "value": "周六"
+        }
+      ]
+    },
+    {
+      "name": "week_short",
+      "value": [
+        {
+          "value": "日"
+        },
+        {
+          "value": "一"
+        },
+        {
+          "value": "二"
+        },
+        {
+          "value": "三"
+        },
+        {
+          "value": "四"
+        },
+        {
+          "value": "五"
+        },
+        {
+          "value": "六"
+        }
+      ]
+    }
+  ]
+}

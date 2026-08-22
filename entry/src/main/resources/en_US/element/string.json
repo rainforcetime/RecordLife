@@ -1211,16 +1211,6 @@
     {
       "name": "website_label",
       "value": "Website"
-    },
-    {
-      "name": "weekdays",
-      "type": "array",
-      "value": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-    },
-    {
-      "name": "week_short",
-      "type": "array",
-      "value": ["Su", "M", "Tu", "W", "Th", "F", "Sa"]
     }
   ]
 }
