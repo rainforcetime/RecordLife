@@ -1,5 +1,6 @@
 // 用户信息区域组件：components/UserInfoSection.ets
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
+import { ColorUtils } from '../../common/ColorUtils'
 
 // 用户信息数据模型
 export interface UserInfo {
@@ -230,7 +231,15 @@ export struct UserInfoSection {
       })
     }
     .width('90%')
-    .backgroundColor(this.themeColors.cardBackground)
+    // 主题色渐变背景（顶部用户区，更新计划五期）
+    .linearGradient({
+      angle: 135,
+      colors: [
+        [ColorUtils.withAlpha(this.getAccentColor(), 0.24), 0],
+        [ColorUtils.withAlpha(this.getAccentColor(), 0.10), 0.55],
+        [this.themeColors.cardBackground, 1]
+      ]
+    })
     .borderRadius(16)
     .margin({ bottom: 16 })
     .padding({ left: 20, right: 20, top: 20, bottom: 20 })

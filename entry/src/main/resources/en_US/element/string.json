@@ -1353,6 +1353,22 @@
       "value": "Clear all"
     },
     {
+      "name": "settings_group_general",
+      "value": "General"
+    },
+    {
+      "name": "settings_group_data",
+      "value": "Data"
+    },
+    {
+      "name": "settings_group_personal",
+      "value": "Personalization"
+    },
+    {
+      "name": "settings_group_more",
+      "value": "More"
+    },
+    {
       "name": "mood_selected",
       "value": "Mood selected: %s"
     },

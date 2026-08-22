@@ -441,162 +441,212 @@ export struct AccountPage {
       .width('100%')
       .padding({ left: 4, bottom: 12 })
       
-      // 主题设置（选择器）
-      SettingItemWithSelector({
-        label: $r('app.string.theme_settings'),
-        currentValue: this.currentTheme,
-        options: this.getThemeOptions(),
-        onSelect: (value: string) => {
-          this.onThemeChange(value)
-        }
-      })
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-        .height(0.5)
-      
-      // 字体大小设置（选择器，更新计划一期）
-      SettingItemWithSelector({
-        label: $r('app.string.font_size_settings'),
-        currentValue: this.currentFontSize,
-        options: this.getFontSizeOptions(),
-        onSelect: (value: string) => {
-          this.onFontSizeChange(value)
-        }
-      })
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-        .height(0.5)
-      
-      // 隐私模式（开关，更新计划三期）
-      Row() {
-        Column() {
-          Text($r('app.string.privacy_mode'))
-            .fontSize(16)
-            .fontWeight(FontWeight.Medium)
-            .fontColor(this.themeColors.textPrimary)
-            .width('100%')
+      // ===== 常规组 =====
+      this.GroupTitle($r('app.string.settings_group_general'))
+      Column() {
+        // 主题设置（选择器）
+        SettingItemWithSelector({
+          label: $r('app.string.theme_settings'),
+          currentValue: this.currentTheme,
+          options: this.getThemeOptions(),
+          onSelect: (value: string) => {
+            this.onThemeChange(value)
+          }
+        })
+        
+        Divider()
+          .color(this.themeColors.divider)
+          .margin({ left: 15 })
+          .height(0.5)
+        
+        // 字体大小设置（选择器，更新计划一期）
+        SettingItemWithSelector({
+          label: $r('app.string.font_size_settings'),
+          currentValue: this.currentFontSize,
+          options: this.getFontSizeOptions(),
+          onSelect: (value: string) => {
+            this.onFontSizeChange(value)
+          }
+        })
+        
+        Divider()
+          .color(this.themeColors.divider)
+          .margin({ left: 15 })
+          .height(0.5)
+        
+        // 隐私模式（开关，更新计划三期）
+        Row() {
+          Text('🔒')
+            .fontSize(20)
+            .margin({ right: 12 })
 
-          Text($r('app.string.privacy_mode_summary'))
-            .fontSize(12)
-            .fontColor(this.themeColors.textSecondary)
-            .width('100%')
-            .margin({ top: 2 })
-        }
-        .layoutWeight(1)
+          Column() {
+            Text($r('app.string.privacy_mode'))
+              .fontSize(16)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(this.themeColors.textPrimary)
+              .width('100%')
 
-        Toggle({ type: ToggleType.Switch, isOn: this.privacyMode })
-          .selectedColor(this.themeColors.primary)
-          .onChange((isOn: boolean) => {
-            this.onPrivacyModeChange(isOn)
-          })
+            Text($r('app.string.privacy_mode_summary'))
+              .fontSize(12)
+              .fontColor(this.themeColors.textSecondary)
+              .width('100%')
+              .margin({ top: 2 })
+          }
+          .layoutWeight(1)
+
+          Toggle({ type: ToggleType.Switch, isOn: this.privacyMode })
+            .selectedColor(this.themeColors.primary)
+            .onChange((isOn: boolean) => {
+              this.onPrivacyModeChange(isOn)
+            })
+        }
+        .padding({ top: 12, bottom: 12, left: 16, right: 16 })
+        .width('100%')
+        .alignItems(VerticalAlign.Center)
       }
-      .padding({ top: 12, bottom: 12, left: 16, right: 16 })
-      .width('100%')
-      .alignItems(VerticalAlign.Center)
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-        .height(0.5)
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-        .height(0.5)
-      
-      // 数据看板（更新计划五期）
-      SettingItem({
-        label: $r('app.string.dashboard_title'),
-        summary: $r('app.string.dashboard_summary')
-      })
-      .onClick(() => {
-        this.onDashboardClick()
+      .width('90%')
+      .backgroundColor(this.themeColors.cardBackground)
+      .borderRadius(16)
+      .margin({ bottom: 6 })
+      .padding(12)
+      .shadow({
+        radius: 12,
+        color: this.themeColors.shadow,
+        offsetX: 0,
+        offsetY: 4
       })
       
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-        .height(0.5)
-      
-      // 存储空间（信息展示）
-      SettingItemWithInfo({
-        label: $r('app.string.storage_space'),
-        info: this.statisticsInfo.storageSize
+      // ===== 数据组 =====
+      this.GroupTitle($r('app.string.settings_group_data'))
+      Column() {
+        // 数据看板（更新计划五期）
+        SettingItem({
+          label: $r('app.string.dashboard_title'),
+          summary: $r('app.string.dashboard_summary'),
+          icon: '📊'
+        })
+        .onClick(() => {
+          this.onDashboardClick()
+        })
+        
+        Divider()
+          .color(this.themeColors.divider)
+          .margin({ left: 15 })
+          .height(0.5)
+        
+        // 存储空间（信息展示）
+        SettingItemWithInfo({
+          label: $r('app.string.storage_space'),
+          info: this.statisticsInfo.storageSize,
+          icon: '💾'
+        })
+        .onClick(() => {
+          this.onStorageClick()
+        })
+        
+        Divider()
+          .color(this.themeColors.divider)
+          .margin({ left: 15 })
+          .height(0.5)
+        
+        // 清理缓存（更新计划三期）
+        SettingItem({
+          label: $r('app.string.clean_cache'),
+          summary: $r('app.string.clean_cache_summary'),
+          icon: '🧹'
+        })
+        .onClick(() => {
+          this.onCleanCache()
+        })
+      }
+      .width('90%')
+      .backgroundColor(this.themeColors.cardBackground)
+      .borderRadius(16)
+      .margin({ bottom: 6 })
+      .padding(12)
+      .shadow({
+        radius: 12,
+        color: this.themeColors.shadow,
+        offsetX: 0,
+        offsetY: 4
       })
-      .onClick(() => {
-        this.onStorageClick()
+      
+      // ===== 个性化组 =====
+      this.GroupTitle($r('app.string.settings_group_personal'))
+      Column() {
+        // 个性化管理（标签/心情/模板）
+        SettingItem({
+          label: $r('app.string.personalization_management'),
+          summary: $r('app.string.personalization_summary'),
+          icon: '🎨'
+        })
+        .onClick(() => {
+          this.tagManagementDialogController.open()
+        })
+      }
+      .width('90%')
+      .backgroundColor(this.themeColors.cardBackground)
+      .borderRadius(16)
+      .margin({ bottom: 6 })
+      .padding(12)
+      .shadow({
+        radius: 12,
+        color: this.themeColors.shadow,
+        offsetX: 0,
+        offsetY: 4
       })
       
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-        .height(0.5)
-      
-      // 清理缓存（更新计划三期）
-      SettingItem({
-        label: $r('app.string.clean_cache'),
-        summary: $r('app.string.clean_cache_summary')
-      })
-      .onClick(() => {
-        this.onCleanCache()
-      })
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-        .height(0.5)
-      
-      // 个性化管理（标签/心情/模板）
-      SettingItem({
-        label: $r('app.string.personalization_management'),
-        summary: $r('app.string.personalization_summary')
-      })
-      .onClick(() => {
-        this.tagManagementDialogController.open()
-      })
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-        .height(0.5)
-      
-      // 更多设置
-      SettingItem({
-        label: $r('app.string.more'),
-        summary: $r('app.string.import_export_config')
-      })
-      .onClick(() => {
-        this.onMoreSettings()
-      })
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-        .height(0.5)
-      
-      // 关于应用（信息展示）
-      SettingItemWithInfo({
-        label: $r('app.string.about_app'),
-        info: $r('app.string.version_value', this.appInfo.appVersion)
-      })
-      .onClick(() => {
-        this.onAboutApp()
+      // ===== 更多组 =====
+      this.GroupTitle($r('app.string.settings_group_more'))
+      Column() {
+        // 更多设置
+        SettingItem({
+          label: $r('app.string.more'),
+          summary: $r('app.string.import_export_config'),
+          icon: '⚙️'
+        })
+        .onClick(() => {
+          this.onMoreSettings()
+        })
+        
+        Divider()
+          .color(this.themeColors.divider)
+          .margin({ left: 15 })
+          .height(0.5)
+        
+        // 关于应用（信息展示）
+        SettingItemWithInfo({
+          label: $r('app.string.about_app'),
+          info: $r('app.string.version_value', this.appInfo.appVersion),
+          icon: 'ℹ️'
+        })
+        .onClick(() => {
+          this.onAboutApp()
+        })
+      }
+      .width('90%')
+      .backgroundColor(this.themeColors.cardBackground)
+      .borderRadius(16)
+      .margin({ bottom: 6 })
+      .padding(12)
+      .shadow({
+        radius: 12,
+        color: this.themeColors.shadow,
+        offsetX: 0,
+        offsetY: 4
       })
     }
-    .width('90%')
-    .backgroundColor(this.themeColors.cardBackground)
-    .borderRadius(16)
-    .margin({ bottom: 6 })
-    .padding(12)
-    .shadow({
-      radius: 12,
-      color: this.themeColors.shadow,
-      offsetX: 0,
-      offsetY: 4
-    })
+    .width('100%')
+  }
+  
+  // 设置分组标题
+  @Builder
+  GroupTitle(title: ResourceStr) {
+    Text(title)
+      .fontSize(13)
+      .fontColor(this.themeColors.textSecondary)
+      .width('100%')
+      .padding({ left: 8, top: 10, bottom: 4 })
   }
 }

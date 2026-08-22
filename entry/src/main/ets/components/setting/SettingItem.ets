@@ -5,11 +5,19 @@ import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 export struct SettingItem {
   label: ResourceStr = ''
   summary: ResourceStr = ''
+  icon: string = ''  // emoji 图标（可选，更新计划五期：设置分组图标化）
   // 直接从 AppStorage 监听主题变化
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
 
   build() {
     Row() {
+      // emoji 图标
+      if (this.icon.length > 0) {
+        Text(this.icon)
+          .fontSize(20)
+          .margin({ right: 12 })
+      }
+
       Column() {
         Text(this.label)
           .fontSize(16)

@@ -1353,6 +1353,22 @@
       "value": "清除全部"
     },
     {
+      "name": "settings_group_general",
+      "value": "常规"
+    },
+    {
+      "name": "settings_group_data",
+      "value": "数据"
+    },
+    {
+      "name": "settings_group_personal",
+      "value": "个性化"
+    },
+    {
+      "name": "settings_group_more",
+      "value": "更多"
+    },
+    {
       "name": "mood_selected",
       "value": "已选择心情 %s"
     },
