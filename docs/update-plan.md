@@ -174,7 +174,7 @@
 | 一期 | 2.1 | 轻量增强：周数/总天数、生日提醒、签名、字体大小（纯函数 + 可选字段） | ✅ | 2026-08-22 | 轮次 1~2 完成：3 个生命里程碑纯函数 + 15 单测 + HomePage 展示 + 签名（编辑/我的页/首页展示）+ 字体大小设置（记录内容缩放，AppStorage fontScale）；涉及数据模型可选字段，需 §8 备份导入回归 |
 | 二期 | 2.2 | 记录体验：心情标记（🔥）、撤销删除（`LifeRecord.mood?`） | ✅ | 2026-08-22 | 轮次 3~4 完成：心情标记全链路（含自定义心情并入标签管理、toast）+ 撤销删除（3s 窗口，图片延迟清理）；涉及数据模型可选字段，需 §8 备份导入回归 |
 | 三期 | 2.3 | 效率与隐私：缓存清理、隐私模式、记录模板 | ✅ | 2026-08-22 | 轮次 5~6 完成：缓存清理（分享图+孤儿图）、隐私模式（首页+我的页）、记录模板（管理并入标签弹窗 + 新增页一键填充）；涉及可选字段，需 §8 备份回归 |
-| 四期 | 2.4 | 提醒与引导：每日提醒通知（🔥）、引导页 | ⬜ | — | **开工前先做通知能力验证**（§2 矩阵） |
+| 四期 | 2.4 | 提醒与引导：每日提醒通知（🔥）、引导页 | 🔄 | 进行中 | 轮次 7 完成每日提醒（reminderAgentManager 系统级每日提醒 + 权限 + 时间选择）；引导页待做（轮次 8） |
 | 五期 | 2.5 | 数据价值：数据看板（🔥）、生命进度、统计面板 | ⬜ | — | 聚合逻辑纯函数化 |
 | 六期 | 2.6 | 批量与导航：批量删除、时间线跳转、多倒计时 | ⬜ | — | — |
 | 远期 | v3.x | 图片压缩/位置/导出/应用锁/快捷方式/热力图/打卡/剪贴板/语音/小组件 | ⬜ | — | 逐项前置验证（§3 远期），不承诺排期 |
@@ -374,6 +374,31 @@
 - **§8 验证记录待补**：三期涉及 `privacyMode?` / `recordTemplates?` 可选字段，需旧备份导入回归
 
 **下一轮计划**：四期 — 提醒与引导（每日提醒通知需先做能力验证；引导页）；开工前读 §2 矩阵
+
+### 轮次 7 — 2026-08-22（四期：每日提醒通知）
+
+**本轮目标**：四期核心功能——每日提醒通知（本地每日定时提醒用户记录生活）。
+
+**涉及文件**：
+- `service/NotificationService.ets`（新建：`requestNotificationPermission`（notificationManager）/ `publishDailyReminder`（reminderAgentManager 日历式每日重复，wantAgent 指向 EntryAbility）/ `cancelAllReminders`）
+- `model/UserConfigModel.ets`（`ReminderTime` 接口 + `AppSettings.reminderTime?` 可选字段）
+- `config/ConfigManager.ets`（+`get/setEnableNotifications`、`get/setReminderTime`）
+- `viewmodel/AccountViewModel.ets`（+`getDailyReminderEnabled`/`setDailyReminderEnabled`（权限+发布/取消）/`setReminderTime`（已开启则重新发布））
+- `pages/AccountPage.ets`（每日提醒 Toggle + 提醒时间选择（showTimePickerDialog）+ toast；顺带清理一处重复 Divider）
+- `entry/src/main/module.json5`（+`ohos.permission.PUBLISH_AGENT_REMINDER`）
+- `resources/base|en_US/element/string.json`（+7 key，369 key × 2）
+
+**已完成**：
+- [x] 每日提醒开关：开启 → 请求通知授权 + 发布每日提醒；关闭 → 取消全部提醒
+- [x] 提醒时间选择（HH:mm，24h）；改时间后若已开启则重新发布
+- [x] 权限拒绝/发布失败时开关回滚 + 提示
+
+**遗留问题**：
+- 引导页未做（四期剩余）
+- ⚠️ 通知能力实机验证：reminderAgentManager 字段/权限在目标 SDK 的兼容性、系统通知授权弹窗、每日触发
+- 待 DevEco 编译 + 实机验证
+
+**下一轮计划**：四期剩余 — 引导页（首装标记 + EntryAbility 路由 + 滑动页）
 
 ---
 

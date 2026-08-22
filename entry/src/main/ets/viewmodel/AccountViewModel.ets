@@ -12,6 +12,7 @@ import { AccountProfile, ThemeSettings, AccountDataStatistics, AvatarInfo } from
 import { ImageFileService } from '../service/ImageFileService'
 import { StorageService } from '../service/StorageService'
 import { RecordRepository } from '../repository/RecordRepository'
+import { NotificationService } from '../service/NotificationService'
 import { resourceManager } from '@kit.LocalizationKit'
 import { Logger } from '../common/utils/Logger'
 
@@ -462,6 +463,61 @@ export class AccountViewModel {
       Logger.error('清理缓存异常: ' + JSON.stringify(error))
       return 0
     }
+  }
+
+  // ==================== 每日提醒通知（更新计划四期） ====================
+
+  // 获取每日提醒开关
+  getDailyReminderEnabled(): boolean {
+    if (!this.configManager) {
+      return false
+    }
+    return this.configManager.getEnableNotifications()
+  }
+
+  // 获取提醒时间
+  getReminderTime(): { hour: number; minute: number } {
+    if (!this.configManager) {
+      return { hour: 20, minute: 0 }
+    }
+    return this.configManager.getReminderTime()
+  }
+
+  // 设置每日提醒（开启：请求权限 + 发布；关闭：取消）
+  async setDailyReminderEnabled(enabled: boolean): Promise<boolean> {
+    if (!this.configManager || !this.context) {
+      return false
+    }
+    if (enabled) {
+      const granted = await NotificationService.requestNotificationPermission(this.context)
+      if (!granted) {
+        return false
+      }
+      const time = this.configManager.getReminderTime()
+      const published = await NotificationService.publishDailyReminder(this.context, time.hour, time.minute)
+      if (!published) {
+        return false
+      }
+      return await this.configManager.setEnableNotifications(true)
+    } else {
+      await NotificationService.cancelAllReminders()
+      return await this.configManager.setEnableNotifications(false)
+    }
+  }
+
+  // 设置提醒时间（若已开启则重新发布）
+  async setReminderTime(hour: number, minute: number): Promise<boolean> {
+    if (!this.configManager) {
+      return false
+    }
+    const saved = await this.configManager.setReminderTime(hour, minute)
+    if (!saved) {
+      return false
+    }
+    if (this.configManager.getEnableNotifications() && this.context) {
+      await NotificationService.publishDailyReminder(this.context, hour, minute)
+    }
+    return true
   }
 
   // 获取上下文

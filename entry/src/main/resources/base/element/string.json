@@ -1447,6 +1447,34 @@
     {
       "name": "personalization_summary",
       "value": "管理标签、心情与记录模板"
+    },
+    {
+      "name": "daily_reminder",
+      "value": "每日提醒"
+    },
+    {
+      "name": "daily_reminder_summary",
+      "value": "每日定时提醒记录生活"
+    },
+    {
+      "name": "daily_reminder_saved",
+      "value": "每日提醒已更新"
+    },
+    {
+      "name": "daily_reminder_content",
+      "value": "今天也要记录生活哦"
+    },
+    {
+      "name": "reminder_time",
+      "value": "提醒时间"
+    },
+    {
+      "name": "reminder_time_saved",
+      "value": "提醒时间已保存"
+    },
+    {
+      "name": "notification_permission_denied",
+      "value": "通知权限未开启，无法设置提醒"
     }
   ]
 }

@@ -5,7 +5,7 @@
  */
 
 import { common } from '@kit.AbilityKit';
-import { UserConfig, createDefaultConfig, createDefaultConfigSync, validateConfig } from './UserConfig';
+import { UserConfig, ReminderTime, createDefaultConfig, createDefaultConfigSync, validateConfig } from './UserConfig';
 import { ConfigRepository } from '../repository/ConfigRepository';
 import { TimeUtils } from '../common/utils/TimeUtils';
 import { Logger } from '../common/utils/Logger'
@@ -294,6 +294,40 @@ export class ConfigManager {
       return false;
     }
     this.config.settings.privacyMode = enabled;
+    return await this.saveConfig();
+  }
+
+  // 获取每日提醒开关（更新计划四期；兜底 false）
+  getEnableNotifications(): boolean {
+    const config = this.getConfig();
+    return config.settings.enableNotifications === true;
+  }
+
+  // 设置每日提醒开关并保存
+  async setEnableNotifications(enabled: boolean): Promise<boolean> {
+    if (!this.config) {
+      return false;
+    }
+    this.config.settings.enableNotifications = enabled;
+    return await this.saveConfig();
+  }
+
+  // 获取每日提醒时间（更新计划四期；兜底 20:00）
+  getReminderTime(): ReminderTime {
+    const config = this.getConfig();
+    const time = config.settings.reminderTime;
+    if (time && time.hour >= 0 && time.hour <= 23 && time.minute >= 0 && time.minute <= 59) {
+      return { hour: time.hour, minute: time.minute };
+    }
+    return { hour: 20, minute: 0 };
+  }
+
+  // 设置每日提醒时间并保存
+  async setReminderTime(hour: number, minute: number): Promise<boolean> {
+    if (!this.config) {
+      return false;
+    }
+    this.config.settings.reminderTime = { hour: hour, minute: minute };
     return await this.saveConfig();
   }
 
