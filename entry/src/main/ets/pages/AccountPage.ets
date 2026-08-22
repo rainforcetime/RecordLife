@@ -305,7 +305,8 @@ export struct AccountPage {
         userBirthday: this.userInfo.userBirthday,
         userGender: this.userInfo.userGender,
         userAvatar: avatarUri,
-        hasCustomAvatar: true
+        hasCustomAvatar: true,
+        userSignature: this.userInfo.userSignature
       }
       // 更新存储空间显示
       await this.loadDataStatistics()
