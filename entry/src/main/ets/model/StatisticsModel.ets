@@ -156,7 +156,10 @@ export class StatisticsUtils {
     ]
 
     const milestones: LifeMilestone[] = []
-    for (const [type, daysFromBirth] of candidates) {
+    for (const candidate of candidates) {
+      // ArkTS 不支持解构声明，改用索引访问
+      const type = candidate[0]
+      const daysFromBirth = candidate[1]
       // 达成日期 = 出生 + daysFromBirth 天（UTC+8）
       const date = TimeUtils.formatDate(new Date(base + daysFromBirth * DAY_MS))
       const reached = livedDays >= daysFromBirth
