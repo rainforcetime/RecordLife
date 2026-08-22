@@ -306,7 +306,7 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | P2 | Model / Repository 层抽取 | ✅ | 2026-08-22 | `repository/` 已创建（`ConfigRepository` / `RecordRepository`，见轮次 3）；Preferences 访问收敛至 repository 层，store/key 常量集中定义 |
 | P3 | Service 层抽取（备份 / 导入导出 / 图片） | ✅ | 2026-08-22 | `service/` 共 5 文件（ImageFileService 图片 IO / TagService 标签 CRUD / ZipTransferService zip 传输 / ConfigTransferService 配置导入导出 / BackupManager）；ConfigManager 18.3KB → 9.8KB，MorePageBackupHandler 19.9KB → 16.3KB（见轮次 4~7）；⚠️ 导出导入改动需实机旧备份导入验证（P8 回归，用户有实机可验证） |
 | P4 | ViewModel 瘦身（IO 职责下沉） | ✅ | 2026-08-22 | AccountViewModel 19.1KB → 13.9KB（存储统计下沉 `StorageService`、`[StorageDebug]` 日志清零，轮次 8）；NowViewModel.buildTimeline 抽为 `model/RecordModel.buildTimelineData` 纯函数（可单测，轮次 9）；Preferences/fileIo 直接引用已消除（P2/P3）；细节清理并入 P6 |
-| P5 | Page 层清理（`@Entry` 标注、路由注册） | ⬜ | — | `NowPage.ets` 误标 `@Entry`（Tab 内容页不应标注）；`main_pages.json` 含 4 页 |
+| P5 | Page 层清理（`@Entry` 标注、路由注册） | ✅ | 2026-08-22 | NowPage 去 `@Entry` + `main_pages.json` 3 页（A4）；顶层 `utils/` 并入 `common/utils/`（C1）；HomePage 累计模式切换抽 `AccumulatedModeToggle` 组件（C3）；NowPage 深拷贝替换（B6）；见轮次 10 |
 | P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
 | P7 | `@kit.*` 统一 & 依赖整理 | ⬜ | — | 11 处旧式 `@ohos.*` import 分布在 7 个文件 |
 | P8 | 全量回归 + 旧备份导入冒烟 | ⬜ | — | 最终验收 |
@@ -617,6 +617,32 @@ entry/src/main/ets/
 - `buildTimelineData` / `StorageService.formatStorageSize` / `calcUsageDays` 均为可单测纯函数（C2 待 P6 补测试）
 
 **下一轮计划**：P5 — Page 层清理（`NowPage` 误标 `@Entry` 修正 + `main_pages.json` 路由同步）
+
+### 轮次 10 — 2026-08-22（P5 Page 层清理 · 完成）
+
+> 前置：用户实机验证 P4 轮次 9 改动 ✅ 通过。
+
+**本轮目标**：完成 P5 —— ① A4 `@Entry` 与路由一致性；② C1 目录重组；③ C3 巨型组件拆分（代表性）；④ 顺带解决 B6 深拷贝。
+
+**涉及文件**：
+- `pages/NowPage.ets`（修改）— 删除误标 `@Entry`（保留文件末尾 `export { NowPage }`，Tab 引用不变）；`refreshTimeline` 移除 `JSON.parse(JSON.stringify())` 深拷贝（buildTimelineData 每次返回全新对象图，直接赋值触发 @State）
+- `resources/base/profile/main_pages.json`（修改）— 移除 `pages/NowPage`（已确认无 pushUrl/loadContent 依赖），现 3 页
+- `utils/ShareUtils.ets`、`utils/ImageGenerator.ets` → `common/utils/`（移动）+ 3 处 import 更新（RecordCard / HomePage / NowViewModel）；顶层 `utils/` 目录删除
+- `components/home/AccumulatedModeToggle.ets`（新增）— HomePage 累计模式切换栏抽出（`@Link isAccumulatedMode` + `@Prop isRemainingMode` + `onModeChange` 回调）
+- `pages/HomePage.ets`（修改）— 累计切换栏替换为组件调用，新增 `saveModeSettings`（两值幂等写入）+ `calculateTime`
+
+**已完成**：
+- [x] A4：`@Entry` 仅剩 Index / MorePage / StorageImagePage，与 `main_pages.json` 3 页完全一致
+- [x] C1：顶层 `utils/` 与 `common/utils/` 并存问题消除（统一至 `common/utils/`）
+- [x] C3：HomePage 累计模式切换抽组件（717 → 654 行）；主模式切换栏与分享按钮布局耦合、NowPage/AccountPage 内联块为 @Builder 且状态强耦合——评估已达可维护粒度，不再强行拆分
+- [x] B6：JSON 深拷贝反模式替换
+- [x] 静态验证通过（@Entry/路由一致、import 层级、ArkTS 约束）
+
+**遗留问题**：
+- ⚠️ **路由变更需重点回归**：`NowPage` 从路由页移除后，确认 Tab 切换正常、无页面跳转依赖（实机验证：Tab 0/1/2 切换、首页模式切换、时间线刷新、分享）
+- `common/utils/ShareUtils` 属业务分享能力，后续可评估迁 `service/`（C1 遗留说明）
+
+**下一轮计划**：P6 — 可测试性提升（为 `buildTimelineData` / `StorageService.formatStorageSize|calcUsageDays` / `validateConfig` 补单元测试，hypium 接入）
 
 ### 10.3 数据兼容性验证记录
 

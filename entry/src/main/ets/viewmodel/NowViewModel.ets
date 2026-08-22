@@ -2,7 +2,7 @@
 import { common } from '@kit.AbilityKit'
 import { LifeRecord, TimelineData, buildTimelineData } from '../common/types'
 import { TimeUtils } from '../common/utils/TimeUtils'
-import { ImageGenerator } from '../utils/ImageGenerator'
+import { ImageGenerator } from '../common/utils/ImageGenerator'
 import { RecordRepository } from '../repository/RecordRepository'
 import { ImageFileService } from '../service/ImageFileService'
 

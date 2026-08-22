@@ -5,7 +5,7 @@ import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { ImageViewer } from '../common/ImageViewer'
 import { TagDisplay } from '../common/TagSelector'
 import { ShareRecordCard } from '../share/ShareRecordCard'
-import { ShareUtils } from '../../utils/ShareUtils'
+import { ShareUtils } from '../../common/utils/ShareUtils'
 import { common } from '@kit.AbilityKit'
 import { ColorUtils } from '../../common/ColorUtils'
 

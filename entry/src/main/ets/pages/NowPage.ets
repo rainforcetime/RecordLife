@@ -14,7 +14,6 @@ import { ColorUtils } from '../common/ColorUtils'
 import { PromptAction } from '@kit.ArkUI'
 import { TagService } from '../service/TagService'
 
-@Entry
 @Component
 struct NowPage {
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
@@ -419,8 +418,8 @@ struct NowPage {
       // 先递增刷新触发器（让子组件感知变更），再更新数据（确保一次状态变更中完成响应）
       this.refreshTrigger++
 
-      // 深拷贝确保触发 @State 更新
-      this.timelineData = JSON.parse(JSON.stringify(newTimelineData)) as TimelineData
+      // buildTimelineData 每次返回全新对象图，直接赋值即可触发 @State 更新（P5 移除 JSON 深拷贝）
+      this.timelineData = newTimelineData
 
       console.info('[NowPage] 时间线刷新完成，年份数: ' + this.timelineData.years.length +
         ', 总记录数: ' + this.getTotalRecordCount() +

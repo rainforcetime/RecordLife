@@ -1,7 +1,6 @@
 {
   "src": [
     "pages/Index",
-    "pages/NowPage",
     "pages/MorePage",
     "pages/StorageImagePage"
   ]

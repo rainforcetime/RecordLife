@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 RecordLife 项目的**现状实现快照**，供不同窗口/会话的 AI 重构任务作为唯一参考，避免每次从头通读全部源码。
 > **配套文档**：`docs/refactoring-plan.md` 是重构方案与进度跟踪；本文档只描述**当前代码实际怎么实现**，两者配合使用。
-> **最后更新**：2026-08-22（P4 viewmodel 瘦身完成；基于当前工作区源码逐文件核对）
+> **最后更新**：2026-08-22（P5 page 层清理完成；基于当前工作区源码逐文件核对）
 > **阅读方式**：全文关键结论均附 `file:line` 引用，可快速定位源码；改动任何涉及数据模型 / 持久化 / 备份导入导出的代码前，**必须先读 §5 与 §6**。
 
 ---
@@ -52,13 +52,12 @@
 │   ├── ColorUtils.ets          十六进制色 → rgba 透明度工具
 │   ├── handlers/               MorePageBackupHandler.ets（19.9KB）/ MorePageConfigHandler.ets
 │   ├── managers/               RefreshManager.ets
-│   └── utils/                  TimeUtils / AccountUtils / ImageBase64Utils / ImagePickerUtils / MorePageHelper / ImagePathUtils
+│   └── utils/                  TimeUtils / AccountUtils / ImageBase64Utils / ImagePickerUtils / MorePageHelper / ImagePathUtils / ShareUtils / ImageGenerator（后两者 P5 自顶层 utils/ 迁入）
 ├── service/                ★ P3/P4 新增：ImageFileService.ets（图片 IO）/ TagService.ets（标签 CRUD）/ ZipTransferService.ets（zip picker 传输）/ ConfigTransferService.ets（配置导入导出）/ StorageService.ets（存储统计，P4）/ BackupManager.ets（自 common/managers 迁入）
-├── components/             calendar(5) / common(4) / dialog(4) / record(5) / setting(4) / share(2) / user(4)
-└── utils/                  ShareUtils.ets（组件截图分享）/ ImageGenerator.ets（生成纯色/渐变示例图）
+├── components/             home(1) / calendar(5) / common(4) / dialog(4) / record(5) / setting(4) / share(2) / user(4)
 ```
 
-> ⚠️ `utils/` 与 `common/utils/` 并存属历史遗留（重构计划 C1）；`model/` 是 P1 新建目录，`common/types.ets` 与 `config/UserConfig.ets` 现为 re-export barrel。
+> `model/` 是 P1 新建目录；`common/types.ets` 与 `config/UserConfig.ets` 现为 re-export barrel；顶层 `utils/` 已于 P5 并入 `common/utils/`（C1 已解决）。
 
 ---
 
@@ -294,7 +293,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 
 ### 7.1 路由与 Tab 关系
 
-- `main_pages.json` 注册 4 页：`pages/Index`、`pages/NowPage`、`pages/MorePage`、`pages/StorageImagePage`（resources/base/profile/main_pages.json）。
+- `main_pages.json` 注册 3 页：`pages/Index`、`pages/MorePage`、`pages/StorageImagePage`（resources/base/profile/main_pages.json；`NowPage` 已移除——P5 修正，Tab 内容页不需注册路由）。
 - `Index`（@Entry，struct `MainPage`）是唯一桌面入口，含 3 个 TabContent：
   - Tab0 `HomePage()`（图标 `sys.symbol.house`）
   - Tab1 `NowPage()`（`sys.symbol.clock`）
@@ -307,7 +306,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | 文件 | 标注 | 实际情况 |
 | --- | --- | --- |
 | Index.ets | `@Entry @Component` | ✅ 正确（入口） |
-| NowPage.ets:17 | `@Entry`（且 `export { NowPage }`） | ❌ **误标**：同时是 Tab 内容页又被注册为路由页 |
+| NowPage.ets | 无 `@Entry`，`export { NowPage }` | ✅ 已修正（P5）：纯 Tab 内容页，不再注册路由 |
 | HomePage / AccountPage | 无 `@Entry`，`export struct` | ✅ 正确（纯 Tab 内容） |
 | MorePage / StorageImagePage | `@Entry` | ✅ 正确（路由页） |
 
@@ -326,7 +325,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 **NowPage.ets（~648 行，struct `NowPage`）**：「此刻」时间线。
 - 状态：`@State timelineData`、`refreshTrigger`（强刷版本号）、`searchText @Watch`、`filterTagIds @Watch`、`viewMode: 'timeline'|'calendar'`、编辑态（editingRecord/showEditDialog/editContent/editImagePaths/editTags）、`customTags`（NowPage.ets:23-79）。
 - 生命周期：aboutToAppear 注册 RefreshManager + 加载标签 + refreshTimeline（:84-110）；onPageShow 重载（:119-124）。
-- `refreshTimeline`（:412-431）：`viewModel.buildTimeline()` → `refreshTrigger++` → **`JSON.parse(JSON.stringify(...))` 深拷贝**赋值触发更新（重构 B6）。
+- `refreshTimeline`（:412-431）：`viewModel.buildTimeline()` → `refreshTrigger++` → 直接赋值新对象触发更新（P5 已移除 `JSON.parse(JSON.stringify())` 深拷贝，B6 解决）。
 - 增删改查：`onEditRecord`（:489）、`onSaveEdit`（:511，校验「文字或图片至少其一」→ `viewModel.updateRecord` → RefreshManager.refresh）、`onTogglePin`（:567）、`onDeleteRecord`（:599，AlertDialog 二次确认）；`EditDialogBuilder`（:364）中图片变更通过展开新数组强制触发 UI 更新（:371-381）。
 - 日历视图：`CalendarView`，点击单条记录切回 timeline 并 `scroller.scrollTo` 定位 `date-年-月-日` 组件 id（:253-285）。
 - 搜索/筛选：`matchRecord`（:469，匹配内容与标签名）、`getFilteredRecordCount`（:447）。
@@ -533,11 +532,11 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 
 | # | 问题 | 位置 | 对应重构项 |
 | --- | --- | --- | --- |
-| 1 | `NowPage` 误标 `@Entry` 且被 Tab 引用 | NowPage.ets:17 | A4 / P5 |
+| 1 | ~~`NowPage` 误标 `@Entry` 且被 Tab 引用~~ ✅ 已修正 | NowPage 去 `@Entry`，`main_pages.json` 3 页（P5 轮次 10） | A4 / P5 已解决 |
 | 2 | 旧式 `@ohos.*` import（**8 处 / 5 文件**，全量清单）：`@ohos.data.preferences`×2（repository/ConfigRepository.ets:11、repository/RecordRepository.ets:8）、`@ohos.file.photoAccessHelper`（ImageViewer.ets:3）、`@ohos.file.fs`×2（ImageViewer.ets:4、ShareUtils.ets:8）、`@ohos.app.ability.common`×2（ImageViewer.ets:5、ConfigManager.ets:8）、`@ohos.promptAction`（ImageViewer.ets:6） | 见左 | B4 / P7（P2 已将 preferences 收敛至 repository 层） |
 | 3 | 硬编码颜色残留（有意保留类）：标签调色板 10 色、`getDayColor` 选中 `'#FFFFFF'`（CalendarUtils.ets:193）、主题判定 `textPrimary === '#FFFFFF'`（ThemeManager.ets:147/149）、纯白文字 on 彩色背景 | 多处 | B1 残余说明 |
 | 4 | `createDefaultConfig` / `createDefaultConfigSync` 几乎重复 | UserConfigModel.ets:83/138 | B5 |
-| 5 | `JSON.parse(JSON.stringify(...))` 深拷贝 | NowPage.ets:412-431（refreshTimeline） | B6 |
+| 5 | ~~`JSON.parse(JSON.stringify(...))` 深拷贝~~ ✅ 已替换 | NowPage.refreshTimeline 直接赋值（buildTimelineData 每次返回全新对象图，P5 轮次 10） | B6 已解决 |
 | 6 | 调试日志泛滥（`console.info` 100+，含 `>>>`/`[StorageDebug]`/`[ConfigManager]` 等） | 全工程 | B3（`[StorageDebug]` 已清零，P4 轮次 8；其余待收敛） |
 | 7 | `uiContext` 获取失败时 `getPromptAction` 等生命周期初始化风险 | NowPage.ets:82 等 | B7 |
 | 8 | ~~`uriToSandboxPath` 三处重复实现~~ ✅ 已收敛 | 统一至 `common/utils/ImagePathUtils.ets`（P3 轮次 4）；MorePageHelper 保留委托兼容 | C1 已解决 |

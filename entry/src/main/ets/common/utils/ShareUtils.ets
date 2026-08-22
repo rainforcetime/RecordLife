@@ -1,4 +1,4 @@
-// 分享工具类：utils/ShareUtils.ets
+// 分享工具类：common/utils/ShareUtils.ets（P5 自 utils/ 迁入）
 // 提供组件截图和系统分享功能
 import { image } from '@kit.ImageKit'
 import { uniformTypeDescriptor as utd } from '@kit.ArkData'

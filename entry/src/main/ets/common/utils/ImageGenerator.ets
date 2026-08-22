@@ -1,4 +1,4 @@
-// 图片生成工具：utils/ImageGenerator.ets
+// 图片生成工具：common/utils/ImageGenerator.ets（P5 自 utils/ 迁入）
 import { image } from '@kit.ImageKit';
 import { fileIo as fs } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';

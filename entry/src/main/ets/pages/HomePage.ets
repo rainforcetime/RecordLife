@@ -7,7 +7,8 @@ import { TimeCard } from '../components/record/TimeCard';
 import { BirthDateSelector } from '../components/user/BirthDateSelector';
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig';
 import { ShareHomeCard } from '../components/share/ShareHomeCard';
-import { ShareUtils } from '../utils/ShareUtils';
+import { AccumulatedModeToggle } from '../components/home/AccumulatedModeToggle';
+import { ShareUtils } from '../common/utils/ShareUtils';
 import { common } from '@kit.AbilityKit';
 import { RefreshManager } from '../common/managers/RefreshManager';
 
@@ -426,57 +427,15 @@ export struct HomePage {
           .width('100%')
           .margin({ bottom: 12 })
 
-          // 累计模式切换栏
-          Row() {
-            Text(this.isRemainingMode ? $r('app.string.remaining_calc_mode') : $r('app.string.alive_calc_mode'))
-              .fontSize(14)
-              .fontColor(this.themeColors.textSecondary)
-            
-            Blank()
-            
-            Row() {
-              Text($r('app.string.accumulated_mode'))
-                .fontSize(12)
-                .fontColor(this.isAccumulatedMode ? '#FFFFFF' : this.themeColors.textSecondary)
-                .fontWeight(this.isAccumulatedMode ? FontWeight.Medium : FontWeight.Normal)
-                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-                .backgroundColor(this.isAccumulatedMode ? (this.isRemainingMode ? this.getRemainingColor() : this.getPassedColor()) : 'transparent')
-                .borderRadius(12)
-                .onClick(async () => {
-                  if (!this.isAccumulatedMode) {
-                    this.isAccumulatedMode = true;
-                    // 保存设置
-                    if (this.configManager) {
-                      await this.configManager.setIsAccumulatedMode(true);
-                    }
-                    this.calculateTime();
-                  }
-                })
-              
-              Text($r('app.string.non_accumulated'))
-                .fontSize(12)
-                .fontColor(!this.isAccumulatedMode ? '#FFFFFF' : this.themeColors.textSecondary)
-                .fontWeight(!this.isAccumulatedMode ? FontWeight.Medium : FontWeight.Normal)
-                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-                .backgroundColor(!this.isAccumulatedMode ? (this.isRemainingMode ? this.getRemainingColor() : this.getPassedColor()) : 'transparent')
-                .borderRadius(12)
-                .onClick(async () => {
-                  if (this.isAccumulatedMode) {
-                    this.isAccumulatedMode = false;
-                    // 保存设置
-                    if (this.configManager) {
-                      await this.configManager.setIsAccumulatedMode(false);
-                    }
-                    this.calculateTime();
-                  }
-                })
+          // 累计模式切换栏（P5 抽为独立组件）
+          AccumulatedModeToggle({
+            isAccumulatedMode: $isAccumulatedMode,
+            isRemainingMode: this.isRemainingMode,
+            onModeChange: () => {
+              this.saveModeSettings()
+              this.calculateTime()
             }
-            .backgroundColor(this.themeColors.background)
-            .borderRadius(16)
-            .padding(2)
-          }
-          .width('100%')
-          .margin({ bottom: 16 })
+          })
 
           // 时间卡片布局
           Column() {
@@ -691,6 +650,14 @@ export struct HomePage {
   .height('100%')
   }
   
+  // 保存累计/剩余模式设置（AccumulatedModeToggle 回调，P5；两值幂等写入）
+  private async saveModeSettings() {
+    if (this.configManager) {
+      await this.configManager.setIsAccumulatedMode(this.isAccumulatedMode)
+      await this.configManager.setIsRemainingMode(this.isRemainingMode)
+    }
+  }
+
   // 执行分享
   private async doShare() {
     if (this.isSharing) {
