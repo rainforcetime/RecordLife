@@ -10,7 +10,7 @@ import { TagService } from '../../service/TagService'
 import { MoodService } from '../../service/MoodService'
 import { Mood } from '../../model/RecordModel'
 import { common } from '@kit.AbilityKit'
-import { promptAction, display } from '@kit.ArkUI'
+import { display } from '@kit.ArkUI'
 import { ColorUtils } from '../../common/ColorUtils'
 import { Logger } from '../../common/utils/Logger'
 
@@ -154,13 +154,13 @@ export struct FilterBar {
     // 如果点击的是当前已选中的标签，取消选择（回到"全部"状态）
     if (this.isTagSelected(tagId)) {
       this.selectedTagIds = []
-      promptAction.showToast({ message: $r('app.string.filter_cancelled'), duration: 1500 })
+      this.getUIContext().getPromptAction().showToast({ message: $r('app.string.filter_cancelled'), duration: 1500 })
     } else {
       // 否则替换为新选择的标签（单选）
       this.selectedTagIds = [tagId]
       const tag = this.availableTags.find(t => t.id === tagId)
       const tagName = tag ? tag.name : tagId
-      promptAction.showToast({ message: $r('app.string.tag_selected', tagName), duration: 1500 })
+      this.getUIContext().getPromptAction().showToast({ message: $r('app.string.tag_selected', tagName), duration: 1500 })
     }
 
     // 触发回调（选择标签后关闭气泡）
@@ -175,12 +175,12 @@ export struct FilterBar {
     if (this.filterMood === moodId) {
       // 取消选择
       this.filterMood = ''
-      promptAction.showToast({ message: $r('app.string.filter_cancelled'), duration: 1500 })
+      this.getUIContext().getPromptAction().showToast({ message: $r('app.string.filter_cancelled'), duration: 1500 })
     } else {
       // 选中
       this.filterMood = moodId
       const emoji = MoodUtils.getMoodEmoji(moodId, this.moods)
-      promptAction.showToast({ message: $r('app.string.mood_selected', emoji), duration: 1500 })
+      this.getUIContext().getPromptAction().showToast({ message: $r('app.string.mood_selected', emoji), duration: 1500 })
     }
     // 选择即关闭气泡
     this.showFilterPopup = false
@@ -355,7 +355,7 @@ export struct FilterBar {
       .width('100%')
       .height(150)
     }
-    .width(px2vp(display.getDefaultDisplaySync().width) - 8)  // 与搜索栏同宽（屏宽 - 左右 4vp×2）
+    .width(this.getUIContext().px2vp(display.getDefaultDisplaySync().width) - 8)  // 与搜索栏同宽（屏宽 - 左右 4vp×2）
     .constraintSize({ maxHeight: '35%' })
     .padding({ left: 14, right: 14, top: 6, bottom: 8 })
     .backgroundColor(this.themeColors.cardBackground)

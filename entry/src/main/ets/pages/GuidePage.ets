@@ -1,6 +1,5 @@
 // 引导页：pages/GuidePage.ets（更新计划四期）
 // 首次安装启动展示，滑动介绍应用功能，看完标记后进入主页
-import { router } from '@kit.ArkUI'
 import { common } from '@kit.AbilityKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { GuideRepository } from '../repository/GuideRepository'
@@ -135,6 +134,6 @@ struct GuidePage {
       Logger.error('[GuidePage] 标记引导失败: ' + JSON.stringify(error))
     }
     // 替换当前页为主页（不再返回引导页）
-    router.replaceUrl({ url: 'pages/Index' })
+    this.getUIContext().getRouter().replaceUrl({ url: 'pages/Index' })
   }
 }

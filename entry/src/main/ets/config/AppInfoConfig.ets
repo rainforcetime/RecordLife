@@ -2,7 +2,7 @@
  * 应用信息配置
  * 统一管理应用的基本信息，避免多处硬编码
  */
-import { bundleManager } from '@kit.AbilityKit';
+import { bundleManager, common } from '@kit.AbilityKit';
 import { Logger } from '../common/utils/Logger'
 
 // 应用信息接口
@@ -22,16 +22,20 @@ export interface AppInfoConfig {
 export class AppInfoManager {
   private static instance: AppInfoManager | null = null;
   private appInfo: AppInfoConfig | null = null;
+  private context: common.UIAbilityContext | null = null;
 
   private constructor() {}
 
   /**
-   * 获取单例实例
+   * 获取单例实例（支持显式注入 context，A5；替代废弃的全局 getContext）
    */
-  static async getInstance(): Promise<AppInfoManager> {
+  static async getInstance(context?: common.UIAbilityContext): Promise<AppInfoManager> {
     if (!AppInfoManager.instance) {
       AppInfoManager.instance = new AppInfoManager();
+      AppInfoManager.instance.context = context ?? null;
       await AppInfoManager.instance.initialize();
+    } else if (context && !AppInfoManager.instance.context) {
+      AppInfoManager.instance.context = context;
     }
     return AppInfoManager.instance;
   }
@@ -72,7 +76,11 @@ export class AppInfoManager {
    */
   private async getResourceString(resourceName: string, defaultValue: string): Promise<string> {
     try {
-      return getContext().resourceManager.getStringByNameSync(resourceName);
+      const rm = this.context?.resourceManager;
+      if (rm) {
+        return rm.getStringByNameSync(resourceName);
+      }
+      return defaultValue;
     } catch (error) {
       Logger.error(`读取资源字符串 ${resourceName} 失败: ` + JSON.stringify(error));
       return defaultValue;

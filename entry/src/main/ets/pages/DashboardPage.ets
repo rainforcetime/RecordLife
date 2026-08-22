@@ -62,7 +62,7 @@ struct DashboardPage {
           .fontSize(22)
           .fontColor([this.themeColors.iconColor])
           .onClick(() => {
-            router.back()
+            this.getUIContext().getRouter().back()
           })
 
         Text($r('app.string.dashboard_title'))
