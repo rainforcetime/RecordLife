@@ -1,6 +1,7 @@
 // 统一筛选栏组件：components/record/FilterBar.ets
 // 合并标签筛选 + 心情筛选（更新计划二期）：单行横向滚动，视觉统一
 // 交互：心情单选（再点取消）、标签单选（再点取消）、"全部"清除所有筛选；心情与标签可叠加过滤
+// 说明：chip 为独立组件 FilterChip（@Prop isSelected 响应式）——@Builder 按值传参不随状态刷新，故不用 @Builder
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { Tag, DEFAULT_TAGS } from '../../common/types'
 import { buildDisplayTags } from '../../common/utils/TagDisplayUtils'
@@ -9,6 +10,66 @@ import { TagService } from '../../service/TagService'
 import { common } from '@kit.AbilityKit'
 import { promptAction } from '@kit.ArkUI'
 import { Logger } from '../../common/utils/Logger'
+
+// 筛选 chip（独立组件：@Prop isSelected 随父状态响应式更新）
+@Component
+export struct FilterChip {
+  label: ResourceStr = ''
+  color: string = '#909399'
+  @Prop isSelected: boolean = false
+  @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
+  onClick?: () => void
+
+  // 判断是否深色模式
+  private isDarkMode(): boolean {
+    return this.themeColors.textPrimary === '#FFFFFF'
+  }
+
+  // 将十六进制颜色转换为 rgba 格式
+  private hexToRgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  }
+
+  // 获取未选中背景色
+  private getUnselectedBackground(): string {
+    if (this.isDarkMode()) {
+      return this.hexToRgba(this.color, 0.2)
+    }
+    return this.hexToRgba(this.color, 0.12)
+  }
+
+  build() {
+    Text(this.label)
+      .fontSize(12)
+      .fontColor(this.isSelected ? '#FFFFFF' : this.color)
+      .fontWeight(this.isSelected ? FontWeight.Bold : FontWeight.Normal)
+      .maxLines(1)
+      .textOverflow({ overflow: TextOverflow.Ellipsis })
+      .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+      .backgroundColor(this.isSelected ? this.color : this.getUnselectedBackground())
+      .borderRadius(14)
+      // 选中态：白色描边 + 阴影（emoji 无法通过 fontColor 变色，靠描边/背景明确选中）
+      .border({
+        width: 1.5,
+        color: this.isSelected ? '#FFFFFF' : '#00000000'
+      })
+      .shadow({
+        radius: 4,
+        color: this.isSelected ? '#33000000' : '#00000000',
+        offsetX: 0,
+        offsetY: 2
+      })
+      .margin({ right: 8 })
+      .onClick(() => {
+        if (this.onClick) {
+          this.onClick()
+        }
+      })
+  }
+}
 
 @Component
 export struct FilterBar {
@@ -59,30 +120,6 @@ export struct FilterBar {
     }
   }
 
-  // 判断是否深色模式
-  private isDarkMode(): boolean {
-    return this.themeColors.textPrimary === '#FFFFFF'
-  }
-
-  // 将十六进制颜色转换为 rgba 格式
-  private hexToRgba(hex: string, alpha: number): string {
-    const r = parseInt(hex.slice(1, 3), 16)
-    const g = parseInt(hex.slice(3, 5), 16)
-    const b = parseInt(hex.slice(5, 7), 16)
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`
-  }
-
-  // 获取标签背景色
-  private getTagBackground(tagColor: string, isSelected: boolean): string {
-    if (isSelected) {
-      return tagColor
-    }
-    if (this.isDarkMode()) {
-      return this.hexToRgba(tagColor, 0.2)
-    }
-    return this.hexToRgba(tagColor, 0.12)
-  }
-
   // 判断标签是否选中
   private isTagSelected(tagId: string): boolean {
     return this.selectedTagIds.includes(tagId)
@@ -131,25 +168,25 @@ export struct FilterBar {
     Scroll() {
       Row({ space: 0 }) {
         // "全部" 按钮（清除标签 + 心情筛选）
-        this.ChipItem(
-          $r('app.string.all'),
-          '#909399',
-          this.isNoFilter(),
-          () => {
+        FilterChip({
+          label: $r('app.string.all'),
+          color: '#909399',
+          isSelected: this.isNoFilter(),
+          onClick: () => {
             this.clearAll()
           }
-        )
+        })
 
         // 心情筛选（更新计划二期）
         ForEach(MoodUtils.MOODS, (mood: string) => {
-          this.ChipItem(
-            MoodUtils.getMoodEmoji(mood),
-            this.themeColors.primary,
-            this.filterMood === mood,
-            () => {
+          FilterChip({
+            label: MoodUtils.getMoodEmoji(mood),
+            color: this.themeColors.primary,
+            isSelected: this.filterMood === mood,
+            onClick: () => {
               this.toggleMood(mood)
             }
-          )
+          })
         }, (mood: string) => `mood-${mood}`)
 
         // 心情与标签分隔线
@@ -163,14 +200,14 @@ export struct FilterBar {
 
         // 标签列表
         ForEach(this.availableTags, (tag: Tag) => {
-          this.ChipItem(
-            (tag.icon ? tag.icon + ' ' : '') + tag.name,
-            tag.color,
-            this.isTagSelected(tag.id),
-            () => {
+          FilterChip({
+            label: (tag.icon ? tag.icon + ' ' : '') + tag.name,
+            color: tag.color,
+            isSelected: this.isTagSelected(tag.id),
+            onClick: () => {
               this.toggleTag(tag.id)
             }
-          )
+          })
         }, (tag: Tag) => `filter-${tag.id}`)
       }
       .padding({ left: 4, right: 4 })
@@ -178,31 +215,5 @@ export struct FilterBar {
     .scrollable(ScrollDirection.Horizontal)
     .scrollBar(BarState.Off)
     .width('100%')
-  }
-
-  @Builder
-  ChipItem(label: ResourceStr, color: string, isSelected: boolean, onClick: () => void) {
-    Text(label)
-      .fontSize(12)
-      .fontColor(isSelected ? '#FFFFFF' : color)
-      .fontWeight(isSelected ? FontWeight.Bold : FontWeight.Normal)
-      .maxLines(1)
-      .textOverflow({ overflow: TextOverflow.Ellipsis })
-      .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-      .backgroundColor(isSelected ? color : this.getTagBackground(color, isSelected))
-      .borderRadius(14)
-      // 选中态：白色描边 + 阴影（emoji 无法通过 fontColor 变色，靠描边/背景明确选中）
-      .border({
-        width: 1.5,
-        color: isSelected ? '#FFFFFF' : '#00000000'
-      })
-      .shadow({
-        radius: 4,
-        color: isSelected ? '#33000000' : '#00000000',
-        offsetX: 0,
-        offsetY: 2
-      })
-      .margin({ right: 8 })
-      .onClick(onClick)
   }
 }
