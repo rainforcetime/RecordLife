@@ -13,7 +13,6 @@ import { StatisticsUtils } from '../model/StatisticsModel';
 import { common } from '@kit.AbilityKit';
 import { RefreshManager } from '../common/managers/RefreshManager';
 import { Logger } from '../common/utils/Logger'
-import { ColorUtils } from '../common/ColorUtils';
 
 // 卡片颜色配置接口
 interface CardColors {
@@ -45,10 +44,6 @@ export struct HomePage {
   @State isRemainingMode: boolean = false; // true: 剩余模式, false: 已存活模式
   @State showShareDialog: boolean = false; // 控制分享对话框显示
   @State isSharing: boolean = false; // 分享进行中标志
-  // 生命里程碑（更新计划一期：第几天/第几周/距下次生日）
-  @State dayOfLife: number = 0;
-  @State weekOfLife: number = 0;
-  @State daysUntilBirthday: number = 0;
   
   private configManager: ConfigManager | null = null;
   private intervalId: number = -1;
@@ -212,11 +207,6 @@ export struct HomePage {
   // 计算存活时间（使用UTC+8时区）
   private calculateTime() {
     const now = TimeUtils.now();
-    
-    // 生命里程碑（与已存活/剩余模式无关，始终展示）
-    this.dayOfLife = TimeUtils.getDayOfLife(this.birthDate, now);
-    this.weekOfLife = TimeUtils.getWeekOfLife(this.birthDate, now);
-    this.daysUntilBirthday = TimeUtils.getDaysUntilNextBirthday(this.birthDate, now);
     
     // 生命进度（更新计划五期）
     this.lifePercent = StatisticsUtils.getLifeProgress(this.birthDate, this.targetAge, now).percent;
@@ -619,44 +609,6 @@ export struct HomePage {
               .layoutWeight(1)
             }
             .width('100%')
-          }
-          .width('100%')
-
-          // 第五行：生命里程碑（第几天 / 第几周 / 距下次生日，更新计划一期；隐私模式隐藏）
-          if (!this.privacyMode) {
-            Row({ space: 12 }) {
-            Text($r('app.string.life_day', this.dayOfLife))
-              .fontSize(14)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(this.themeColors.textPrimary)
-              .textAlign(TextAlign.Center)
-              .layoutWeight(1)
-              .padding({ top: 10, bottom: 10 })
-              .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
-              .borderRadius(12)
-
-            Text($r('app.string.life_week', this.weekOfLife))
-              .fontSize(14)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(this.themeColors.textPrimary)
-              .textAlign(TextAlign.Center)
-              .layoutWeight(1)
-              .padding({ top: 10, bottom: 10 })
-              .backgroundColor(ColorUtils.primaryUltraLight(this.themeColors.primary))
-              .borderRadius(12)
-
-            Text(this.daysUntilBirthday === 0 ? $r('app.string.birthday_today') : $r('app.string.birthday_countdown', this.daysUntilBirthday))
-              .fontSize(14)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(this.themeColors.textPrimary)
-              .textAlign(TextAlign.Center)
-              .layoutWeight(1)
-              .padding({ top: 10, bottom: 10 })
-              .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
-              .borderRadius(12)
-            }
-            .width('100%')
-            }
           }
           .width('100%')
           .padding(20)
