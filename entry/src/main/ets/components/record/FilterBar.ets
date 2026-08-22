@@ -277,11 +277,11 @@ export struct FilterBar {
     return count
   }
 
-  // 筛选弹窗（心情单选 + 标签单选 + 清除全部）
+  // 筛选弹窗（心情单选 + 标签单选 + 清除全部；内容可滚动，高度调小）
   @Builder
   FilterSheetBuilder() {
     Column() {
-      // 标题行
+      // 标题行（固定）
       Row() {
         Text($r('app.string.filter_title'))
           .fontSize(18)
@@ -300,54 +300,64 @@ export struct FilterBar {
           })
       }
       .width('100%')
-      .margin({ top: 12, bottom: 16 })
+      .margin({ top: 12, bottom: 12 })
 
-      // 心情分组
-      Text($r('app.string.mood_tab'))
-        .fontSize(13)
-        .fontColor(this.themeColors.textSecondary)
+      // 可滚动内容区（心情 + 标签分组）
+      Scroll() {
+        Column() {
+          // 心情分组
+          Text($r('app.string.mood_tab'))
+            .fontSize(13)
+            .fontColor(this.themeColors.textSecondary)
+            .width('100%')
+            .margin({ top: 2, bottom: 10 })
+
+          Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
+            ForEach(this.moods, (mood: Mood) => {
+              FilterChip({
+                label: mood.emoji,
+                color: this.themeColors.primary,
+                isSelected: this.filterMood === mood.id,
+                onChipClick: () => {
+                  this.toggleMood(mood.id)
+                }
+              })
+            }, (mood: Mood) => `mood-${mood.id}`)
+          }
+          .width('100%')
+          .margin({ bottom: 16 })
+
+          // 标签分组
+          Text($r('app.string.tag_tab'))
+            .fontSize(13)
+            .fontColor(this.themeColors.textSecondary)
+            .width('100%')
+            .margin({ bottom: 10 })
+
+          Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
+            ForEach(this.availableTags, (tag: Tag) => {
+              FilterChip({
+                label: (tag.icon ? tag.icon + ' ' : '') + tag.name,
+                color: tag.color,
+                isSelected: this.isTagSelected(tag.id),
+                onChipClick: () => {
+                  this.toggleTag(tag.id)
+                }
+              })
+            }, (tag: Tag) => `filter-${tag.id}`)
+          }
+          .width('100%')
+          .padding({ bottom: 4 })
+        }
         .width('100%')
-        .margin({ bottom: 10 })
-
-      Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
-        ForEach(this.moods, (mood: Mood) => {
-          FilterChip({
-            label: mood.emoji,
-            color: this.themeColors.primary,
-            isSelected: this.filterMood === mood.id,
-            onChipClick: () => {
-              this.toggleMood(mood.id)
-            }
-          })
-        }, (mood: Mood) => `mood-${mood.id}`)
       }
+      .scrollBar(BarState.Off)
       .width('100%')
-      .margin({ bottom: 20 })
-
-      // 标签分组
-      Text($r('app.string.tag_tab'))
-        .fontSize(13)
-        .fontColor(this.themeColors.textSecondary)
-        .width('100%')
-        .margin({ bottom: 10 })
-
-      Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
-        ForEach(this.availableTags, (tag: Tag) => {
-          FilterChip({
-            label: (tag.icon ? tag.icon + ' ' : '') + tag.name,
-            color: tag.color,
-            isSelected: this.isTagSelected(tag.id),
-            onChipClick: () => {
-              this.toggleTag(tag.id)
-            }
-          })
-        }, (tag: Tag) => `filter-${tag.id}`)
-      }
-      .width('100%')
+      .constraintSize({ maxHeight: 260 })
     }
     .width(280)
-    .constraintSize({ maxHeight: '55%' })
-    .padding({ left: 16, right: 16, top: 8, bottom: 16 })
+    .constraintSize({ maxHeight: '45%' })
+    .padding({ left: 16, right: 16, top: 8, bottom: 12 })
     .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(14)
   }
