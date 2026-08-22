@@ -662,6 +662,9 @@ entry/src/main/ets/
 - [x] 被测对象均为纯函数/纯逻辑（无系统 API 运行时依赖：`StorageService.getAppStorageSize` 未测，其依赖 storageStatistics 运行时能力）
 - [x] 静态验证通过（import 路径 / 被测符号存在 / hypium API 用法）
 
+**测试暴露并修复的 bug**（生产代码，重构前即存在）：
+- `buildTimelineData` 当前月展开 off-by-one：`currentMonth = TimeUtils.getMonth(now)` 返回 0-11，与分组月份 `date.getMonth() + 1`（1-12）比较**永不相等** → 「当前月份默认展开」从未生效。已修复为 `currentMonth = TimeUtils.getMonth(now) + 1`（RecordModel.ets:55）。修复后 NowPage 时间线当前月将正确展开，**需实机回归时间线展示**。
+
 **遗留问题**：
 - ⚠️ 本机无法运行测试，需用户在 DevEco 执行 `hvigorw test`（或 IDE 运行本地单测）确认 15 用例全绿
 - 构造器注入（A5，去除 AppStorage 硬依赖）未做——涉及全工程单例改造，风险高，标记为渐进项

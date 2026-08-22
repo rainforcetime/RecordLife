@@ -52,7 +52,7 @@ export interface TimelineData {
 // 自 NowViewModel.buildTimeline 下沉（P4），纯函数无副作用，可直接单测
 export function buildTimelineData(records: LifeRecord[], now: Date): TimelineData {
   const currentYear = TimeUtils.getFullYear(now);
-  const currentMonth = TimeUtils.getMonth(now);
+  const currentMonth = TimeUtils.getMonth(now) + 1;  // 0-11 → 1-12，与分组月份（date.getMonth()+1）对齐；修复 off-by-one：当前月展开原本永不生效
 
   // 按年月日分组
   const yearMap = new Map<number, Map<number, Map<number, LifeRecord[]>>>();

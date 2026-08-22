@@ -44,7 +44,7 @@ export default function configModelTest() {
     });
   });
 
-  describe('TimeUtils（UTC+8）', () => {
+  describe('TimeUtils_UTC_8', () => {
     it('formatDate / parseDate 往返一致', 0, () => {
       expect(TimeUtils.formatDate(TimeUtils.parseDate('2026-06-15'))).assertEqual('2026-06-15');
     });
