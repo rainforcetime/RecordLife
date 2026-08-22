@@ -185,12 +185,23 @@ export struct FilterBar {
     Text(label)
       .fontSize(12)
       .fontColor(isSelected ? '#FFFFFF' : color)
-      .fontWeight(isSelected ? FontWeight.Medium : FontWeight.Normal)
+      .fontWeight(isSelected ? FontWeight.Bold : FontWeight.Normal)
       .maxLines(1)
       .textOverflow({ overflow: TextOverflow.Ellipsis })
       .padding({ left: 10, right: 10, top: 5, bottom: 5 })
       .backgroundColor(isSelected ? color : this.getTagBackground(color, isSelected))
       .borderRadius(14)
+      // 选中态：白色描边 + 阴影（emoji 无法通过 fontColor 变色，靠描边/背景明确选中）
+      .border({
+        width: 1.5,
+        color: isSelected ? '#FFFFFF' : '#00000000'
+      })
+      .shadow({
+        radius: 4,
+        color: isSelected ? '#33000000' : '#00000000',
+        offsetX: 0,
+        offsetY: 2
+      })
       .margin({ right: 8 })
       .onClick(onClick)
   }
