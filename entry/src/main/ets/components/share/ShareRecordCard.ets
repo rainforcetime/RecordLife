@@ -1,8 +1,9 @@
 // 分享记录卡片组件：components/share/ShareRecordCard.ets
 // 专门用于生成分享图片的组件，样式更简洁美观
-import { LifeRecord, DEFAULT_TAGS } from '../../common/types'
+import { LifeRecord, DEFAULT_TAGS, getAllTags, Tag } from '../../common/types'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
+import { TagService } from '../../service/TagService'
 import { common } from '@kit.AbilityKit'
 
 @Component
@@ -13,8 +14,17 @@ export struct ShareRecordCard {
   // ViewModel
   private viewModel: NowViewModel | null = null
   
+  // 全部标签（预设 + 自定义，动态加载）
+  @State private allTags: Tag[] = DEFAULT_TAGS
+  
   async aboutToAppear() {
     this.viewModel = await NowViewModel.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
+    try {
+      const ts = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
+      this.allTags = getAllTags(ts.getCustomTags())
+    } catch (error) {
+      console.error('[ShareRecordCard] 加载标签失败: ' + JSON.stringify(error))
+    }
   }
   
   build() {
@@ -153,21 +163,21 @@ export struct ShareRecordCard {
     .borderRadius(12)
   }
   
-  // 获取标签名称
+  // 获取标签名称（预设 + 自定义标签合并查找）
   private getTagName(tagId: string): string {
-    const tag = DEFAULT_TAGS.find(t => t.id === tagId)
+    const tag = this.allTags.find(t => t.id === tagId)
     return tag ? tag.name : tagId
   }
   
   // 获取标签颜色
   private getTagColor(tagId: string): string {
-    const tag = DEFAULT_TAGS.find(t => t.id === tagId)
+    const tag = this.allTags.find(t => t.id === tagId)
     return tag ? tag.color : '#999999'
   }
   
   // 获取标签图标
   private getTagIcon(tagId: string): string | null {
-    const tag = DEFAULT_TAGS.find(t => t.id === tagId)
+    const tag = this.allTags.find(t => t.id === tagId)
     return tag && tag.icon ? tag.icon : null
   }
   

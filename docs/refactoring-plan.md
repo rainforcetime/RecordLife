@@ -837,6 +837,20 @@ entry/src/main/ets/
 
 **下一轮计划**：无（重构 + A5 全部完成）；可选：B3 日志收敛（统一 hilog）、预设标签国际化
 
+### 轮次 18 — 2026-08-22（bug 修复：分享预览卡片自定义标签显示为 id）
+
+**问题**：此刻页面条目「分享预览卡片」（`ShareRecordCard`）中，自定义标签显示为 `custom_XXX`（tag id 回退）。
+
+**根因**：`ShareRecordCard.getTagName/getTagColor/getTagIcon` 只查 `DEFAULT_TAGS`（预设标签），未加载自定义标签——`custom_*` 标签查找失败后回退显示 id 字符串。
+
+**修复**（`components/share/ShareRecordCard.ets`）：
+- 新增 `@State allTags: Tag[]`，`aboutToAppear` 通过 `TagService.getInstance(context).getCustomTags()` 加载，`getAllTags(customTags)` 合并预设 + 自定义
+- 三个查找方法改用 `this.allTags` 查找
+
+**排查**：全工程其他标签显示位置（TagSelector/TagDisplay/TagFilterBar/TimelineSection/NowPage 搜索匹配）均已加载自定义标签，仅此组件遗漏。
+
+**验证**：✅ 用户实机确认修复（自定义标签显示名称/颜色/图标正常）。
+
 ### 10.3 数据兼容性验证记录
 
 | 验证时间 | 备份文件来源 | 导入结果 | 验证人 | 备注 |
