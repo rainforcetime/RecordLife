@@ -344,16 +344,42 @@ export struct HomePage {
         Column() {
           // 标题区域
           Column() {
-            Text($r('app.string.app_name'))
-              .fontSize(32)
-              .fontWeight(FontWeight.Bold)
-              .fontColor(this.themeColors.textPrimary)
-              .letterSpacing(2)
+            // 标题行：应用名 + 生命进度环形（同一行）
+            Row() {
+              Column() {
+                Text($r('app.string.app_name'))
+                  .fontSize(32)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor(this.themeColors.textPrimary)
+                  .letterSpacing(2)
 
-            Text($r('app.string.app_desc'))
-              .fontSize(14)
-              .fontColor(this.themeColors.textSecondary)
-              .margin({ top: 6 })
+                Text($r('app.string.app_desc'))
+                  .fontSize(14)
+                  .fontColor(this.themeColors.textSecondary)
+                  .margin({ top: 6 })
+              }
+              .alignItems(HorizontalAlign.Start)
+              .layoutWeight(1)
+
+              // 生命进度环形（更新计划五期）
+              Stack() {
+                Progress({ value: this.lifePercent, total: 100, type: ProgressType.Ring })
+                  .width(64)
+                  .height(64)
+                  .color(this.themeColors.primary)
+                  .backgroundColor(this.themeColors.divider)
+                  .style({ strokeWidth: 7 })
+
+                Text(this.lifePercent.toFixed(1) + '%')
+                  .fontSize(14)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor(this.themeColors.primary)
+              }
+              .width(64)
+              .height(64)
+            }
+            .width('100%')
+            .alignItems(VerticalAlign.Center)
 
             // 签名/座右铭（有值才展示，更新计划一期）
             if (this.signature && this.signature.length > 0) {
@@ -365,46 +391,10 @@ export struct HomePage {
                 .maxLines(2)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
             }
-
-            // 生命进度环形（更新计划五期：首页顶部焦点）
-            Row() {
-              Stack() {
-                Progress({ value: this.lifePercent, total: 100, type: ProgressType.Ring })
-                  .width(76)
-                  .height(76)
-                  .color(this.themeColors.primary)
-                  .backgroundColor(this.themeColors.divider)
-                  .style({ strokeWidth: 8 })
-
-                Text(this.lifePercent.toFixed(1) + '%')
-                  .fontSize(16)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor(this.themeColors.primary)
-              }
-              .width(76)
-              .height(76)
-
-              Column() {
-                Text($r('app.string.life_progress_label'))
-                  .fontSize(14)
-                  .fontColor(this.themeColors.textPrimary)
-                  .fontWeight(FontWeight.Medium)
-
-                Text($r('app.string.life_progress_detail', this.targetAge))
-                  .fontSize(12)
-                  .fontColor(this.themeColors.textSecondary)
-                  .margin({ top: 4 })
-              }
-              .alignItems(HorizontalAlign.Start)
-              .margin({ left: 14 })
-            }
-            .width('100%')
-            .justifyContent(FlexAlign.Center)
-            .margin({ top: 16 })
-        }
-        .width('100%')
-        .alignItems(HorizontalAlign.Center)
-        .padding({ top: 32, bottom: 20 })
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Center)
+          .padding({ top: 32, bottom: 20 })
 
         // 出生日期设置组件（隐私模式开启时遮罩，更新计划三期）
         if (this.privacyMode) {
