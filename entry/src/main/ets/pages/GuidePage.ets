@@ -1,5 +1,6 @@
 // 引导页：pages/GuidePage.ets（更新计划四期）
 // 首次安装启动展示，滑动介绍应用功能，看完标记后进入主页
+import { router } from '@kit.ArkUI'
 import { common } from '@kit.AbilityKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { GuideRepository } from '../repository/GuideRepository'
@@ -124,21 +125,16 @@ struct GuidePage {
     .backgroundColor(this.themeColors.background)
   }
 
-  // 标记已看过引导并进入主页（@Entry 页面不能用 router 跳转 @Entry 页面，改用 loadContent 切换）
+  // 标记已看过引导并进入主页
   private async startUsing() {
     try {
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext
       await GuideRepository.markGuideSeen(context)
       Logger.info('[GuidePage] 引导完成，进入主页')
-      // 通过 windowStage.loadContent 切换到主页（替换当前页面，不再返回引导页）
-      const windowStage = context.getWindowStage()
-      windowStage.loadContent('pages/Index', (err) => {
-        if (err.code) {
-          Logger.error('[GuidePage] loadContent 主页失败: ' + JSON.stringify(err))
-        }
-      })
     } catch (error) {
-      Logger.error('[GuidePage] 进入主页异常: ' + JSON.stringify(error))
+      Logger.error('[GuidePage] 标记引导失败: ' + JSON.stringify(error))
     }
+    // 替换当前页为主页（不再返回引导页）
+    router.replaceUrl({ url: 'pages/Index' })
   }
 }
