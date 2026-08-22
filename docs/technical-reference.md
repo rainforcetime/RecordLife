@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 RecordLife 项目的**现状实现快照**，供不同窗口/会话的 AI 重构任务作为唯一参考，避免每次从头通读全部源码。
 > **配套文档**：`docs/refactoring-plan.md` 是重构方案与进度跟踪；本文档只描述**当前代码实际怎么实现**，两者配合使用。
-> **最后更新**：2026-08-22（P3 service 层抽取第二部分完成；基于当前工作区源码逐文件核对）
+> **最后更新**：2026-08-22（P3 service 层抽取第三部分完成；基于当前工作区源码逐文件核对）
 > **阅读方式**：全文关键结论均附 `file:line` 引用，可快速定位源码；改动任何涉及数据模型 / 持久化 / 备份导入导出的代码前，**必须先读 §5 与 §6**。
 
 ---
@@ -53,7 +53,7 @@
 │   ├── handlers/               MorePageBackupHandler.ets（19.9KB）/ MorePageConfigHandler.ets
 │   ├── managers/               RefreshManager.ets
 │   └── utils/                  TimeUtils / AccountUtils / ImageBase64Utils / ImagePickerUtils / MorePageHelper / ImagePathUtils
-├── service/                ★ P3 新增：ImageFileService.ets（图片 IO）/ TagService.ets（标签 CRUD）/ BackupManager.ets（自 common/managers 迁入）
+├── service/                ★ P3 新增：ImageFileService.ets（图片 IO）/ TagService.ets（标签 CRUD）/ ZipTransferService.ets（zip picker 传输）/ BackupManager.ets（自 common/managers 迁入）
 ├── components/             calendar(5) / common(4) / dialog(4) / record(5) / setting(4) / share(2) / user(4)
 └── utils/                  ShareUtils.ets（组件截图分享）/ ImageGenerator.ets（生成纯色/渐变示例图）
 ```
@@ -236,9 +236,9 @@ interface DateDifference { years; months; days }
 | 导出/导入备份（仅记录） | 同上 | `MorePageBackupHandler.exportBackup/importBackup` → `BackupManager` | `.zip` `RecordLife_backup_<ts>.zip` |
 | **导出/导入全部数据** | 同上（ExportOptionDialog/ImportOptionDialog 二选一） | `MorePageBackupHandler.exportAll/importAll` | `.zip` `RecordLife_all_<ts>.zip` |
 
-操作均使用 `picker.DocumentViewPicker`（保存/选择文件，**免权限**），成功 Toast 后 `setTimeout(1000ms)` → `restartApp(want)`（bundleName `com.rainforcetime.recordlife`，abilityName `EntryAbility`）重启应用（MorePageBackupHandler.ets:30-43）。
+操作均使用 `picker.DocumentViewPicker`（保存/选择文件，**免权限**；picker 流程已下沉至 `service/ZipTransferService`，P3 轮次 6），成功 Toast 后 `setTimeout(1000ms)` → `restartApp(want)`（bundleName `com.rainforcetime.recordlife`，abilityName `EntryAbility`）重启应用（MorePageBackupHandler.ets:28-42）。
 
-### 6.2 「导出全部数据」zip 实际结构（`MorePageBackupHandler.exportAll`，MorePageBackupHandler.ets:177-305）
+### 6.2 「导出全部数据」zip 实际结构（`MorePageBackupHandler.exportAll`，MorePageBackupHandler.ets:134-244）
 
 ```text
 RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
@@ -246,9 +246,9 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 ├── records_metadata.json  # { appVersion, timestamp, recordCount, records: LifeRecord[] }
 └── records/               # 图片文件，文件名 = 原沙箱文件名（如 record_<ts>.jpg）
 ```
-> ⚠️ **与 plan §0.1 快照的差异**：实际代码图片文件名是 `sandboxPath.split('/').pop()` 保留原文件名（MorePageBackupHandler.ets:240），**不是** `{recordId}_{index}.jpg`；records 数组是完整 `LifeRecord[]`（含 tags/isPinned），文件名为 `records_metadata.json`（不是 `metadata.json`）。**重构验证兼容性时以本文档结构为准**。
+> ⚠️ **与 plan §0.1 快照的差异**：实际代码图片文件名是 `sandboxPath.split('/').pop()` 保留原文件名（MorePageBackupHandler.ets:194），**不是** `{recordId}_{index}.jpg`；records 数组是完整 `LifeRecord[]`（含 tags/isPinned），文件名为 `records_metadata.json`（不是 `metadata.json`）。**重构验证兼容性时以本文档结构为准**。
 
-### 6.3 导入流程（`importAll`，MorePageBackupHandler.ets:310-474）
+### 6.3 导入流程（`importAll`，MorePageBackupHandler.ets:245-393）
 
 1. Picker 选择 zip → 复制到 `cacheDir/temp_import_all.zip` → `zlib.decompressFile` 解压到 `cacheDir/import_all_temp`。
 2. **配置导入**：读 `config.json` → `ConfigManager.importConfig(configStr)`（见 6.4）。
@@ -466,6 +466,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | common/utils/MorePageHelper.ets | MorePageHelper | `deleteDirectory` / `uriToSandboxPath`（委托 ImagePathUtils）/ `readFileContent` / `writeFileContent` / `copyFile` / `fileExists` / `ensureDirectory` |
 | common/utils/ImagePathUtils.ets | ImagePathUtils | ★ P3 新增：`uriToSandboxPath`（统一实现）/ `sandboxPathToUri` / `getFileName` |
 | service/ImageFileService.ets | ImageFileService | ★ P3 新增：`saveRecordImage` / `getImageUri` / `deleteImageFiles` / `copyAvatar`（记录图片与头像的沙箱 IO） |
+| service/ZipTransferService.ets | ZipTransferService | ★ P3 新增：`saveZipToDocument` / `pickZipToSandbox`（DocumentViewPicker zip 保存/选择 + 沙箱复制；取消返回 false，IO 异常冒泡） |
 | common/ColorUtils.ets | ColorUtils | `withAlpha(hex, alpha)` → rgba、`primaryLight`(α32)/`primaryExtraLight`(α20)/`primaryUltraLight`(α15) |
 | utils/ShareUtils.ets | ShareUtils | `shareComponent(uiContext, componentId, context, title?, desc?)`：getComponentSnapshot → packToData(jpeg 95) → 存 `cacheDir/share_<ts>.jpg` → `systemShare.ShareController.show`；`cleanupOldShareImages` |
 | utils/ImageGenerator.ets | ImageGenerator | `generateSolidColorImage`（存 `filesDir/records`）、`generateGradientImage`（存 `filesDir/sample_images`），BGRA_8888 逐像素生成 |

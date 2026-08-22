@@ -304,7 +304,7 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | P0 | 数据兼容性基线锁定（确认旧备份可导入） | ⬜ | — | 备份格式已记录在 §0；尚未做导入冒烟测试 |
 | P1 | 类型层重构（`types.ets` 拆分、消除重复定义） | ✅ | 2026-08-22 | `model/` 目录已创建（5 文件）；`UserProfile`/`DataStatistics` 重复已消除；UI DTO 重命名为 `AccountProfile`/`AccountDataStatistics`；旧文件保留 re-export 兼容 |
 | P2 | Model / Repository 层抽取 | ✅ | 2026-08-22 | `repository/` 已创建（`ConfigRepository` / `RecordRepository`，见轮次 3）；Preferences 访问收敛至 repository 层，store/key 常量集中定义 |
-| P3 | Service 层抽取（备份 / 导入导出 / 图片） | 🟦 | 2026-08-22 | `service/` 已建立（ImageFileService 图片 IO + BackupManager 迁入 + TagService 标签 CRUD，见轮次 4/5）；BackupManager 已改依赖 `RecordRepository`（消除反向依赖）；剩余：MorePageBackupHandler 拆分、ConfigManager 导出导入拆分（触数据兼容红线，待旧备份验证） |
+| P3 | Service 层抽取（备份 / 导入导出 / 图片） | 🟦 | 2026-08-22 | `service/` 已建立（ImageFileService 图片 IO + BackupManager 迁入 + TagService 标签 CRUD + ZipTransferService zip 传输，见轮次 4/5/6）；BackupManager 已改依赖 `RecordRepository`；MorePageBackupHandler 已瘦身（19.9KB → 16.3KB）；剩余：ConfigManager 导出导入拆分（触数据兼容红线，待旧备份验证） |
 | P4 | ViewModel 瘦身（IO 职责下沉） | ⬜ | — | `NowViewModel` 15.7KB 直接 import `@ohos.data.preferences`；`AccountViewModel` 19.1KB 含重复类型 |
 | P5 | Page 层清理（`@Entry` 标注、路由注册） | ⬜ | — | `NowPage.ets` 误标 `@Entry`（Tab 内容页不应标注）；`main_pages.json` 含 4 页 |
 | P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
@@ -524,6 +524,32 @@ entry/src/main/ets/
 - MorePageBackupHandler（19.9KB）拆分未做 — P3 剩余
 
 **下一轮计划**：P3 续 — MorePageBackupHandler 拆分（zip 公共操作抽 service，行为保持）；或 P4 — ViewModel 瘦身（AccountViewModel 存储统计下沉）
+
+### 轮次 6 — 2026-08-22（P3 Service 层抽取 · 第三部分：MorePageBackupHandler 拆分）
+
+**本轮目标**：拆分 MorePageBackupHandler（19.9KB，全工程最大 handler）中重复的 DocumentViewPicker zip 保存/选择流程到 `service/ZipTransferService`。
+
+**涉及文件**：
+- `service/ZipTransferService.ets`（新增）— `saveZipToDocument(context, zipPath)` / `pickZipToSandbox(context, destPath)`
+- `common/handlers/MorePageBackupHandler.ets`（修改）— 四方法改用 ZipTransferService；删除未使用 import（`picker` / `fileUri` / `RefreshManager`）
+
+**设计要点**：
+- **取消 vs 异常分离**：picker 返回空数组（用户取消）→ 返回 `false`；IO 异常**不捕获**，冒泡到调用方外层 `try/catch` → 保持原有「导出失败/导入失败」toast 行为完全一致。
+- 临时文件清理时机由调用方保留（exportBackup 分支删、exportAll 统一删），行为不变。
+- 图片恢复/记录映射等数据兼容核心逻辑**未改动**（仍留在 importAll / BackupManager.restoreBackup）。
+
+**已完成**：
+- [x] `ZipTransferService` 创建（逻辑逐行迁自原 picker 流程）
+- [x] exportBackup / importBackup / exportAll / importAll 四方法重构（文件 19726B/494 行 → 16311B/409 行，瘦身约 17%）
+- [x] import 清理与新增（`../../service/ZipTransferService`，吸取轮次 4 教训核对层级）
+- [x] 静态验证通过（无残留引用 / ArkTS 约束 / 行为等价性审查）
+
+**遗留问题**：
+- ⚠️ 本机无 hvigor；且本轮改动涉及 `MorePageBackupHandler.exportAll|importAll`（数据兼容红线 §0.3），**需在 DevEco 编译 + 用旧备份文件做导入冒烟验证**
+- ConfigManager 导出导入（`exportConfig` / `importConfig`）未拆 — 触红线，待验证手段确认
+- `ZipTransferService` 未纳入单测（C2）
+
+**下一轮计划**：P4 — ViewModel 瘦身（AccountViewModel 存储统计/`[StorageDebug]` 日志下沉，不触红线）；或收尾 P3（ConfigManager 导出导入拆分，需先确认旧备份导入验证方式）
 
 ### 10.3 数据兼容性验证记录
 

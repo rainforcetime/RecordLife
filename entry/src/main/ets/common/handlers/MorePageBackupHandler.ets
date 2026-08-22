@@ -1,13 +1,12 @@
 // MorePage 备份处理类：处理备份相关的业务逻辑
 import { common, Want } from '@kit.AbilityKit'
-import { picker, fileUri } from '@kit.CoreFileKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { zlib } from '@kit.BasicServicesKit'
 import { PromptAction } from '@kit.ArkUI'
 import { util } from '@kit.ArkTS'
 import { RecordRepository } from '../../repository/RecordRepository'
 import { BackupManager } from '../../service/BackupManager'
-import { RefreshManager } from '../managers/RefreshManager'
+import { ZipTransferService } from '../../service/ZipTransferService'
 import { MorePageHelper } from '../utils/MorePageHelper'
 import { ConfigManager } from '../../config/ConfigManager'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
@@ -63,33 +62,14 @@ export class MorePageBackupHandler {
       
       console.info('[MorePageBackupHandler] 备份已创建: ' + zipPath)
       
-      // 使用 DocumentViewPicker 保存文件
-      const fileName = zipPath.split('/').pop() || 'backup.zip'
-      const documentSaveOptions: picker.DocumentSaveOptions = new picker.DocumentSaveOptions()
-      documentSaveOptions.newFileNames = [fileName]
-      const documentPicker: picker.DocumentViewPicker = new picker.DocumentViewPicker()
+      // 使用 DocumentViewPicker 保存文件（picker 流程已下沉至 ZipTransferService，P3）
+      const saved = await ZipTransferService.saveZipToDocument(context, zipPath)
       
-      const uriResult: Array<string> = await documentPicker.save(documentSaveOptions)
-      console.info('[MorePageBackupHandler] 文件选择结果: ' + JSON.stringify(uriResult))
-      
-      if (uriResult && uriResult.length > 0) {
-        const saveUri: string = uriResult[0]
-        
-        // 打开文件并写入备份内容
-        const zipFile = fileIo.openSync(zipPath, fileIo.OpenMode.READ_ONLY)
-        const stat = fileIo.statSync(zipFile.fd)
-        const buffer = new ArrayBuffer(stat.size)
-        fileIo.readSync(zipFile.fd, buffer)
-        fileIo.closeSync(zipFile)
-        
-        const destFile = fileIo.openSync(saveUri, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
-        fileIo.writeSync(destFile.fd, buffer)
-        fileIo.closeSync(destFile)
-        
+      if (saved) {
         // 删除临时备份文件
         fileIo.unlinkSync(zipPath)
         
-        console.info('[MorePageBackupHandler] 备份导出成功: ' + saveUri)
+        console.info('[MorePageBackupHandler] 备份导出成功')
         promptAction.showToast({ message: $r('app.string.backup_export_success') })
       } else {
         // 用户取消，删除临时备份文件
@@ -117,29 +97,11 @@ export class MorePageBackupHandler {
     console.info('[MorePageBackupHandler] 开始导入备份')
     
     try {
-      // 使用 DocumentViewPicker 选择备份文件
-      const documentSelectOptions: picker.DocumentSelectOptions = new picker.DocumentSelectOptions()
-      documentSelectOptions.maxSelectNumber = 1
-      const documentPicker: picker.DocumentViewPicker = new picker.DocumentViewPicker()
+      // 使用 DocumentViewPicker 选择备份文件（picker 流程已下沉至 ZipTransferService，P3）
+      const tempZipPath = `${context.cacheDir}/temp_backup.zip`
+      const picked = await ZipTransferService.pickZipToSandbox(context, tempZipPath)
       
-      const uriResult: Array<string> = await documentPicker.select(documentSelectOptions)
-      console.info('[MorePageBackupHandler] 文件选择结果: ' + JSON.stringify(uriResult))
-      
-      if (uriResult && uriResult.length > 0) {
-        const selectUri: string = uriResult[0]
-        
-        // 将文件复制到沙箱临时目录
-        const tempZipPath = `${context.cacheDir}/temp_backup.zip`
-        const srcFile = fileIo.openSync(selectUri, fileIo.OpenMode.READ_ONLY)
-        const stat = fileIo.statSync(srcFile.fd)
-        const buffer = new ArrayBuffer(stat.size)
-        fileIo.readSync(srcFile.fd, buffer)
-        fileIo.closeSync(srcFile)
-        
-        const destFile = fileIo.openSync(tempZipPath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
-        fileIo.writeSync(destFile.fd, buffer)
-        fileIo.closeSync(destFile)
-        
+      if (picked) {
         // 恢复备份
         const success = await backupManager.restoreBackup(tempZipPath)
         
@@ -261,28 +223,11 @@ export class MorePageBackupHandler {
       await zlib.compressFile(tempDir, zipPath, options)
       console.info(`[MorePageBackupHandler] 所有数据已打包: ${zipPath}`)
       
-      // 7. 使用 DocumentViewPicker 保存文件
-      const documentSaveOptions: picker.DocumentSaveOptions = new picker.DocumentSaveOptions()
-      documentSaveOptions.newFileNames = [zipFileName]
-      const documentPicker: picker.DocumentViewPicker = new picker.DocumentViewPicker()
+      // 7. 使用 DocumentViewPicker 保存文件（picker 流程已下沉至 ZipTransferService，P3）
+      const saved = await ZipTransferService.saveZipToDocument(context, zipPath)
       
-      const uriResult: Array<string> = await documentPicker.save(documentSaveOptions)
-      
-      if (uriResult && uriResult.length > 0) {
-        const saveUri: string = uriResult[0]
-        
-        // 读取并写入目标文件
-        const zipFile = fileIo.openSync(zipPath, fileIo.OpenMode.READ_ONLY)
-        const stat = fileIo.statSync(zipFile.fd)
-        const buffer = new ArrayBuffer(stat.size)
-        fileIo.readSync(zipFile.fd, buffer)
-        fileIo.closeSync(zipFile)
-        
-        const destFile = fileIo.openSync(saveUri, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
-        fileIo.writeSync(destFile.fd, buffer)
-        fileIo.closeSync(destFile)
-        
-        console.info('[MorePageBackupHandler] 所有数据导出成功: ' + saveUri)
+      if (saved) {
+        console.info('[MorePageBackupHandler] 所有数据导出成功')
         promptAction.showToast({ message: $r('app.string.export_success') })
       } else {
         console.info('[MorePageBackupHandler] 用户取消导出')
@@ -315,31 +260,14 @@ export class MorePageBackupHandler {
     console.info('[MorePageBackupHandler] 开始导入所有数据')
     
     try {
-      // 1. 使用 DocumentViewPicker 选择文件
-      const documentSelectOptions: picker.DocumentSelectOptions = new picker.DocumentSelectOptions()
-      documentSelectOptions.maxSelectNumber = 1
-      const documentPicker: picker.DocumentViewPicker = new picker.DocumentViewPicker()
+      // 1. 使用 DocumentViewPicker 选择文件（picker 流程已下沉至 ZipTransferService，P3）
+      const tempZipPath = `${context.cacheDir}/temp_import_all.zip`
+      const picked = await ZipTransferService.pickZipToSandbox(context, tempZipPath)
       
-      const uriResult: Array<string> = await documentPicker.select(documentSelectOptions)
-      
-      if (!uriResult || uriResult.length === 0) {
+      if (!picked) {
         console.info('[MorePageBackupHandler] 用户取消导入')
         return
       }
-      
-      const selectUri: string = uriResult[0]
-      
-      // 2. 将文件复制到沙箱临时目录
-      const tempZipPath = `${context.cacheDir}/temp_import_all.zip`
-      const srcFile = fileIo.openSync(selectUri, fileIo.OpenMode.READ_ONLY)
-      const stat = fileIo.statSync(srcFile.fd)
-      const buffer = new ArrayBuffer(stat.size)
-      fileIo.readSync(srcFile.fd, buffer)
-      fileIo.closeSync(srcFile)
-      
-      const destFile = fileIo.openSync(tempZipPath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
-      fileIo.writeSync(destFile.fd, buffer)
-      fileIo.closeSync(destFile)
       
       // 3. 解压 zip 文件
       const tempDir = `${context.cacheDir}/import_all_temp`
