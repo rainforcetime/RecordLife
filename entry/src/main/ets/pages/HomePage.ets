@@ -627,27 +627,26 @@ export struct HomePage {
             }
           }
           .width('100%')
+          .padding(20)
+          .margin({ top: 16 })
+          .backgroundColor(this.themeColors.cardBackground)
+          .borderRadius(16)
+          .shadow({
+            radius: 12,
+            color: this.themeColors.shadow,
+            offsetX: 0,
+            offsetY: 4
+          })
         }
         .width('100%')
-        .padding(20)
-        .margin({ top: 16 })
-        .backgroundColor(this.themeColors.cardBackground)
-        .borderRadius(16)
-        .shadow({
-          radius: 12,
-          color: this.themeColors.shadow,
-          offsetX: 0,
-          offsetY: 4
-        })
+        .backgroundColor(this.themeColors.background)
+        .padding({ left: 16, right: 16, bottom: 16 })
       }
       .width('100%')
+      .height('100%')
       .backgroundColor(this.themeColors.background)
-      .padding({ left: 16, right: 16, bottom: 16 })
-    .width('100%')
-    .height('100%')
-    .backgroundColor(this.themeColors.background)
-    .scrollBar(BarState.Off)
-    .edgeEffect(EdgeEffect.Spring)
+      .scrollBar(BarState.Off)
+      .edgeEffect(EdgeEffect.Spring)
     
     // 分享弹窗
     if (this.showShareDialog) {
