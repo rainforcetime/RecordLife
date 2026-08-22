@@ -261,7 +261,7 @@ export struct CalendarSelectedRecords {
   // 构建选中日期完整字符串（国际化，UTC+8 日期分量）
   private buildSelectedDateStr(): string {
     const rm = this.getUIContext().getHostContext()?.resourceManager
-    return ResourceUtils.getString(rm, 'date_ymd_full', this.selectedYear, this.selectedMonth, this.selectedDay) : ''
+    return ResourceUtils.getString(rm, 'date_ymd_full', this.selectedYear, this.selectedMonth, this.selectedDay)
   }
   
   // 获取记录图标背景色

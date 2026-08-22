@@ -133,7 +133,7 @@ export struct TimelineSection {
   // 读取格式化字符串资源（国际化；占位符 %d/%s 由参数填充）
   private getString(name: string, ...args: Array<string | number>): string {
     const rm = this.getUIContext().getHostContext()?.resourceManager
-    return ResourceUtils.getString(rm, name, ...args) : ''
+    return ResourceUtils.getString(rm, name, ...args)
   }
 
   // 构建扁平化的日期分组数据

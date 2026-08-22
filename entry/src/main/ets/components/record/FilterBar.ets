@@ -258,7 +258,7 @@ export struct FilterBar {
   // 筛选入口摘要（无筛选显示「筛选」）
   private getFilterSummary(): string {
     const rm = this.getUIContext().getHostContext()?.resourceManager
-    const title = ResourceUtils.getString(rm, 'filter_title') : ''
+    const title = ResourceUtils.getString(rm, 'filter_title')
     if (this.filterMood.length > 0) {
       return MoodUtils.getMoodEmoji(this.filterMood, this.moods) + ' ' + title
     }
