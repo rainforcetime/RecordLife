@@ -114,7 +114,6 @@ interface AppSettings {
   customMoods?: Mood[];      // 用户自定义心情（更新计划二期，MoodService 管理）
   privacyMode?: boolean;     // 隐私模式（更新计划三期，默认 false：首页出生日期/里程碑遮罩）
   recordTemplates?: RecordTemplate[]; // 记录模板（更新计划三期，TemplateService 管理）
-  reminderTime?: ReminderTime; // 每日提醒时间（更新计划四期，默认 20:00，NotificationService 发布）
 }
 interface BackupConfig { autoBackup: boolean; backupFrequency: number; lastBackupTime: string; backupPath: string; cloudBackup: CloudBackupConfig | null }
 interface CloudBackupConfig { enabled: boolean; provider: string /* 'huawei'|'custom' */; syncInterval: number }
@@ -476,7 +475,6 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | common/utils/MoodUtils.ets | MoodUtils | ★ 更新计划二期：`PRESET_MOODS`（5 预置）/ `PRESET_MOOD_EMOJIS`（24 候选池）/ `getMoodEmoji(id, customMoods?)` / `isValidMood` / `getAllMoods(customMoods?)`（纯函数，可单测） |
 | service/MoodService.ets | MoodService | ★ 更新计划二期：自定义心情 CRUD（`getCustomMoods`/`addCustomMood`/`deleteCustomMood`，读写 `config.settings.customMoods`，预置不可改） |
 | service/TemplateService.ets | TemplateService | ★ 更新计划三期：记录模板 CRUD（`getTemplates`/`addTemplate`/`updateTemplate`/`deleteTemplate`，读写 `config.settings.recordTemplates`） |
-| service/NotificationService.ets | NotificationService | ★ 更新计划四期：`requestNotificationPermission` / `publishDailyReminder(hour, minute)`（reminderAgentManager 每日重复，wantAgent=EntryAbility）/ `cancelAllReminders` |
 | common/utils/Logger.ets | Logger | ★ B3 轮次 19 新增：`info/warn/error`（hilog 封装 + `setDebugEnabled` 开关，error 恒输出）；全工程 `console.*` 已统一至此 |
 | service/ImageFileService.ets | ImageFileService | ★ P3 新增：`saveRecordImage` / `getImageUri` / `deleteImageFiles` / `copyAvatar`（记录图片与头像的沙箱 IO） |
 | service/ZipTransferService.ets | ZipTransferService | ★ P3 新增：`saveZipToDocument` / `pickZipToSandbox`（DocumentViewPicker zip 保存/选择 + 沙箱复制；取消返回 false，IO 异常冒泡） |

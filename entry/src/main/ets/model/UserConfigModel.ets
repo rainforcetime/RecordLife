@@ -14,12 +14,6 @@ export interface RecordTemplate {
   content: string;          // 模板内容
 }
 
-// 每日提醒时间（更新计划四期）
-export interface ReminderTime {
-  hour: number;             // 小时（0-23）
-  minute: number;           // 分钟（0-59）
-}
-
 // 云备份配置
 export interface CloudBackupConfig {
   enabled: boolean;
@@ -53,7 +47,6 @@ export interface AppSettings {
   customMoods?: Mood[]; // 用户自定义的心情列表（可选，更新计划二期）
   privacyMode?: boolean; // 隐私模式（可选，默认 false，更新计划三期：隐藏首页出生日期等敏感信息）
   recordTemplates?: RecordTemplate[]; // 记录模板列表（可选，更新计划三期）
-  reminderTime?: ReminderTime; // 每日提醒时间（可选，默认 20:00，更新计划四期）
 }
 
 // 备份配置

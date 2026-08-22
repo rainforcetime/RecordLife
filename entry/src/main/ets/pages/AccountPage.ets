@@ -1,6 +1,6 @@
 // 账号设置页面：pages/AccountPage.ets
 import { common } from '@kit.AbilityKit'
-import { promptAction, PromptAction, TimePickerResult } from '@kit.ArkUI'
+import { promptAction, PromptAction } from '@kit.ArkUI'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { SettingItem } from '../components/setting/SettingItem'
 import { SettingItemWithSelector } from '../components/setting/SettingItemWithSelector'
@@ -34,8 +34,6 @@ export struct AccountPage {
   @State currentTheme: string = ''
   @State currentFontSize: string = 'medium'  // 字体大小（更新计划一期）
   @State privacyMode: boolean = false  // 隐私模式（更新计划三期）
-  @State dailyReminderEnabled: boolean = false  // 每日提醒（更新计划四期）
-  @State reminderTimeText: string = '20:00'  // 提醒时间文本
   
   // 数据统计
   @State statisticsInfo: AccountDataStatistics = {
@@ -124,11 +122,6 @@ export struct AccountPage {
       
       // 加载隐私模式（更新计划三期）
       this.privacyMode = this.viewModel.getPrivacyMode()
-      
-      // 加载每日提醒（更新计划四期）
-      this.dailyReminderEnabled = this.viewModel.getDailyReminderEnabled()
-      const reminderTime = this.viewModel.getReminderTime()
-      this.reminderTimeText = this.formatTimeText(reminderTime.hour, reminderTime.minute)
       
       // 加载应用信息
       await this.loadAppInfo()
@@ -287,45 +280,6 @@ export struct AccountPage {
     } else {
       AccountUtils.showToastSafely(this.promptAction, $r('app.string.operation_failed'))
     }
-  }
-
-  // 每日提醒开关切换（更新计划四期）
-  private async onDailyReminderChange(enabled: boolean) {
-    const success = await this.viewModel.setDailyReminderEnabled(enabled)
-    if (success) {
-      this.dailyReminderEnabled = enabled
-      AccountUtils.showToastSafely(this.promptAction, $r('app.string.daily_reminder_saved'))
-    } else {
-      // 回滚开关状态（权限拒绝或发布失败）
-      this.dailyReminderEnabled = !enabled
-      AccountUtils.showToastSafely(this.promptAction, $r('app.string.notification_permission_denied'))
-    }
-  }
-
-  // 格式化时间文本（HH:mm）
-  private formatTimeText(hour: number, minute: number): string {
-    return hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0')
-  }
-
-  // 选择提醒时间（更新计划四期）
-  private onReminderTimeClick() {
-    const current = this.viewModel.getReminderTime()
-    const date = new Date()
-    date.setHours(current.hour, current.minute, 0, 0)
-    this.getUIContext().showTimePickerDialog({
-      selected: date,
-      useMilitaryTime: true,
-      onAccept: (value: TimePickerResult) => {
-        const hour = value.hour ?? 20
-        const minute = value.minute ?? 0
-        this.viewModel.setReminderTime(hour, minute).then((ok: boolean) => {
-          if (ok) {
-            this.reminderTimeText = this.formatTimeText(hour, minute)
-            AccountUtils.showToastSafely(this.promptAction, $r('app.string.reminder_time_saved'))
-          }
-        })
-      }
-    })
   }
 
   // 清理缓存（更新计划三期）
@@ -536,47 +490,6 @@ export struct AccountPage {
         .color(this.themeColors.divider)
         .margin({ left: 15 })
         .height(0.5)
-      
-      // 每日提醒（开关，更新计划四期）
-      Row() {
-        Column() {
-          Text($r('app.string.daily_reminder'))
-            .fontSize(16)
-            .fontWeight(FontWeight.Medium)
-            .fontColor(this.themeColors.textPrimary)
-            .width('100%')
-
-          Text($r('app.string.daily_reminder_summary'))
-            .fontSize(12)
-            .fontColor(this.themeColors.textSecondary)
-            .width('100%')
-            .margin({ top: 2 })
-        }
-        .layoutWeight(1)
-
-        Toggle({ type: ToggleType.Switch, isOn: this.dailyReminderEnabled })
-          .selectedColor(this.themeColors.primary)
-          .onChange((isOn: boolean) => {
-            this.onDailyReminderChange(isOn)
-          })
-      }
-      .padding({ top: 12, bottom: 12, left: 16, right: 16 })
-      .width('100%')
-      .alignItems(VerticalAlign.Center)
-      
-      Divider()
-        .color(this.themeColors.divider)
-        .margin({ left: 15 })
-        .height(0.5)
-      
-      // 提醒时间（点击选择，更新计划四期）
-      SettingItem({
-        label: $r('app.string.reminder_time'),
-        summary: this.reminderTimeText
-      })
-      .onClick(() => {
-        this.onReminderTimeClick()
-      })
       
       Divider()
         .color(this.themeColors.divider)

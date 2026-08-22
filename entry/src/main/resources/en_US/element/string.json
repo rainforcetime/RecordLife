@@ -1447,34 +1447,6 @@
     {
       "name": "personalization_summary",
       "value": "Manage tags, moods & templates"
-    },
-    {
-      "name": "daily_reminder",
-      "value": "Daily reminder"
-    },
-    {
-      "name": "daily_reminder_summary",
-      "value": "Daily reminder to record life"
-    },
-    {
-      "name": "daily_reminder_saved",
-      "value": "Daily reminder updated"
-    },
-    {
-      "name": "daily_reminder_content",
-      "value": "Don't forget to record today"
-    },
-    {
-      "name": "reminder_time",
-      "value": "Reminder time"
-    },
-    {
-      "name": "reminder_time_saved",
-      "value": "Reminder time saved"
-    },
-    {
-      "name": "notification_permission_denied",
-      "value": "Notification permission denied"
     }
   ]
 }
