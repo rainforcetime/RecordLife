@@ -640,13 +640,14 @@ export struct AccountPage {
     .width('100%')
   }
   
-  // 设置分组标题
+  // 设置分组标题（与 90% 卡片左缘对齐）
   @Builder
   GroupTitle(title: ResourceStr) {
     Text(title)
       .fontSize(13)
       .fontColor(this.themeColors.textSecondary)
-      .width('100%')
-      .padding({ left: 8, top: 10, bottom: 4 })
+      .width('90%')
+      .alignSelf(ItemAlign.Center)
+      .padding({ left: 12, top: 10, bottom: 4 })
   }
 }
