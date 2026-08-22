@@ -902,6 +902,24 @@ entry/src/main/ets/
 
 **下一轮计划**：无（重构 + 国际化全部完成）；项目可发布
 
+### 轮次 21 — 2026-08-22（最后硬编码处理：删除死代码异常消息）
+
+> 前置：用户要求处理最后硬编码。
+
+**本轮目标**：清除最后一批用户可见中文硬编码——`MorePageHelper` 的 4 处中文异常消息。
+
+**处理**（`common/utils/MorePageHelper.ets`）：
+- 发现 `readFileContent` / `writeFileContent` / `copyFile` / `ensureDirectory` 4 个方法**均无调用方**（死代码），其 `throw new Error('读取/写入/复制/创建目录失败')` 中文异常消息随方法删除
+- 清理不再使用的 import（`util` / `fileUri`）；保留 `deleteDirectory` / `uriToSandboxPath` / `fileExists`
+
+**清理后全工程状态**：
+- 用户可见中文硬编码**全部清零**（扫描验证）
+- 仅剩合理保留项：`TagModel.DEFAULT_TAGS.name`（数据层，已做显示映射国际化）、Logger 日志文本（`NowPage` 等日志内容）、代码注释
+
+**遗留问题**：无（硬编码清零）；⚠️ 需 DevEco 编译 + 快速回归（MorePageHelper 被用方法 deleteDirectory/fileExists 正常）
+
+**下一轮计划**：无（项目可发布）
+
 ### 10.3 数据兼容性验证记录
 
 | 验证时间 | 备份文件来源 | 导入结果 | 验证人 | 备注 |

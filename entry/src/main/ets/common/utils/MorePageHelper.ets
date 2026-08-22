@@ -1,7 +1,5 @@
 // MorePage 辅助工具类：提供文件操作相关功能
 import { fileIo } from '@kit.CoreFileKit'
-import { fileUri } from '@kit.CoreFileKit'
-import { util } from '@kit.ArkTS'
 import { ImagePathUtils } from './ImagePathUtils'
 import { Logger } from './Logger'
 
@@ -47,57 +45,6 @@ export class MorePageHelper {
   }
   
   /**
-   * 读取文件内容为字符串
-   * @param filePath 文件路径
-   * @returns 文件内容字符串
-   */
-  static readFileContent(filePath: string): string {
-    try {
-      const file = fileIo.openSync(filePath, fileIo.OpenMode.READ_ONLY)
-      const stat = fileIo.statSync(file.fd)
-      const buffer = new ArrayBuffer(stat.size)
-      fileIo.readSync(file.fd, buffer)
-      fileIo.closeSync(file)
-      
-      const decoder: util.TextDecoder = util.TextDecoder.create('utf-8')
-      return decoder.decodeToString(new Uint8Array(buffer))
-    } catch (error) {
-      Logger.error('[MorePageHelper] 读取文件失败: ' + JSON.stringify(error))
-      throw new Error('读取文件失败: ' + JSON.stringify(error))
-    }
-  }
-  
-  /**
-   * 写入字符串内容到文件
-   * @param filePath 文件路径
-   * @param content 内容字符串
-   */
-  static writeFileContent(filePath: string, content: string): void {
-    try {
-      const file = fileIo.openSync(filePath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
-      fileIo.writeSync(file.fd, content)
-      fileIo.closeSync(file)
-    } catch (error) {
-      Logger.error('[MorePageHelper] 写入文件失败: ' + JSON.stringify(error))
-      throw new Error('写入文件失败: ' + JSON.stringify(error))
-    }
-  }
-  
-  /**
-   * 复制文件
-   * @param srcPath 源文件路径
-   * @param destPath 目标文件路径
-   */
-  static copyFile(srcPath: string, destPath: string): void {
-    try {
-      fileIo.copyFileSync(srcPath, destPath)
-    } catch (error) {
-      Logger.error('[MorePageHelper] 复制文件失败: ' + JSON.stringify(error))
-      throw new Error('复制文件失败: ' + JSON.stringify(error))
-    }
-  }
-  
-  /**
    * 检查文件是否存在
    * @param filePath 文件路径
    * @returns 是否存在
@@ -107,21 +54,6 @@ export class MorePageHelper {
       return fileIo.accessSync(filePath)
     } catch (error) {
       return false
-    }
-  }
-  
-  /**
-   * 创建目录（如果不存在）
-   * @param dirPath 目录路径
-   */
-  static ensureDirectory(dirPath: string): void {
-    try {
-      if (!fileIo.accessSync(dirPath)) {
-        fileIo.mkdirSync(dirPath)
-      }
-    } catch (error) {
-      Logger.error('[MorePageHelper] 创建目录失败: ' + JSON.stringify(error))
-      throw new Error('创建目录失败: ' + JSON.stringify(error))
     }
   }
 }

@@ -503,7 +503,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 
 - 命名规范：小写 snake_case；系统约定名（`module_desc`、`EntryAbility_label`）；权限理由 `*_reason`；导航 `tab_*`；功能域前缀分组（`tag_*`、`profile_*`、`remaining_*`/`accumulated_*`/`current_*`/`non_accumulated_*`、`share_*`、`theme_*`、`storage_*`/`clear_cache_*`、`import_*`/`export_*`/`backup_*`/`reset_*`/`restore_*`、`sample_record_1~6`）；语义后缀 `_success/_failed/_hint/_placeholder/_title/_label/_desc/_prefix/_suffix/_confirm/_unit/_short`。
 - ✅ 拼接文本国际化已完成（P6 轮次 14）：含动态值的中文拼接（`共 X 条记录` / `X年X月X日` / `今天/昨天/N天前` / `已使用 X / 可用 Y` / 星期标题等）全部改为 `$r('app.string.key', args)` 或 `getStringByNameSync(key, ...args)`，资源带 `%1$d`/`%2$d`/`%s` 占位符，base/en_US 双语言一一对应。
-- ⚠️ 仍有意保留的硬编码（重构 B2 残余）：`MorePageHelper` `throw new Error('读取/写入/复制/创建目录失败')`（异常消息，拼接进失败 toast，错误路径开发导向）。其余 UI 文本（主题/性别显示映射、ViewModel 默认值、选择器 options、toast、时间单位、版本号、存储失败兜底）已于轮次 14/15 全部资源化；预设标签名已于轮次 20 国际化（`common/utils/TagDisplayUtils`，`DEFAULT_TAGS.name` 保留为数据）；`MorePageBackupHandler` 部分 `getStringByNameSync('...')` 直接按名取（key 名未走 `$r()` 编译期校验）。
+- ✅ 硬编码中文已全部清零（轮次 21）：UI 文本（主题/性别映射、默认值、选择器、toast、时间单位、版本号、拼接文本、预设标签名）全部资源化；`MorePageHelper` 4 处中文异常消息随死方法删除。仅剩合理保留：`DEFAULT_TAGS.name`（数据层，显示映射已国际化）、Logger 日志文本、代码注释。`MorePageBackupHandler` 部分 `getStringByNameSync('...')` 直接按名取（key 名未走 `$r()` 编译期校验）。
 
 ### 12.2 权限（module.json5）
 
