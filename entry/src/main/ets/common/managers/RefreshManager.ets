@@ -1,5 +1,5 @@
 // 全局刷新管理器：common/RefreshManager.ets
-import { Logger } from '../common/utils/Logger'
+import { Logger } from '../utils/Logger'
 
 type RefreshCallback = () => void
 
