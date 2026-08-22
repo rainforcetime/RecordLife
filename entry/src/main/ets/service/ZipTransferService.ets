@@ -37,7 +37,8 @@ export class ZipTransferService {
         fileIo.writeSync(destFile.fd, buffer)
         fileIo.closeSync(destFile)
       } catch (error) {
-        throw error
+        // ArkTS 限制 throw 只能抛 Error（arkts-limited-throw）
+        throw new Error(JSON.stringify(error))
       }
 
       return true
@@ -72,7 +73,8 @@ export class ZipTransferService {
         fileIo.writeSync(destFile.fd, buffer)
         fileIo.closeSync(destFile)
       } catch (error) {
-        throw error
+        // ArkTS 限制 throw 只能抛 Error（arkts-limited-throw）
+        throw new Error(JSON.stringify(error))
       }
 
       return true
