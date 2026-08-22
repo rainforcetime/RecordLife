@@ -289,10 +289,6 @@
       "value": "Days Used"
     },
     {
-      "name": "app_description",
-      "value": "Description"
-    },
-    {
       "name": "developer",
       "value": "Developer"
     },
@@ -415,10 +411,6 @@
     {
       "name": "user_name_default",
       "value": "User"
-    },
-    {
-      "name": "app_name",
-      "value": "Alive"
     },
     {
       "name": "app_desc",

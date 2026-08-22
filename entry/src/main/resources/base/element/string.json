@@ -289,10 +289,6 @@
       "value": "已使用"
     },
     {
-      "name": "app_description",
-      "value": "应用描述"
-    },
-    {
       "name": "developer",
       "value": "开发者"
     },
@@ -415,10 +411,6 @@
     {
       "name": "user_name_default",
       "value": "张三"
-    },
-    {
-      "name": "app_name",
-      "value": "活着"
     },
     {
       "name": "app_desc",
