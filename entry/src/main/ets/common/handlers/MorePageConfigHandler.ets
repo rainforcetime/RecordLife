@@ -1,5 +1,6 @@
 // MorePage 配置处理类：处理配置相关的业务逻辑
 import { common, Want } from '@kit.AbilityKit'
+import { ResourceUtils } from '../utils/ResourceUtils'
 import { picker } from '@kit.CoreFileKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { util } from '@kit.ArkTS'
@@ -75,7 +76,7 @@ export class MorePageConfigHandler {
     } catch (error) {
       Logger.error('[MorePageConfigHandler] 导出配置失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('export_failed_prefix') + (error as Error).message })
+        promptAction.showToast({ message: ResourceUtils.getString(context.resourceManager, 'export_failed_prefix') + (error as Error).message })
       } catch (toastError) {
         Logger.error('[MorePageConfigHandler] showToast 失败: ' + JSON.stringify(toastError))
       }
@@ -137,7 +138,7 @@ export class MorePageConfigHandler {
     } catch (error) {
       Logger.error('[MorePageConfigHandler] 导入配置失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('import_failed_prefix') + (error as Error).message })
+        promptAction.showToast({ message: ResourceUtils.getString(context.resourceManager, 'import_failed_prefix') + (error as Error).message })
       } catch (toastError) {
         Logger.error('[MorePageConfigHandler] showToast 失败: ' + JSON.stringify(toastError))
       }
@@ -276,7 +277,7 @@ export class MorePageConfigHandler {
             }
           } catch (error) {
             Logger.error('[MorePageConfigHandler] 重置应用异常: ' + JSON.stringify(error))
-            promptAction.showToast({ message: context.resourceManager.getStringByNameSync('reset_failed_prefix') + (error as Error).message })
+            promptAction.showToast({ message: ResourceUtils.getString(context.resourceManager, 'reset_failed_prefix') + (error as Error).message })
           }
         }
       }

@@ -1,5 +1,6 @@
 // 账号设置页面：pages/AccountPage.ets
 import { common } from '@kit.AbilityKit'
+import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { promptAction, PromptAction } from '@kit.ArkUI'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { SettingItem } from '../components/setting/SettingItem'
@@ -230,7 +231,7 @@ export struct AccountPage {
     if (!rm) {
       return []
     }
-    return [rm.getStringByNameSync('follow_system'), rm.getStringByNameSync('light_mode'), rm.getStringByNameSync('dark_mode')]
+    return [ResourceUtils.getString(rm, 'follow_system'), ResourceUtils.getString(rm, 'light_mode'), ResourceUtils.getString(rm, 'dark_mode')]
   }
 
   // 主题切换处理
@@ -251,7 +252,7 @@ export struct AccountPage {
     if (!rm) {
       return []
     }
-    return [rm.getStringByNameSync('font_size_small'), rm.getStringByNameSync('font_size_medium'), rm.getStringByNameSync('font_size_large')]
+    return [ResourceUtils.getString(rm, 'font_size_small'), ResourceUtils.getString(rm, 'font_size_medium'), ResourceUtils.getString(rm, 'font_size_large')]
   }
 
   // 字体大小切换处理（选择器回传的是显示文本，需转内部值后保存）

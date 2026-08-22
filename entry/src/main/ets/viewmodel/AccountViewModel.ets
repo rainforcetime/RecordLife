@@ -1,5 +1,6 @@
 // 账号页面业务逻辑类：viewmodel/AccountViewModel.ets
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
+import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { common, ConfigurationConstant } from '@kit.AbilityKit'
@@ -52,9 +53,9 @@ export class AccountViewModel {
   async loadUserProfile(): Promise<AccountProfile> {
     const rm = this.getRm()
     const defaultProfile: AccountProfile = {
-      name: rm ? rm.getStringByNameSync('username_default') : '',
+      name: ResourceUtils.getString(rm, 'username_default') : '',
       birthday: '1990-01-15',
-      gender: rm ? rm.getStringByNameSync('gender_other') : '',
+      gender: ResourceUtils.getString(rm, 'gender_other') : '',
       avatar: '',
       hasCustomAvatar: false,
       signature: ''
@@ -100,7 +101,7 @@ export class AccountViewModel {
   async loadThemeSettings(): Promise<ThemeSettings> {
     const rm = this.getRm()
     if (!this.configManager) {
-      return { currentTheme: rm ? rm.getStringByNameSync('follow_system') : '' }
+      return { currentTheme: ResourceUtils.getString(rm, 'follow_system') : '' }
     }
 
     try {
@@ -110,7 +111,7 @@ export class AccountViewModel {
       return { currentTheme }
     } catch (error) {
       Logger.error('加载主题设置失败: ' + JSON.stringify(error))
-      return { currentTheme: rm ? rm.getStringByNameSync('follow_system') : '' }
+      return { currentTheme: ResourceUtils.getString(rm, 'follow_system') : '' }
     }
   }
 
@@ -119,12 +120,12 @@ export class AccountViewModel {
     // 默认应用信息（作为备用）
     const rm = this.getRm()
     const defaultAppInfo: AppInfo = {
-      appName: rm ? rm.getStringByNameSync('app_name') : '',
+      appName: ResourceUtils.getString(rm, 'app_name') : '',
       appVersion: '0.0.1',
       buildNumber: '20260521',
       developer: 'rainforcetime',
       website: 'https://github.com/rainforcetime/RecordLife',
-      description: rm ? rm.getStringByNameSync('app_desc') : ''
+      description: ResourceUtils.getString(rm, 'app_desc') : ''
     };
 
     try {
@@ -153,7 +154,7 @@ export class AccountViewModel {
       usageDays: 0,
       dataVersion: 'v0.0.1',
       lastActiveTime: '',
-      storageSize: rm ? rm.getStringByNameSync('calculation_hint') : ''
+      storageSize: ResourceUtils.getString(rm, 'calculation_hint') : ''
     }
 
     try {
@@ -171,7 +172,7 @@ export class AccountViewModel {
           usageDays: 0,
           dataVersion: `v${appVersion}`,
           lastActiveTime: '',
-          storageSize: rm ? rm.getStringByNameSync('calculation_hint') : ''
+          storageSize: ResourceUtils.getString(rm, 'calculation_hint') : ''
         };
       }
 

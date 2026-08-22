@@ -1,6 +1,7 @@
 // 分享工具类：common/utils/ShareUtils.ets（P5 自 utils/ 迁入）
 // 提供组件截图和系统分享功能
 import { image } from '@kit.ImageKit'
+import { ResourceUtils } from './ResourceUtils'
 import { uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { systemShare } from '@kit.ShareKit'
 import { common } from '@kit.AbilityKit'
@@ -124,8 +125,8 @@ export class ShareUtils {
         const shareData: systemShare.SharedData = new systemShare.SharedData({
           utd: utdTypeId,
           uri: fileUri.getUriFromPath(imagePath),
-          title: title || context.resourceManager.getStringByNameSync('share_record_title'),
-          description: description || context.resourceManager.getStringByNameSync('share_description_default')
+          title: title || ResourceUtils.getString(context.resourceManager, 'share_record_title'),
+          description: description || ResourceUtils.getString(context.resourceManager, 'share_description_default')
         })
         
         // 创建分享控制器

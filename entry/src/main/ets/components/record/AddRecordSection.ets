@@ -1,5 +1,6 @@
 // 新增记录区域组件：components/AddRecordSection.ets
 import { common } from '@kit.AbilityKit'
+import { ResourceUtils } from '../../common/utils/ResourceUtils'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
@@ -387,7 +388,7 @@ export struct AddRecordSection {
     } catch (error) {
       Logger.error('[AddRecordSection] 保存失败: ' + JSON.stringify(error))
       try {
-        this.promptAction.showToast({ message: (this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager.getStringByNameSync('save_failed_prefix') + (error as Error).message })
+        this.promptAction.showToast({ message: ResourceUtils.getString((this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager, 'save_failed_prefix') + (error as Error).message })
       } catch (e) {
         Logger.error('[AddRecordSection] showToast failed: ' + JSON.stringify(e))
       }

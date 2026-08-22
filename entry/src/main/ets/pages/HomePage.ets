@@ -1,5 +1,6 @@
 // 首页：展示用户存活时间
 import { ConfigManager } from '../config/ConfigManager';
+import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { UserConfig } from '../config/UserConfig';
 import { TimeUtils } from '../common/utils/TimeUtils';
 import { TimeData, DateDifference } from '../common/types';
@@ -746,8 +747,8 @@ export struct HomePage {
         this.getUIContext(),
         'share-home-card',
         context,
-        rm.getStringByNameSync('share_title'),
-        rm.getStringByNameSync('share_description')
+        ResourceUtils.getString(rm, 'share_title'),
+        ResourceUtils.getString(rm, 'share_description')
       );
       
       if (success) {

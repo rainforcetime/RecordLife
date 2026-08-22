@@ -1,5 +1,6 @@
 // 选中日期记录预览组件：components/calendar/CalendarSelectedRecords.ets
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
+import { ResourceUtils } from '../../common/utils/ResourceUtils'
 import { LifeRecord } from '../../common/types'
 import { CalendarUtils } from './CalendarUtils'
 import { ColorUtils } from '../../common/ColorUtils'
@@ -260,7 +261,7 @@ export struct CalendarSelectedRecords {
   // 构建选中日期完整字符串（国际化，UTC+8 日期分量）
   private buildSelectedDateStr(): string {
     const rm = this.getUIContext().getHostContext()?.resourceManager
-    return rm ? rm.getStringByNameSync('date_ymd_full', this.selectedYear, this.selectedMonth, this.selectedDay) : ''
+    return ResourceUtils.getString(rm, 'date_ymd_full', this.selectedYear, this.selectedMonth, this.selectedDay) : ''
   }
   
   // 获取记录图标背景色

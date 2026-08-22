@@ -1,5 +1,6 @@
 // NowPage 业务逻辑类：viewmodel/NowViewModel.ets
 import { common } from '@kit.AbilityKit'
+import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { LifeRecord, TimelineData, buildTimelineData } from '../common/types'
 import { TimeUtils } from '../common/utils/TimeUtils'
 import { ImageGenerator } from '../common/utils/ImageGenerator'
@@ -137,39 +138,39 @@ export class NowViewModel {
       {
         id: this.generateId(),
         timestamp: now,
-        content: rm?.getStringByNameSync('sample_record_1') ?? '',
+        content: ResourceUtils.getString(rm, 'sample_record_1'),
         tags: ['life', 'entertainment']
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs,
-        content: rm?.getStringByNameSync('sample_record_2') ?? '',
+        content: ResourceUtils.getString(rm, 'sample_record_2'),
         tags: ['life', 'study'],
         imagePaths: sampleImagePath ? [sampleImagePath] : undefined  // 添加示例图片
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 3,
-        content: rm?.getStringByNameSync('sample_record_3') ?? '',
+        content: ResourceUtils.getString(rm, 'sample_record_3'),
         tags: ['travel', 'food'],
         imagePaths: sampleImagePath ? [sampleImagePath,sampleImagePath,sampleImagePath,sampleImagePath] : undefined  // 添加示例图片
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 35,
-        content: rm?.getStringByNameSync('sample_record_4') ?? '',
+        content: ResourceUtils.getString(rm, 'sample_record_4'),
         tags: ['work', 'health']
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 365,
-        content: rm?.getStringByNameSync('sample_record_5') ?? '',
+        content: ResourceUtils.getString(rm, 'sample_record_5'),
         tags: ['family']
       },
       {
         id: this.generateId(),
         timestamp: now - oneDayMs * 365 * 2,
-        content: rm?.getStringByNameSync('sample_record_6') ?? '',
+        content: ResourceUtils.getString(rm, 'sample_record_6'),
         tags: ['life']
       }
     ]

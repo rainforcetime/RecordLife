@@ -1,5 +1,6 @@
 // 记录卡片组件：components/RecordCard.ets
 import { LifeRecord } from '../../common/types'
+import { ResourceUtils } from '../../common/utils/ResourceUtils'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { ImageViewer } from '../common/ImageViewer'
@@ -428,8 +429,8 @@ export struct RecordCard {
         this.getUIContext(),
         this.shareCardId,
         context,
-        context.resourceManager.getStringByNameSync('share_record_title'),
-        context.resourceManager.getStringByNameSync('share_description_default')
+        ResourceUtils.getString(context.resourceManager, 'share_record_title'),
+        ResourceUtils.getString(context.resourceManager, 'share_description_default')
       )
       
       if (success) {

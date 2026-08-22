@@ -1,5 +1,6 @@
 // 现在页面：pages/NowPage.ets
 import { common } from '@kit.AbilityKit'
+import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { TimelineData, LifeRecord, Tag } from '../common/types'
 import { getDisplayTagName } from '../common/utils/TagDisplayUtils'
@@ -632,7 +633,7 @@ struct NowPage {
     } catch (error) {
       Logger.error('[NowPage] 保存编辑失败: ' + JSON.stringify(error))
       try {
-        this.promptAction.showToast({ message: (this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager.getStringByNameSync('edit_failed_prefix') + (error as Error).message })
+        this.promptAction.showToast({ message: ResourceUtils.getString((this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager, 'edit_failed_prefix') + (error as Error).message })
       } catch (e) {
         Logger.error('[NowPage] showToast failed: ' + JSON.stringify(e))
       }
@@ -709,7 +710,7 @@ struct NowPage {
           } catch (error) {
             Logger.error('[NowPage] 删除失败: ' + JSON.stringify(error))
             try {
-              this.promptAction.showToast({ message: (this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager.getStringByNameSync('delete_failed_prefix') + (error as Error).message })
+              this.promptAction.showToast({ message: ResourceUtils.getString((this.getUIContext().getHostContext() as common.UIAbilityContext).resourceManager, 'delete_failed_prefix') + (error as Error).message })
             } catch (e) {
               Logger.error('[NowPage] showToast failed: ' + JSON.stringify(e))
             }

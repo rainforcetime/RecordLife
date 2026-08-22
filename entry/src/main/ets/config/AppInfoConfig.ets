@@ -3,6 +3,7 @@
  * 统一管理应用的基本信息，避免多处硬编码
  */
 import { bundleManager, common } from '@kit.AbilityKit';
+import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { Logger } from '../common/utils/Logger'
 
 // 应用信息接口
@@ -78,7 +79,7 @@ export class AppInfoManager {
     try {
       const rm = this.context?.resourceManager;
       if (rm) {
-        return rm.getStringByNameSync(resourceName);
+        return ResourceUtils.getString(rm, resourceName);
       }
       return defaultValue;
     } catch (error) {

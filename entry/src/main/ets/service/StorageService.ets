@@ -3,6 +3,7 @@
  * 应用存储空间统计与使用天数计算，拆自 AccountViewModel（P4 重构，A3 IO/统计职责下沉）
  */
 import { storageStatistics, fileIo } from '@kit.CoreFileKit'
+import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { common } from '@kit.AbilityKit'
 import { TimeUtils } from '../common/utils/TimeUtils'
 import { Logger } from '../common/utils/Logger'
@@ -21,7 +22,7 @@ export class StorageService {
       return StorageService.formatStorageSize(totalSize)
     } catch (error) {
       Logger.error('[StorageService] 获取应用存储空间失败: ' + JSON.stringify(error))
-      return context.resourceManager.getStringByNameSync('calc_failed')
+      return ResourceUtils.getString(context.resourceManager, 'calc_failed')
     }
   }
 

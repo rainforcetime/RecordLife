@@ -1,5 +1,6 @@
 // 出生日期选择组件
 import { ConfigManager } from '../../config/ConfigManager';
+import { ResourceUtils } from '../../common/utils/ResourceUtils'
 import { TimeUtils } from '../../common/utils/TimeUtils';
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig';
 import { common } from '@kit.AbilityKit';
@@ -26,7 +27,7 @@ export struct BirthDateRow {
     if (!rm) {
       return '';
     }
-    return rm.getStringByNameSync('date_ymd_full', TimeUtils.getFullYear(date), TimeUtils.getMonth(date) + 1, TimeUtils.getDate(date));
+    return ResourceUtils.getString(rm, 'date_ymd_full', TimeUtils.getFullYear(date), TimeUtils.getMonth(date) + 1, TimeUtils.getDate(date));
   }
 
   build() {

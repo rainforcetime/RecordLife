@@ -1,5 +1,6 @@
 // 时间线区域组件：components/TimelineSection.ets
 import { TimelineData, TimelineYear, TimelineMonth, TimelineDay, LifeRecord, Tag } from '../../common/types'
+import { ResourceUtils } from '../../common/utils/ResourceUtils'
 import { getDisplayTagName } from '../../common/utils/TagDisplayUtils'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { RecordCard } from './RecordCard'
@@ -132,7 +133,7 @@ export struct TimelineSection {
   // 读取格式化字符串资源（国际化；占位符 %d/%s 由参数填充）
   private getString(name: string, ...args: Array<string | number>): string {
     const rm = this.getUIContext().getHostContext()?.resourceManager
-    return rm ? rm.getStringByNameSync(name, ...args) : ''
+    return ResourceUtils.getString(rm, name, ...args) : ''
   }
 
   // 构建扁平化的日期分组数据

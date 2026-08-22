@@ -1,5 +1,6 @@
 // 编辑资料弹窗组件
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
+import { ResourceUtils } from '../../common/utils/ResourceUtils'
 import { Logger } from '../../common/utils/Logger'
 
 @CustomDialog
@@ -44,7 +45,7 @@ export struct EditProfileDialog {
     if (!rm) {
       return []
     }
-    return [rm.getStringByNameSync('male'), rm.getStringByNameSync('female'), rm.getStringByNameSync('gender_other')]
+    return [ResourceUtils.getString(rm, 'male'), ResourceUtils.getString(rm, 'female'), ResourceUtils.getString(rm, 'gender_other')]
   }
 
   build() {

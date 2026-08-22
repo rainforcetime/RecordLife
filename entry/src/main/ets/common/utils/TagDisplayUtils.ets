@@ -1,6 +1,7 @@
 // 标签显示工具：common/utils/TagDisplayUtils.ets
 // 预设标签（DEFAULT_TAGS）显示名国际化：id → 资源 key 映射；自定义标签保留数据 name
 import { resourceManager } from '@kit.LocalizationKit'
+import { ResourceUtils } from './ResourceUtils'
 import { Tag, getAllTags, getTagNameById } from '../types'
 
 // 预设标签 id → 资源 key 映射
@@ -24,7 +25,7 @@ export function buildDisplayTags(customTags: Tag[] | undefined, rm: resourceMana
     if (resKey && rm) {
       return {
         id: tag.id,
-        name: rm.getStringByNameSync(resKey),
+        name: ResourceUtils.getString(rm, resKey),
         color: tag.color,
         icon: tag.icon
       }
@@ -37,7 +38,7 @@ export function buildDisplayTags(customTags: Tag[] | undefined, rm: resourceMana
 export function getDisplayTagName(tagId: string, customTags: Tag[] | undefined, rm: resourceManager.ResourceManager | null): string {
   const resKey = PRESET_TAG_RES_KEYS.get(tagId)
   if (resKey && rm) {
-    return rm.getStringByNameSync(resKey)
+    return ResourceUtils.getString(rm, resKey)
   }
   return getTagNameById(tagId, customTags)
 }

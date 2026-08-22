@@ -3,6 +3,7 @@
 // 交互：心情单选（再点取消）、标签单选（再点取消）、"全部"清除所有筛选；心情与标签可叠加过滤
 // 说明：chip 为独立组件 FilterChip（@Prop isSelected 响应式）——@Builder 按值传参不随状态刷新，故不用 @Builder
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
+import { ResourceUtils } from '../../common/utils/ResourceUtils'
 import { Tag, DEFAULT_TAGS } from '../../common/types'
 import { buildDisplayTags } from '../../common/utils/TagDisplayUtils'
 import { MoodUtils } from '../../common/utils/MoodUtils'
@@ -257,7 +258,7 @@ export struct FilterBar {
   // 筛选入口摘要（无筛选显示「筛选」）
   private getFilterSummary(): string {
     const rm = this.getUIContext().getHostContext()?.resourceManager
-    const title = rm ? rm.getStringByNameSync('filter_title') : ''
+    const title = ResourceUtils.getString(rm, 'filter_title') : ''
     if (this.filterMood.length > 0) {
       return MoodUtils.getMoodEmoji(this.filterMood, this.moods) + ' ' + title
     }

@@ -1,5 +1,6 @@
 // 账号页面工具类：common/utils/AccountUtils.ets
 import { promptAction, PromptAction } from '@kit.ArkUI'
+import { ResourceUtils } from './ResourceUtils'
 import { resourceManager } from '@kit.LocalizationKit'
 import { Logger } from './Logger'
 
@@ -12,12 +13,12 @@ export class AccountUtils {
     }
     switch (theme) {
       case 'light':
-        return rm.getStringByNameSync('light_mode')
+        return ResourceUtils.getString(rm, 'light_mode')
       case 'dark':
-        return rm.getStringByNameSync('dark_mode')
+        return ResourceUtils.getString(rm, 'dark_mode')
       case 'auto':
       default:
-        return rm.getStringByNameSync('follow_system')
+        return ResourceUtils.getString(rm, 'follow_system')
     }
   }
 
@@ -26,10 +27,10 @@ export class AccountUtils {
     if (!rm) {
       return 'auto'
     }
-    if (display === rm.getStringByNameSync('light_mode')) {
+    if (display === ResourceUtils.getString(rm, 'light_mode')) {
       return 'light'
     }
-    if (display === rm.getStringByNameSync('dark_mode')) {
+    if (display === ResourceUtils.getString(rm, 'dark_mode')) {
       return 'dark'
     }
     return 'auto'
@@ -42,12 +43,12 @@ export class AccountUtils {
     }
     switch (fontSize) {
       case 'small':
-        return rm.getStringByNameSync('font_size_small')
+        return ResourceUtils.getString(rm, 'font_size_small')
       case 'large':
-        return rm.getStringByNameSync('font_size_large')
+        return ResourceUtils.getString(rm, 'font_size_large')
       case 'medium':
       default:
-        return rm.getStringByNameSync('font_size_medium')
+        return ResourceUtils.getString(rm, 'font_size_medium')
     }
   }
 
@@ -56,10 +57,10 @@ export class AccountUtils {
     if (!rm) {
       return 'medium'
     }
-    if (display === rm.getStringByNameSync('font_size_small')) {
+    if (display === ResourceUtils.getString(rm, 'font_size_small')) {
       return 'small'
     }
-    if (display === rm.getStringByNameSync('font_size_large')) {
+    if (display === ResourceUtils.getString(rm, 'font_size_large')) {
       return 'large'
     }
     return 'medium'
@@ -71,13 +72,13 @@ export class AccountUtils {
     }
     switch (gender) {
       case 'male':
-        return rm.getStringByNameSync('male')
+        return ResourceUtils.getString(rm, 'male')
       case 'female':
-        return rm.getStringByNameSync('female')
+        return ResourceUtils.getString(rm, 'female')
       case 'other':
-        return rm.getStringByNameSync('gender_other')
+        return ResourceUtils.getString(rm, 'gender_other')
       default:
-        return rm.getStringByNameSync('male')
+        return ResourceUtils.getString(rm, 'male')
     }
   }
 
@@ -86,13 +87,13 @@ export class AccountUtils {
     if (!rm) {
       return ''
     }
-    if (gender === rm.getStringByNameSync('male')) {
+    if (gender === ResourceUtils.getString(rm, 'male')) {
       return 'male'
     }
-    if (gender === rm.getStringByNameSync('female')) {
+    if (gender === ResourceUtils.getString(rm, 'female')) {
       return 'female'
     }
-    if (gender === rm.getStringByNameSync('gender_other')) {
+    if (gender === ResourceUtils.getString(rm, 'gender_other')) {
       return 'other'
     }
     return ''

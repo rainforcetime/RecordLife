@@ -1,5 +1,6 @@
 // 数据看板页：pages/DashboardPage.ets（更新计划五期：数据看板 / 生命进度）
 import { router } from '@kit.ArkUI'
+import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { common } from '@kit.AbilityKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { ConfigManager } from '../config/ConfigManager'
@@ -262,28 +263,28 @@ struct DashboardPage {
     }
     switch (type) {
       case 'days_1000':
-        return rm.getStringByNameSync('milestone_days_1000')
+        return ResourceUtils.getString(rm, 'milestone_days_1000')
       case 'days_10000':
-        return rm.getStringByNameSync('milestone_days_10000')
+        return ResourceUtils.getString(rm, 'milestone_days_10000')
       case 'days_20000':
-        return rm.getStringByNameSync('milestone_days_20000')
+        return ResourceUtils.getString(rm, 'milestone_days_20000')
       case 'days_30000':
-        return rm.getStringByNameSync('milestone_days_30000')
+        return ResourceUtils.getString(rm, 'milestone_days_30000')
       case 'age_18':
-        return rm.getStringByNameSync('milestone_age_18')
+        return ResourceUtils.getString(rm, 'milestone_age_18')
       case 'age_30':
-        return rm.getStringByNameSync('milestone_age_30')
+        return ResourceUtils.getString(rm, 'milestone_age_30')
       case 'age_50':
-        return rm.getStringByNameSync('milestone_age_50')
+        return ResourceUtils.getString(rm, 'milestone_age_50')
       case 'quarter_target':
-        return rm.getStringByNameSync('milestone_quarter_target')
+        return ResourceUtils.getString(rm, 'milestone_quarter_target')
       case 'half_target':
-        return rm.getStringByNameSync('milestone_half_target')
+        return ResourceUtils.getString(rm, 'milestone_half_target')
       case 'three_quarters_target':
-        return rm.getStringByNameSync('milestone_three_quarters_target')
+        return ResourceUtils.getString(rm, 'milestone_three_quarters_target')
       case 'target':
       default:
-        return rm.getStringByNameSync('milestone_target')
+        return ResourceUtils.getString(rm, 'milestone_target')
     }
   }
 

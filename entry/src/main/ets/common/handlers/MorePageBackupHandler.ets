@@ -1,5 +1,6 @@
 // MorePage 备份处理类：处理备份相关的业务逻辑
 import { common, Want } from '@kit.AbilityKit'
+import { ResourceUtils } from '../utils/ResourceUtils'
 import { fileIo } from '@kit.CoreFileKit'
 import { zlib } from '@kit.BasicServicesKit'
 import { PromptAction } from '@kit.ArkUI'
@@ -81,7 +82,7 @@ export class MorePageBackupHandler {
     } catch (error) {
       Logger.error('[MorePageBackupHandler] 导出备份失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('export_failed_prefix') + (error as Error).message })
+        promptAction.showToast({ message: ResourceUtils.getString(context.resourceManager, 'export_failed_prefix') + (error as Error).message })
       } catch (e) {
         Logger.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }
@@ -128,7 +129,7 @@ export class MorePageBackupHandler {
     } catch (error) {
       Logger.error('[MorePageBackupHandler] 导入备份失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('import_failed_prefix') + (error as Error).message })
+        promptAction.showToast({ message: ResourceUtils.getString(context.resourceManager, 'import_failed_prefix') + (error as Error).message })
       } catch (e) {
         Logger.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }
@@ -244,7 +245,7 @@ export class MorePageBackupHandler {
     } catch (error) {
       Logger.error('[MorePageBackupHandler] 导出所有数据失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('export_failed_prefix') + (error as Error).message })
+        promptAction.showToast({ message: ResourceUtils.getString(context.resourceManager, 'export_failed_prefix') + (error as Error).message })
       } catch (e) {
         Logger.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }
@@ -380,10 +381,10 @@ export class MorePageBackupHandler {
       if (configImported || recordsImported) {
         const rm = context.resourceManager
         const messages: string[] = []
-        if (configImported) messages.push(rm.getStringByNameSync('user_config'))
-        if (recordsImported) messages.push(rm.getStringByNameSync('now_record_backup'))
+        if (configImported) messages.push(ResourceUtils.getString(rm, 'user_config'))
+        if (recordsImported) messages.push(ResourceUtils.getString(rm, 'now_record_backup'))
         
-        promptAction.showToast({ message: rm.getStringByNameSync('import_success_prefix') + messages.join(rm.getStringByNameSync('import_separator')) + rm.getStringByNameSync('import_success_suffix') })
+        promptAction.showToast({ message: ResourceUtils.getString(rm, 'import_success_prefix') + messages.join(ResourceUtils.getString(rm, 'import_separator')) + ResourceUtils.getString(rm, 'import_success_suffix') })
         
         // 延迟1秒后重启应用，让用户看到提示
         setTimeout(() => {
@@ -396,7 +397,7 @@ export class MorePageBackupHandler {
     } catch (error) {
       Logger.error('[MorePageBackupHandler] 导入所有数据失败: ' + JSON.stringify(error))
       try {
-        promptAction.showToast({ message: context.resourceManager.getStringByNameSync('import_failed_prefix') + (error as Error).message })
+        promptAction.showToast({ message: ResourceUtils.getString(context.resourceManager, 'import_failed_prefix') + (error as Error).message })
       } catch (e) {
         Logger.error('[MorePageBackupHandler] showToast failed: ' + JSON.stringify(e))
       }
