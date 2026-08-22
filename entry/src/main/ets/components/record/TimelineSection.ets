@@ -3,7 +3,7 @@ import { TimelineData, TimelineYear, TimelineMonth, TimelineDay, LifeRecord, get
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { RecordCard } from './RecordCard'
 import { ColorUtils } from '../../common/ColorUtils'
-import { ConfigManager } from '../../config/ConfigManager'
+import { TagService } from '../../service/TagService'
 
 // 日期分组数据结构
 interface DateGroup {
@@ -48,13 +48,13 @@ export struct TimelineSection {
   // 自定义标签（用于标签名称查找）
   @State private customTags: Tag[] = []
 
-  // ConfigManager
-  private configManager: ConfigManager | null = null
+  // TagService
+  private tagService: TagService | null = null
   
   async aboutToAppear() {
     try {
-      this.configManager = await ConfigManager.getInstance()
-      this.customTags = this.configManager.getCustomTags()
+      this.tagService = await TagService.getInstance()
+      this.customTags = this.tagService.getCustomTags()
     } catch (error) {
       console.error('[TimelineSection] 初始化失败: ' + JSON.stringify(error))
     }

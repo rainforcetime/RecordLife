@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 RecordLife 项目的**现状实现快照**，供不同窗口/会话的 AI 重构任务作为唯一参考，避免每次从头通读全部源码。
 > **配套文档**：`docs/refactoring-plan.md` 是重构方案与进度跟踪；本文档只描述**当前代码实际怎么实现**，两者配合使用。
-> **最后更新**：2026-08-22（P3 service 层抽取第一部分完成；基于当前工作区源码逐文件核对）
+> **最后更新**：2026-08-22（P3 service 层抽取第二部分完成；基于当前工作区源码逐文件核对）
 > **阅读方式**：全文关键结论均附 `file:line` 引用，可快速定位源码；改动任何涉及数据模型 / 持久化 / 备份导入导出的代码前，**必须先读 §5 与 §6**。
 
 ---
@@ -53,7 +53,7 @@
 │   ├── handlers/               MorePageBackupHandler.ets（19.9KB）/ MorePageConfigHandler.ets
 │   ├── managers/               RefreshManager.ets
 │   └── utils/                  TimeUtils / AccountUtils / ImageBase64Utils / ImagePickerUtils / MorePageHelper / ImagePathUtils
-├── service/                ★ P3 新增：ImageFileService.ets（图片 IO）/ BackupManager.ets（自 common/managers 迁入）
+├── service/                ★ P3 新增：ImageFileService.ets（图片 IO）/ TagService.ets（标签 CRUD）/ BackupManager.ets（自 common/managers 迁入）
 ├── components/             calendar(5) / common(4) / dialog(4) / record(5) / setting(4) / share(2) / user(4)
 └── utils/                  ShareUtils.ets（组件截图分享）/ ImageGenerator.ets（生成纯色/渐变示例图）
 ```
@@ -204,7 +204,8 @@ interface DateDifference { years; months; days }
 
 | 类 | 文件 | 获取方式 | 职责 |
 | --- | --- | --- | --- |
-| `ConfigManager` | config/ConfigManager.ets:27 | `await ConfigManager.getInstance()` | 配置读写/标签 CRUD/头像/导入导出/重置（**职责过重**，重构 A2） |
+| `ConfigManager` | config/ConfigManager.ets:27 | `await ConfigManager.getInstance()` | 配置读写/头像/导入导出/重置（标签 CRUD 已拆至 `TagService`，P3 轮次 5） |
+| `TagService` | service/TagService.ets:9 | `await TagService.getInstance()` | 自定义标签 CRUD（拆自 ConfigManager，P3 轮次 5；内部依赖 ConfigManager 单例） |
 | `ThemeManager` | config/ThemeManager.ets:13 | `await ThemeManager.getInstance()` | 主题状态管理（数据源是 ConfigManager，本类只是 AppStorage 便捷层） |
 | `AppInfoManager` | config/AppInfoConfig.ets:21 | `await AppInfoManager.getInstance()` | 从 bundleManager 读应用版本信息 |
 | `NowViewModel` | viewmodel/NowViewModel.ets:10 | `await NowViewModel.getInstance()` | 记录 CRUD + 时间线构建（图片 IO 已下沉至 `service/ImageFileService`，P3） |
@@ -410,8 +411,8 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | AnimatedNumber.ets | AnimatedTimeValue | `@Prop value`、`label`、`description`、`cardColor`、`valueColor`、`valueFontSize` | AppStorage |
 | ImageViewer.ets | ImageViewer | `@Prop imageUris: string[]`、`@Prop currentIndex`；`onClose?()` | AppStorage；用 photoAccessHelper/fs 保存图片 |
 | SearchBar.ets | SearchBar | `@Link searchText`、`@Link isSearching`、`@Prop placeholder` | AppStorage |
-| TagSelector.ets | TagSelector | `@Link selectedTagIds: string[]`、`@Prop isCompact` | **ConfigManager**、AppStorage |
-| TagSelector.ets | TagDisplay | `@Prop tagIds: string[]` | **ConfigManager**、AppStorage |
+| TagSelector.ets | TagSelector | `@Link selectedTagIds: string[]`、`@Prop isCompact` | **TagService**、AppStorage |
+| TagSelector.ets | TagDisplay | `@Prop tagIds: string[]` | **TagService**、AppStorage |
 
 ### dialog/
 | 文件 | struct | 对外参数 / 回调 | 全局依赖 |
@@ -419,16 +420,16 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | AboutAppDialog.ets | AboutAppDialog（@CustomDialog） | `controller`、`@Prop appInfo: AppInfo`、`@Prop themeColors @Watch`（父传入）、`@Prop usageDays` | **AppInfoManager** |
 | EditProfileDialog.ets | EditProfileDialog（@CustomDialog） | `controller`、`@Prop userName/userBirthday/userGender`、`@Prop themeColors`（父传入）；`onSave(name,birthday,gender)` | 无 |
 | EditRecordDialog.ets | EditRecordDialog | `@Prop record: LifeRecord\|null`、`@Link editContent`、`@Prop editImagePaths`、`@Link editTags`；`onImagePathsChange`、`onSave`、`onCancel`、`saveImageToSandbox` | **NowViewModel**、AppStorage |
-| TagManagementDialog.ets | TagManagementDialog（@CustomDialog） | `controller` | **ConfigManager**、**RefreshManager**、AppStorage |
+| TagManagementDialog.ets | TagManagementDialog（@CustomDialog） | `controller` | **TagService**、**RefreshManager**、AppStorage |
 
 ### record/
 | 文件 | struct | 对外参数 / 回调 | 全局依赖 |
 | --- | --- | --- | --- |
 | AddRecordSection.ets | AddRecordSection | `onSaveSuccess?()` | **NowViewModel**、**RefreshManager**、AppStorage |
 | RecordCard.ets | RecordCard | `@Prop record`、`@Prop showDate`、`@Prop searchKeyword`；`onEdit?`、`onDelete?`、`onTogglePin?` | **NowViewModel**、AppStorage |
-| TagFilterBar.ets | TagFilterBar | `@Link selectedTagIds`、`@Prop tagVersion @Watch`；`onChange?()` | **ConfigManager**、AppStorage |
+| TagFilterBar.ets | TagFilterBar | `@Link selectedTagIds`、`@Prop tagVersion @Watch`；`onChange?()` | **TagService**、AppStorage |
 | TimeCard.ets | TimeCard | `@Prop value @Watch`、`label`、`description`、`cardColor`、`valueColor`、`labelColor`、`valueFontSize` | AppStorage |
-| TimelineSection.ets | TimelineSection | `@Prop timelineData`、`searchKeyword`、`searchKeywordVersion @Watch`、`filterTagIds`、`filterTagIdsVersion @Watch`、`timelineDataVersion @Watch`；`onEditRecord?`、`onDeleteRecord?`、`onTogglePin?` | **ConfigManager**、AppStorage |
+| TimelineSection.ets | TimelineSection | `@Prop timelineData`、`searchKeyword`、`searchKeywordVersion @Watch`、`filterTagIds`、`filterTagIdsVersion @Watch`、`timelineDataVersion @Watch`；`onEditRecord?`、`onDeleteRecord?`、`onTogglePin?` | **TagService**、AppStorage |
 
 ### setting/（label/summary/options/onAction/onSelect 为无装饰器普通成员）
 | 文件 | struct | 对外参数 / 回调 | 全局依赖 |

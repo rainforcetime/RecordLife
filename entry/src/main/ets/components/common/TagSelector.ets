@@ -1,7 +1,7 @@
 // 标签选择组件：components/TagSelector.ets
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { Tag, DEFAULT_TAGS, getAllTags } from '../../common/types'
-import { ConfigManager } from '../../config/ConfigManager'
+import { TagService } from '../../service/TagService'
 
 @Component
 export struct TagSelector {
@@ -16,12 +16,12 @@ export struct TagSelector {
   // 是否为编辑模式（紧凑显示）
   @Prop isCompact: boolean = false
 
-  // ConfigManager
-  private configManager: ConfigManager | null = null
+  // TagService
+  private tagService: TagService | null = null
 
   async aboutToAppear() {
     try {
-      this.configManager = await ConfigManager.getInstance()
+      this.tagService = await TagService.getInstance()
       this.loadTags()
     } catch (error) {
       console.error('[TagSelector] 初始化失败: ' + JSON.stringify(error))
@@ -29,8 +29,8 @@ export struct TagSelector {
   }
 
   private loadTags() {
-    if (this.configManager) {
-      const customTags = this.configManager.getCustomTags()
+    if (this.tagService) {
+      const customTags = this.tagService.getCustomTags()
       this.availableTags = getAllTags(customTags)
     }
   }
@@ -157,12 +157,12 @@ export struct TagDisplay {
   // 可用的标签列表（内部动态加载）
   @State availableTags: Tag[] = DEFAULT_TAGS
 
-  // ConfigManager
-  private configManager: ConfigManager | null = null
+  // TagService
+  private tagService: TagService | null = null
 
   async aboutToAppear() {
     try {
-      this.configManager = await ConfigManager.getInstance()
+      this.tagService = await TagService.getInstance()
       this.loadTags()
     } catch (error) {
       console.error('[TagDisplay] 初始化失败: ' + JSON.stringify(error))
@@ -170,8 +170,8 @@ export struct TagDisplay {
   }
 
   private loadTags() {
-    if (this.configManager) {
-      const customTags = this.configManager.getCustomTags()
+    if (this.tagService) {
+      const customTags = this.tagService.getCustomTags()
       this.availableTags = getAllTags(customTags)
     }
   }

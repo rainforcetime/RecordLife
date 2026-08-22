@@ -12,7 +12,7 @@ import { CalendarView } from '../components/calendar/CalendarView'
 import { RefreshManager } from '../common/managers/RefreshManager'
 import { ColorUtils } from '../common/ColorUtils'
 import { PromptAction } from '@kit.ArkUI'
-import { ConfigManager } from '../config/ConfigManager'
+import { TagService } from '../service/TagService'
 
 @Entry
 @Component
@@ -99,8 +99,8 @@ struct NowPage {
     
     // 加载自定义标签（用于搜索时标签名称匹配）
     try {
-      const cm = await ConfigManager.getInstance()
-      this.customTags = cm.getCustomTags()
+      const ts = await TagService.getInstance()
+      this.customTags = ts.getCustomTags()
     } catch (error) {
       console.error('[NowPage] 加载自定义标签失败: ' + JSON.stringify(error))
     }
@@ -400,8 +400,8 @@ struct NowPage {
   // 重新加载自定义标签
   private async reloadCustomTags() {
     try {
-      const cm = await ConfigManager.getInstance()
-      this.customTags = cm.getCustomTags()
+      const ts = await TagService.getInstance()
+      this.customTags = ts.getCustomTags()
       this.tagVersion++  // 触发子组件重载标签
     } catch (error) {
       console.error('[NowPage] 重新加载自定义标签失败: ' + JSON.stringify(error))

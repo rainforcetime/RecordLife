@@ -304,7 +304,7 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | P0 | 数据兼容性基线锁定（确认旧备份可导入） | ⬜ | — | 备份格式已记录在 §0；尚未做导入冒烟测试 |
 | P1 | 类型层重构（`types.ets` 拆分、消除重复定义） | ✅ | 2026-08-22 | `model/` 目录已创建（5 文件）；`UserProfile`/`DataStatistics` 重复已消除；UI DTO 重命名为 `AccountProfile`/`AccountDataStatistics`；旧文件保留 re-export 兼容 |
 | P2 | Model / Repository 层抽取 | ✅ | 2026-08-22 | `repository/` 已创建（`ConfigRepository` / `RecordRepository`，见轮次 3）；Preferences 访问收敛至 repository 层，store/key 常量集中定义 |
-| P3 | Service 层抽取（备份 / 导入导出 / 图片） | 🟦 | 2026-08-22 | `service/` 已建立（ImageFileService 图片 IO + BackupManager 迁入，见轮次 4）；剩余：ConfigManager 标签/导出导入拆分、MorePageBackupHandler 拆分、BackupManager 改依赖 RecordRepository |
+| P3 | Service 层抽取（备份 / 导入导出 / 图片） | 🟦 | 2026-08-22 | `service/` 已建立（ImageFileService 图片 IO + BackupManager 迁入 + TagService 标签 CRUD，见轮次 4/5）；BackupManager 已改依赖 `RecordRepository`（消除反向依赖）；剩余：MorePageBackupHandler 拆分、ConfigManager 导出导入拆分（触数据兼容红线，待旧备份验证） |
 | P4 | ViewModel 瘦身（IO 职责下沉） | ⬜ | — | `NowViewModel` 15.7KB 直接 import `@ohos.data.preferences`；`AccountViewModel` 19.1KB 含重复类型 |
 | P5 | Page 层清理（`@Entry` 标注、路由注册） | ⬜ | — | `NowPage.ets` 误标 `@Entry`（Tab 内容页不应标注）；`main_pages.json` 含 4 页 |
 | P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
@@ -498,6 +498,32 @@ entry/src/main/ets/
 - BackupManager 仍通过 `NowViewModel.getInstance()` 取记录（service → viewmodel 反向依赖，理想应改依赖 `RecordRepository`）— P3 剩余
 
 **下一轮计划**：P3 续 — 拆分 ConfigManager（标签管理独立 Service / 导出导入）与 MorePageBackupHandler
+
+### 轮次 5 — 2026-08-22（P3 Service 层抽取 · 第二部分：标签管理拆分 + 依赖修正）
+
+> 前置：用户在 DevEco 中修复了轮次 4 的 `MorePageBackupHandler` BackupManager import 路径（`../service/` → `../../service/`，提交 55bf052）并编译成功。
+
+**本轮目标**：拆分 ConfigManager 的标签管理为独立 `TagService`（解决 A2 职责过重），消除 BackupManager 对 NowViewModel 的反向依赖。
+
+**涉及文件**：
+- `service/TagService.ets`（新增）— 自定义标签 CRUD（`getCustomTags` / `addCustomTag` / `updateCustomTag` / `deleteCustomTag` / `saveCustomTags`），依赖 ConfigManager 单例
+- `config/ConfigManager.ets`（修改）— 删除 5 个标签方法 + `import { Tag }`（18.3KB → 约 15KB）
+- `components/common/TagSelector.ets`（TagSelector + TagDisplay）、`components/dialog/TagManagementDialog.ets`、`components/record/TagFilterBar.ets`、`components/record/TimelineSection.ets`、`pages/NowPage.ets`（修改）— `configManager` → `tagService`，import 改 `../../service/TagService`（pages 为 `../service/`）
+- `service/BackupManager.ets`（修改）— `createBackup` 改用 `RecordRepository.getRecords(context)`；`restoreBackup` 删除未使用的 viewModel 变量；删除 NowViewModel import
+
+**已完成**：
+- [x] `TagService` 单例：逻辑与原 ConfigManager 标签方法逐行等价（读 `getConfig().settings.customTags` + `saveConfig()`）
+- [x] ConfigManager 标签方法移除（含残留 console 日志引用修正）
+- [x] 6 处调用方全部切换，import 路径层级逐一核对（components/xx → `../../service/`，pages → `../service/`，吸取轮次 4 教训）
+- [x] BackupManager 反向依赖消除（service → repository，符合目标架构依赖方向）
+- [x] 静态验证通过（无残留调用 / ArkTS 约束 / 改动面核对）
+
+**遗留问题**：
+- ⚠️ 本机仍无 hvigor 编译环境，需用户在 DevEco 编译回归（尤其标签管理 UI：TagSelector / TagManagementDialog / 筛选）
+- ConfigManager 导出导入（`exportConfig` / `importConfig`）未拆 — 触数据兼容红线（§0.3），待旧备份导入验证手段确认
+- MorePageBackupHandler（19.9KB）拆分未做 — P3 剩余
+
+**下一轮计划**：P3 续 — MorePageBackupHandler 拆分（zip 公共操作抽 service，行为保持）；或 P4 — ViewModel 瘦身（AccountViewModel 存储统计下沉）
 
 ### 10.3 数据兼容性验证记录
 

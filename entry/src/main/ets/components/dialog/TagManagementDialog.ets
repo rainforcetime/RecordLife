@@ -1,7 +1,7 @@
 // 标签管理对话框：components/dialog/TagManagementDialog.ets
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { Tag } from '../../common/types'
-import { ConfigManager } from '../../config/ConfigManager'
+import { TagService } from '../../service/TagService'
 import { RefreshManager } from '../../common/managers/RefreshManager'
 
 // 预设可选颜色
@@ -39,20 +39,20 @@ export struct TagManagementDialog {
   // 图标选择器展开
   @State private showIconPicker: boolean = false
 
-  // ConfigManager
-  private configManager: ConfigManager | null = null
+  // TagService
+  private tagService: TagService | null = null
 
   async aboutToAppear() {
     console.info('[TagMgmtDialog] aboutToAppear 开始')
-    this.configManager = await ConfigManager.getInstance()
-    console.info('[TagMgmtDialog] configManager 初始化完成: ' + (this.configManager !== null))
+    this.tagService = await TagService.getInstance()
+    console.info('[TagMgmtDialog] tagService 初始化完成: ' + (this.tagService !== null))
     this.loadTags()
     console.info('[TagMgmtDialog] aboutToAppear 完成, customTags count: ' + this.customTags.length)
   }
 
   private loadTags() {
-    if (this.configManager) {
-      this.customTags = [...this.configManager.getCustomTags()]
+    if (this.tagService) {
+      this.customTags = [...this.tagService.getCustomTags()]
       console.info('[TagMgmtDialog] loadTags 完成, count: ' + this.customTags.length)
     }
   }
@@ -109,8 +109,8 @@ export struct TagManagementDialog {
   // 保存标签
   private async saveTag() {
     console.info('[TagMgmtDialog] >>> saveTag 被调用 <<<')
-    if (!this.configManager) {
-      console.warn('[TagMgmtDialog] saveTag 失败: configManager 为 null')
+    if (!this.tagService) {
+      console.warn('[TagMgmtDialog] saveTag 失败: tagService 为 null')
       return
     }
 
@@ -129,9 +129,9 @@ export struct TagManagementDialog {
         color: this.editingTag.color,
         icon: this.editingTag.icon || undefined
       }
-      console.info('[TagMgmtDialog] 准备调用 configManager.addCustomTag, configManager 类型: ' + typeof this.configManager + ', 是否为null: ' + (this.configManager === null))
+      console.info('[TagMgmtDialog] 准备调用 tagService.addCustomTag, tagService 类型: ' + typeof this.tagService + ', 是否为null: ' + (this.tagService === null))
       try {
-        const result = await this.configManager.addCustomTag(newTag)
+        const result = await this.tagService.addCustomTag(newTag)
         console.info('[TagMgmtDialog] addCustomTag 返回: ' + result)
       } catch (e) {
         console.error('[TagMgmtDialog] addCustomTag 异常: ' + String(e) + ', message: ' + (e as Error).message + ', stack: ' + (e as Error).stack)
@@ -145,7 +145,7 @@ export struct TagManagementDialog {
         icon: this.editingTag.icon
       }
       try {
-        const result = await this.configManager.updateCustomTag(updatedTag)
+        const result = await this.tagService.updateCustomTag(updatedTag)
         console.info('[TagMgmtDialog] updateCustomTag 返回: ' + result)
       } catch (e) {
         console.error('[TagMgmtDialog] updateCustomTag 异常: ' + JSON.stringify(e))
@@ -161,11 +161,11 @@ export struct TagManagementDialog {
   // 删除标签
   private async deleteTag(tag: Tag) {
     console.info('[TagMgmtDialog] deleteTag 被调用, id: ' + tag.id)
-    if (!this.configManager) {
-      console.warn('[TagMgmtDialog] deleteTag 失败: configManager 为 null')
+    if (!this.tagService) {
+      console.warn('[TagMgmtDialog] deleteTag 失败: tagService 为 null')
       return
     }
-    await this.configManager.deleteCustomTag(tag.id)
+    await this.tagService.deleteCustomTag(tag.id)
     this.loadTags()
     RefreshManager.getInstance().refresh()
     console.info('[TagMgmtDialog] deleteTag 完成')

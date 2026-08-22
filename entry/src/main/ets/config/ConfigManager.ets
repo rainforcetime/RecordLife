@@ -7,7 +7,6 @@
 import common from '@ohos.app.ability.common';
 import { UserConfig, UserProfile, AppSettings, BackupConfig, DataStatistics, ConfigMetadata, createDefaultConfig, createDefaultConfigSync, validateConfig } from './UserConfig';
 import { ConfigRepository } from '../repository/ConfigRepository';
-import { Tag } from '../common/types';
 import { TimeUtils } from '../common/utils/TimeUtils';
 import { AppInfoManager } from './AppInfoConfig';
 import { ImageBase64Utils } from '../common/utils/ImageBase64Utils';
@@ -114,64 +113,6 @@ export class ConfigManager {
       console.error('Load config failed:', error);
       this.config = await createDefaultConfig();
     }
-  }
-
-  // ==================== 自定义标签管理 ====================
-
-  // 获取所有自定义标签
-  getCustomTags(): Tag[] {
-    const config = this.getConfig();
-    return config.settings.customTags || [];
-  }
-
-  // 添加自定义标签
-  async addCustomTag(tag: Tag): Promise<boolean> {
-    console.info('[ConfigManager] addCustomTag 开始, tag: ' + JSON.stringify(tag))
-    console.info('[ConfigManager] addCustomTag config: ' + (this.config ? '存在' : 'null') + ', context: ' + (this.context ? '存在' : 'null'))
-    if (!this.config || !this.context) {
-      console.warn('[ConfigManager] addCustomTag 失败: config或context为null')
-      return false;
-    }
-    const customTags = this.config.settings.customTags || [];
-    const newTags = [...customTags, tag];
-    this.config.settings.customTags = newTags;
-    console.info('[ConfigManager] addCustomTag 准备保存, tags count: ' + newTags.length)
-    const result = await this.saveConfig();
-    console.info('[ConfigManager] addCustomTag saveConfig 返回: ' + result)
-    return result;
-  }
-
-  // 更新自定义标签
-  async updateCustomTag(tag: Tag): Promise<boolean> {
-    if (!this.config || !this.context) {
-      return false;
-    }
-    const tags = this.config.settings.customTags || [];
-    const index = tags.findIndex(t => t.id === tag.id);
-    if (index === -1) {
-      return false;
-    }
-    tags[index] = tag;
-    return await this.saveConfig();
-  }
-
-  // 删除自定义标签
-  async deleteCustomTag(id: string): Promise<boolean> {
-    if (!this.config || !this.context) {
-      return false;
-    }
-    const tags = (this.config.settings.customTags || []).filter(t => t.id !== id);
-    this.config.settings.customTags = tags;
-    return await this.saveConfig();
-  }
-
-  // 保存整个自定义标签列表
-  async saveCustomTags(tags: Tag[]): Promise<boolean> {
-    if (!this.config || !this.context) {
-      return false;
-    }
-    this.config.settings.customTags = tags;
-    return await this.saveConfig();
   }
 
   // 保存配置到存储

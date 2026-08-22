@@ -1,7 +1,7 @@
 // 标签筛选栏组件：components/record/TagFilterBar.ets
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { Tag, DEFAULT_TAGS, getAllTags } from '../../common/types'
-import { ConfigManager } from '../../config/ConfigManager'
+import { TagService } from '../../service/TagService'
 import { promptAction } from '@kit.ArkUI'
 
 @Component
@@ -21,12 +21,12 @@ export struct TagFilterBar {
   @Watch('onTagVersionChange')
   @Prop tagVersion: number = 0
 
-  // ConfigManager
-  private configManager: ConfigManager | null = null
+  // TagService
+  private tagService: TagService | null = null
 
   async aboutToAppear() {
     try {
-      this.configManager = await ConfigManager.getInstance()
+      this.tagService = await TagService.getInstance()
       this.loadTags()
     } catch (error) {
       console.error('[TagFilterBar] 初始化失败: ' + JSON.stringify(error))
@@ -39,8 +39,8 @@ export struct TagFilterBar {
   }
 
   private loadTags() {
-    if (this.configManager) {
-      const customTags = this.configManager.getCustomTags()
+    if (this.tagService) {
+      const customTags = this.tagService.getCustomTags()
       this.availableTags = getAllTags(customTags)
     }
   }

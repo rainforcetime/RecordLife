@@ -4,7 +4,6 @@ import { zlib } from '@kit.BasicServicesKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { util } from '@kit.ArkTS'
 import { LifeRecord } from '../common/types'
-import { NowViewModel } from '../viewmodel/NowViewModel'
 import { RecordRepository } from '../repository/RecordRepository'
 import { AppInfoManager } from '../config/AppInfoConfig'
 import { ImagePathUtils } from '../common/utils/ImagePathUtils'
@@ -71,9 +70,8 @@ export class BackupManager {
         fileIo.mkdirSync(tempDir)
       }
       
-      // 2. 获取所有记录
-      const viewModel = await NowViewModel.getInstance()
-      const records = viewModel.getRecords()
+      // 2. 获取所有记录（直接读存储层，避免 service → viewmodel 反向依赖，P3）
+      const records = await RecordRepository.getRecords(this.context)
       
       console.info(`[BackupManager] 获取到 ${records.length} 条记录`)
       
@@ -255,7 +253,6 @@ export class BackupManager {
       console.info(`[BackupManager] 图片文件已恢复，记录路径已更新`)
       
       // 5. 恢复记录到 Preferences
-      const viewModel = await NowViewModel.getInstance()
       const success = await this.restoreRecordsToPreferences(updatedRecords)
       
       if (success) {
