@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 RecordLife 项目的**现状实现快照**，供不同窗口/会话的 AI 重构任务作为唯一参考，避免每次从头通读全部源码。
 > **配套文档**：`docs/refactoring-plan.md` 是重构方案与进度跟踪；本文档只描述**当前代码实际怎么实现**，两者配合使用。
-> **最后更新**：2026-08-22（P7 `@kit.*` 统一完成；基于当前工作区源码逐文件核对）
+> **最后更新**：2026-08-22（重构全部完成——P0~P8 + A5 + 国际化 + 日志收敛；基于当前工作区源码逐文件核对）
 > **阅读方式**：全文关键结论均附 `file:line` 引用，可快速定位源码；改动任何涉及数据模型 / 持久化 / 备份导入导出的代码前，**必须先读 §5 与 §6**。
 
 ---
@@ -460,19 +460,21 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 
 | 文件 | 类 | 关键方法 |
 | --- | --- | --- |
-| common/utils/TimeUtils.ets | TimeUtils | **统一 UTC+8**：`now` / `getFullYear/getMonth/getDate/getHours/getMinutes/getSeconds`（+8h 后取 UTC 分量）/ `setFullYear` / `formatDate`(YYYY-MM-DD) / `formatDateCN` / `parseDate`(YYYY-MM-DD 按 UTC+8 0 点) / `getDateDifference` / `getLastDayOfMonth` |
-| common/utils/AccountUtils.ets | AccountUtils | `themeToDisplay/displayToTheme`（light↔浅色模式 等）、`convertGenderToDisplay/Storage`（male↔男 等）、`showToastSafely(promptAction, message, duration)` |
+| common/utils/TimeUtils.ets | TimeUtils | **统一 UTC+8**：`now` / `getFullYear/getMonth/getDate/getHours/getMinutes/getSeconds`（+8h 后取 UTC 分量）/ `setFullYear` / `formatDate`(YYYY-MM-DD) / `parseDate`(YYYY-MM-DD 按 UTC+8 0 点) / `getDateDifference` / `getLastDayOfMonth`（`formatDateCN` 已于 P6 轮次 14 删除） |
+| common/utils/AccountUtils.ets | AccountUtils | `themeToDisplay/displayToTheme`、`convertGenderToDisplay/Storage`（均带 `rm` 参数：显示文本读资源、反向匹配按资源值，国际化）/ `showToastSafely(promptAction, message, duration)` |
 | common/utils/ImageBase64Utils.ets | ImageBase64Utils | `imageToBase64(path)`（util.Base64Helper）/ `base64ToImage(base64, outPath)` / `uriToSandboxPath` / `getAvatarSavePath` → `filesDir/avatar.jpg` |
 | common/utils/ImagePickerUtils.ets | ImagePickerUtils + `ImagePickResult` + `enum ImagePickMode` | `pickImage(context, mode)`：CAMERA 走 `cameraPicker.pick`（需 CAMERA 权限）、GALLERY 走 `photoAccessHelper.PhotoViewPicker`；`showErrorToast` |
-| common/utils/MorePageHelper.ets | MorePageHelper | `deleteDirectory` / `uriToSandboxPath`（委托 ImagePathUtils）/ `readFileContent` / `writeFileContent` / `copyFile` / `fileExists` / `ensureDirectory` |
+| common/utils/MorePageHelper.ets | MorePageHelper | `deleteDirectory` / `uriToSandboxPath`（委托 ImagePathUtils）/ `fileExists`（`readFileContent`/`writeFileContent`/`copyFile`/`ensureDirectory` 死代码已删，P6 轮次 21） |
 | common/utils/ImagePathUtils.ets | ImagePathUtils | ★ P3 新增：`uriToSandboxPath`（统一实现）/ `sandboxPathToUri` / `getFileName` |
+| common/utils/TagDisplayUtils.ets | TagDisplayUtils | ★ P6 轮次 20 新增：`buildDisplayTags(customTags, rm)` / `getDisplayTagName(tagId, customTags, rm)`（预设标签 id → 资源显示名映射；`DEFAULT_TAGS.name` 保持数据层） |
+| common/utils/Logger.ets | Logger | ★ B3 轮次 19 新增：`info/warn/error`（hilog 封装 + `setDebugEnabled` 开关，error 恒输出）；全工程 `console.*` 已统一至此 |
 | service/ImageFileService.ets | ImageFileService | ★ P3 新增：`saveRecordImage` / `getImageUri` / `deleteImageFiles` / `copyAvatar`（记录图片与头像的沙箱 IO） |
 | service/ZipTransferService.ets | ZipTransferService | ★ P3 新增：`saveZipToDocument` / `pickZipToSandbox`（DocumentViewPicker zip 保存/选择 + 沙箱复制；取消返回 false，IO 异常冒泡） |
 | service/ConfigTransferService.ets | ConfigTransferService | ★ P3 新增：`exportConfig` / `importConfig`（用户配置导出/导入 + 头像 base64 转换，拆自 ConfigManager） |
-| service/StorageService.ets | StorageService | ★ P4 新增：`getAppStorageSize` / `formatStorageSize`（纯函数）/ `calcUsageDays`（拆自 AccountViewModel，P4 轮次 8） |
+| service/StorageService.ets | StorageService | ★ P4 新增：`getAppStorageSize(context)` / `formatStorageSize`（纯函数）/ `calcUsageDays`（拆自 AccountViewModel，P4 轮次 8） |
 | common/ColorUtils.ets | ColorUtils | `withAlpha(hex, alpha)` → rgba、`primaryLight`(α32)/`primaryExtraLight`(α20)/`primaryUltraLight`(α15) |
-| utils/ShareUtils.ets | ShareUtils | `shareComponent(uiContext, componentId, context, title?, desc?)`：getComponentSnapshot → packToData(jpeg 95) → 存 `cacheDir/share_<ts>.jpg` → `systemShare.ShareController.show`；`cleanupOldShareImages` |
-| utils/ImageGenerator.ets | ImageGenerator | `generateSolidColorImage`（存 `filesDir/records`）、`generateGradientImage`（存 `filesDir/sample_images`），BGRA_8888 逐像素生成 |
+| common/utils/ShareUtils.ets | ShareUtils | `shareComponent(uiContext, componentId, context, title?, desc?)`：getComponentSnapshot → packToData(jpeg 95) → 存 `cacheDir/share_<ts>.jpg` → `systemShare.ShareController.show`；`cleanupOldShareImages`（P5 自顶层 utils/ 迁入） |
+| common/utils/ImageGenerator.ets | ImageGenerator | `generateSolidColorImage`（存 `filesDir/records`）、`generateGradientImage`（存 `filesDir/sample_images`），BGRA_8888 逐像素生成（P5 自顶层 utils/ 迁入） |
 
 ---
 

@@ -1,7 +1,8 @@
 # RecordLife 项目结构分析与重构方案
 
-> 状态：**重构前评估已完成（尚未开始执行）**
+> 状态：**重构已完成（2026-08-22）**——P0~P8 里程碑、A1~A7 问题清单、可测试性（15 单测）、B2 全量国际化、B3 日志收敛全部落地；旧备份导入实机验证通过（§10.3），§8 验证清单 9 项全绿。
 > 目标：在不改变现有功能行为的前提下，按照 HarmonyOS / ArkTS 行业最佳实践进行架构与代码质量重构。
+> 说明：以下 §0~§9 为重构前的评估与分析（历史依据）；§10 为执行进度与逐轮日志（已完结）。当前代码实现以 `docs/technical-reference.md` 为准。
 
 ---
 
@@ -301,14 +302,14 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 
 | 阶段 | 描述 | 状态 | 完成日期 | 备注 |
 | --- | --- | --- | --- | --- |
-| P0 | 数据兼容性基线锁定（确认旧备份可导入） | ⬜ | — | 备份格式已记录在 §0；尚未做导入冒烟测试 |
+| P0 | 数据兼容性基线锁定（确认旧备份可导入） | ✅ | 2026-08-22 | 旧备份 `RecordLife_all_*.zip` 实机导入验证通过（§10.3，P3 后与 P8 最终验收两次）；备份格式基线见 §0.1（以 technical-reference §6 实际结构为准） |
 | P1 | 类型层重构（`types.ets` 拆分、消除重复定义） | ✅ | 2026-08-22 | `model/` 目录已创建（5 文件）；`UserProfile`/`DataStatistics` 重复已消除；UI DTO 重命名为 `AccountProfile`/`AccountDataStatistics`；旧文件保留 re-export 兼容 |
 | P2 | Model / Repository 层抽取 | ✅ | 2026-08-22 | `repository/` 已创建（`ConfigRepository` / `RecordRepository`，见轮次 3）；Preferences 访问收敛至 repository 层，store/key 常量集中定义 |
-| P3 | Service 层抽取（备份 / 导入导出 / 图片） | ✅ | 2026-08-22 | `service/` 共 5 文件（ImageFileService 图片 IO / TagService 标签 CRUD / ZipTransferService zip 传输 / ConfigTransferService 配置导入导出 / BackupManager）；ConfigManager 18.3KB → 9.8KB，MorePageBackupHandler 19.9KB → 16.3KB（见轮次 4~7）；⚠️ 导出导入改动需实机旧备份导入验证（P8 回归，用户有实机可验证） |
+| P3 | Service 层抽取（备份 / 导入导出 / 图片） | ✅ | 2026-08-22 | `service/` 共 6 文件（ImageFileService 图片 IO / TagService 标签 CRUD / ZipTransferService zip 传输 / ConfigTransferService 配置导入导出 / StorageService 存储统计 / BackupManager）；ConfigManager 18.7KB → 9.8KB，MorePageBackupHandler 19.9KB → 16.3KB（见轮次 4~7）；导出导入改动已通过实机旧备份导入验证（§10.3） |
 | P4 | ViewModel 瘦身（IO 职责下沉） | ✅ | 2026-08-22 | AccountViewModel 19.1KB → 13.9KB（存储统计下沉 `StorageService`、`[StorageDebug]` 日志清零，轮次 8）；NowViewModel.buildTimeline 抽为 `model/RecordModel.buildTimelineData` 纯函数（可单测，轮次 9）；Preferences/fileIo 直接引用已消除（P2/P3）；细节清理并入 P6 |
 | P5 | Page 层清理（`@Entry` 标注、路由注册） | ✅ | 2026-08-22 | NowPage 去 `@Entry` + `main_pages.json` 3 页（A4）；顶层 `utils/` 并入 `common/utils/`（C1）；HomePage 累计模式切换抽 `AccumulatedModeToggle` 组件（C3）；NowPage 深拷贝替换（B6）；见轮次 10 |
-| P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
-| — | 可测试性提升（阶段 6，hypium 单测） | ✅ | 2026-08-22 | 15 个单测覆盖 `buildTimelineData` / `formatStorageSize` / `calcUsageDays` / `validateConfig` / `TimeUtils`（见轮次 11）；⚠️ 构造器注入（A5，去除 AppStorage 硬依赖）为渐进项未全量改造 |
+| P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（base 317 key / en_US 317 key）+ `color.json`（base + dark）已创建；全量 UI 文本资源化（轮次 14/15/20/21 延伸至映射函数/拼接文本/预设标签名/异常消息死代码）；硬编码中文全部清零，仅剩数据层/日志/注释合理保留 |
+| — | 可测试性提升（阶段 6，hypium 单测） | ✅ | 2026-08-22 | 15 个单测覆盖 `buildTimelineData` / `formatStorageSize` / `calcUsageDays` / `validateConfig` / `TimeUtils`（轮次 11）；A5 构造器注入已全量完成（轮次 17，单例 `getInstance(context?)` 支持显式注入） |
 | P7 | `@kit.*` 统一 & 依赖整理 | ✅ | 2026-08-22 | 8 处旧式 `@ohos.*` import（6 文件）全部统一为 `@kit.*`：`@ohos.data.preferences`→`@kit.ArkData`、`@ohos.file.fs`→`@kit.CoreFileKit`（fileIo 别名）、`@ohos.file.photoAccessHelper`→`@kit.MediaLibraryKit`、`@ohos.app.ability.common`→`@kit.AbilityKit`、`@ohos.promptAction`→`@kit.ArkUI`（见轮次 12）；`@ohos/hypium`/`@ohos/hamock` 为测试框架依赖保留 |
 | P8 | 全量回归 + 旧备份导入冒烟 | ✅ | 2026-08-22 | 最终验收完成：§8 验证清单 9 项全部通过（旧备份导入实机验证见 §10.3；单测 15 用例全绿；中英文回归）；见轮次 16 |
 
