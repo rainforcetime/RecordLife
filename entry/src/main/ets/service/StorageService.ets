@@ -2,8 +2,7 @@
  * 存储统计服务（service 层）
  * 应用存储空间统计与使用天数计算，拆自 AccountViewModel（P4 重构，A3 IO/统计职责下沉）
  */
-import { storageStatistics } from '@kit.CoreFileKit'
-import { fs } from '@kit.CoreFileKit'
+import { storageStatistics, fileIo } from '@kit.CoreFileKit'
 import { common } from '@kit.AbilityKit'
 import { TimeUtils } from '../common/utils/TimeUtils'
 import { Logger } from '../common/utils/Logger'
@@ -75,10 +74,10 @@ export class StorageService {
   static async clearShareCache(context: common.Context): Promise<number> {
     try {
       let count = 0
-      const files = fs.listFileSync(context.cacheDir)
+      const files = fileIo.listFileSync(context.cacheDir)
       for (const fileName of files) {
         if (fileName.startsWith('share_') && fileName.endsWith('.jpg')) {
-          fs.unlinkSync(context.cacheDir + '/' + fileName)
+          fileIo.unlinkSync(context.cacheDir + '/' + fileName)
           count++
         }
       }
@@ -109,17 +108,17 @@ export class StorageService {
       }
 
       const dir = context.filesDir + '/records'
-      if (!fs.accessSync(dir)) {
+      if (!fileIo.accessSync(dir)) {
         return 0
       }
       let count = 0
-      const files = fs.listFileSync(dir)
+      const files = fileIo.listFileSync(dir)
       for (const fileName of files) {
         if (!fileName.endsWith('.jpg') && !fileName.endsWith('.png')) {
           continue
         }
         if (!referencedNames.has(fileName)) {
-          fs.unlinkSync(dir + '/' + fileName)
+          fileIo.unlinkSync(dir + '/' + fileName)
           count++
         }
       }
