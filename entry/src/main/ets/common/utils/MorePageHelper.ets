@@ -2,6 +2,7 @@
 import { fileIo } from '@kit.CoreFileKit'
 import { fileUri } from '@kit.CoreFileKit'
 import { util } from '@kit.ArkTS'
+import { ImagePathUtils } from './ImagePathUtils'
 
 export class MorePageHelper {
   /**
@@ -41,19 +42,7 @@ export class MorePageHelper {
    * @returns 沙箱路径
    */
   static uriToSandboxPath(uri: string): string {
-    if (uri.startsWith('file://')) {
-      // URI 格式: file://<bundleName>/data/storage/... 或 file:///data/storage/...
-      let path = uri.substring(7)  // 移除 'file://'
-      
-      // 找到第一个 '/' 的位置，从那里开始截取路径
-      const slashIndex = path.indexOf('/')
-      if (slashIndex !== -1) {
-        path = path.substring(slashIndex)
-      }
-      
-      return path
-    }
-    return uri  // 已经是沙箱路径格式
+    return ImagePathUtils.uriToSandboxPath(uri)  // 统一实现收敛至 ImagePathUtils（P3）
   }
   
   /**

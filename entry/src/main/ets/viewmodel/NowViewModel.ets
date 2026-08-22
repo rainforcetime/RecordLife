@@ -1,10 +1,10 @@
 // NowPage 业务逻辑类：viewmodel/NowViewModel.ets
 import { common } from '@kit.AbilityKit'
-import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { LifeRecord, TimelineYear, TimelineMonth, TimelineDay, TimelineData } from '../common/types'
 import { TimeUtils } from '../common/utils/TimeUtils'
 import { ImageGenerator } from '../utils/ImageGenerator'
 import { RecordRepository } from '../repository/RecordRepository'
+import { ImageFileService } from '../service/ImageFileService'
 
 // 生活记录数据管理类
 export class NowViewModel {
@@ -243,20 +243,10 @@ export class NowViewModel {
     // 处理图片路径更新
     if (imagePaths !== undefined) {
       // 删除不再使用的图片文件
-      if (record.imagePaths) {
-        for (const oldPath of record.imagePaths) {
-          // 如果新图片列表中不包含这张图片，则删除
-          if (!imagePaths.includes(oldPath)) {
-            try {
-              const sandboxPath = this.uriToSandboxPath(oldPath)
-              if (this.context && fileIo.accessSync(sandboxPath)) {
-                fileIo.unlinkSync(sandboxPath)
-                console.info('[NowViewModel] 图片文件已删除: ' + sandboxPath)
-              }
-            } catch (error) {
-              console.error('[NowViewModel] 删除图片文件失败: ' + JSON.stringify(error))
-            }
-          }
+      if (this.context && record.imagePaths) {
+        const pathsToDelete: string[] = record.imagePaths.filter(oldPath => !imagePaths.includes(oldPath))
+        if (pathsToDelete.length > 0) {
+          ImageFileService.deleteImageFiles(this.context, pathsToDelete)
         }
       }
       
@@ -302,18 +292,8 @@ export class NowViewModel {
     const record = this.records[index]
     
     // 如果有图片，删除所有图片文件
-    if (record.imagePaths && record.imagePaths.length > 0) {
-      for (const imagePath of record.imagePaths) {
-        try {
-          const sandboxPath = this.uriToSandboxPath(imagePath)
-          if (this.context && fileIo.accessSync(sandboxPath)) {
-            fileIo.unlinkSync(sandboxPath)
-            console.info('[NowViewModel] 图片文件已删除: ' + sandboxPath)
-          }
-        } catch (error) {
-          console.error('[NowViewModel] 删除图片文件失败: ' + JSON.stringify(error))
-        }
-      }
+    if (this.context && record.imagePaths && record.imagePaths.length > 0) {
+      ImageFileService.deleteImageFiles(this.context, record.imagePaths)
     }
     
     this.records.splice(index, 1)
@@ -404,80 +384,19 @@ export class NowViewModel {
   }
   
   // 保存图片到沙箱目录（返回 URI 格式）
+  // 图片 IO 已下沉至 service/ImageFileService（P3）
   async saveImageToSandbox(sourceUri: string): Promise<string | null> {
     if (!this.context) {
       console.error('[NowViewModel] context 未初始化')
       return null
     }
-    
-    let sourceFile: fileIo.File | null = null
-    try {
-      // 打开源图片
-      sourceFile = fileIo.openSync(sourceUri, fileIo.OpenMode.READ_ONLY)
-      
-      // 生成文件名
-      const timestamp = Date.now()
-      const fileName = `record_${timestamp}.jpg`
-      const sandboxPath = `${this.context.filesDir}/records/${fileName}`
-      
-      // 确保目录存在
-      const dirPath = `${this.context.filesDir}/records`
-      if (!fileIo.accessSync(dirPath)) {
-        fileIo.mkdirSync(dirPath)
-      }
-      
-      // 复制文件
-      fileIo.copyFileSync(sourceFile.fd, sandboxPath)
-      console.info('[NowViewModel] 图片保存成功: ' + sandboxPath)
-      
-      // 返回 URI 格式（统一路径格式）
-      const imageUri = fileUri.getUriFromPath(sandboxPath)
-      console.info('[NowViewModel] 图片 URI: ' + imageUri)
-      
-      return imageUri
-    } catch (error) {
-      console.error('[NowViewModel] 保存图片失败: ' + JSON.stringify(error))
-      return null
-    } finally {
-      if (sourceFile) {
-        try {
-          fileIo.closeSync(sourceFile)
-        } catch (error) {
-          console.error('[NowViewModel] 关闭文件失败: ' + JSON.stringify(error))
-        }
-      }
-    }
+    return await ImageFileService.saveRecordImage(this.context, sourceUri)
   }
   
   // 获取图片 URI（用于显示）
-  // 注：新记录已统一为 URI 格式，此方法保留用于兼容旧数据
+  // 注：新记录已统一为 URI 格式，此方法保留用于兼容旧数据；实现已下沉至 service/ImageFileService（P3）
   getImageUri(path: string): string {
-    if (path.startsWith('file://')) {
-      return path  // 已经是 URI 格式
-    }
-    try {
-      return fileUri.getUriFromPath(path)  // 兼容旧的沙箱路径格式
-    } catch (error) {
-      console.error('[NowViewModel] 获取图片URI失败: ' + JSON.stringify(error))
-      return path
-    }
-  }
-  
-  // 将 URI 转换为沙箱路径（用于文件操作）
-  private uriToSandboxPath(uri: string): string {
-    if (uri.startsWith('file://')) {
-      // URI 格式: file://<bundleName>/data/storage/... 或 file:///data/storage/...
-      let path = uri.substring(7)  // 移除 'file://'
-      
-      // 找到第一个 '/' 的位置，从那里开始截取路径
-      const slashIndex = path.indexOf('/')
-      if (slashIndex !== -1) {
-        path = path.substring(slashIndex)
-      }
-      
-      return path
-    }
-    return uri  // 已经是沙箱路径格式
+    return ImageFileService.getImageUri(path)
   }
   
   // 生成唯一ID

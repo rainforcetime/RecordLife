@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 RecordLife 项目的**现状实现快照**，供不同窗口/会话的 AI 重构任务作为唯一参考，避免每次从头通读全部源码。
 > **配套文档**：`docs/refactoring-plan.md` 是重构方案与进度跟踪；本文档只描述**当前代码实际怎么实现**，两者配合使用。
-> **最后更新**：2026-08-22（P2 repository 层重构完成；基于当前工作区源码逐文件核对）
+> **最后更新**：2026-08-22（P3 service 层抽取第一部分完成；基于当前工作区源码逐文件核对）
 > **阅读方式**：全文关键结论均附 `file:line` 引用，可快速定位源码；改动任何涉及数据模型 / 持久化 / 备份导入导出的代码前，**必须先读 §5 与 §6**。
 
 ---
@@ -51,8 +51,9 @@
 │   ├── types.ets               re-export barrel → model/（兼容旧 import 路径）
 │   ├── ColorUtils.ets          十六进制色 → rgba 透明度工具
 │   ├── handlers/               MorePageBackupHandler.ets（19.9KB）/ MorePageConfigHandler.ets
-│   ├── managers/               BackupManager.ets（11.9KB）/ RefreshManager.ets
-│   └── utils/                  TimeUtils / AccountUtils / ImageBase64Utils / ImagePickerUtils / MorePageHelper
+│   ├── managers/               RefreshManager.ets
+│   └── utils/                  TimeUtils / AccountUtils / ImageBase64Utils / ImagePickerUtils / MorePageHelper / ImagePathUtils
+├── service/                ★ P3 新增：ImageFileService.ets（图片 IO）/ BackupManager.ets（自 common/managers 迁入）
 ├── components/             calendar(5) / common(4) / dialog(4) / record(5) / setting(4) / share(2) / user(4)
 └── utils/                  ShareUtils.ets（组件截图分享）/ ImageGenerator.ets（生成纯色/渐变示例图）
 ```
@@ -181,7 +182,7 @@ interface DateDifference { years; months; days }
 ### 4.3 图片路径两种格式的兼容约定
 
 - **新写入**统一为 **URI**：`saveImageToSandbox` 返回 `fileUri.getUriFromPath(sandboxPath)`（NowViewModel.ets:441）。
-- **旧数据**可能是裸沙箱路径：读取显示走 `NowViewModel.getImageUri(path)`（NowViewModel.ets:461，`file://` 开头直接返回，否则转 URI）；文件操作走 `uriToSandboxPath(uri)`（NowViewModel.ets:474、BackupManager.ets:324、MorePageHelper.ets:43，三处实现重复：去 `file://` 前缀后取第一个 `/` 之后的路径）。
+- **旧数据**可能是裸沙箱路径：读取显示走 `NowViewModel.getImageUri(path)`（`file://` 开头直接返回，否则转 URI，实现已下沉至 `service/ImageFileService.getImageUri`）；文件操作走统一工具 `ImagePathUtils.uriToSandboxPath(uri)`（`common/utils/ImagePathUtils.ets:11`，去 `file://` 前缀后取第一个 `/` 之后的路径；原 NowViewModel/BackupManager/MorePageHelper 三处重复实现已收敛）。
 - ⚠️ 示例数据（NowViewModel.ets:146/153）的 `imagePaths` 写的是**沙箱路径**（非 URI），依赖 getImageUri 兼容。
 
 ---
@@ -206,9 +207,9 @@ interface DateDifference { years; months; days }
 | `ConfigManager` | config/ConfigManager.ets:27 | `await ConfigManager.getInstance()` | 配置读写/标签 CRUD/头像/导入导出/重置（**职责过重**，重构 A2） |
 | `ThemeManager` | config/ThemeManager.ets:13 | `await ThemeManager.getInstance()` | 主题状态管理（数据源是 ConfigManager，本类只是 AppStorage 便捷层） |
 | `AppInfoManager` | config/AppInfoConfig.ets:21 | `await AppInfoManager.getInstance()` | 从 bundleManager 读应用版本信息 |
-| `NowViewModel` | viewmodel/NowViewModel.ets:10 | `await NowViewModel.getInstance()` | 记录 CRUD + 时间线构建 + 图片 IO（**IO 职责未下沉**，重构 A3） |
+| `NowViewModel` | viewmodel/NowViewModel.ets:10 | `await NowViewModel.getInstance()` | 记录 CRUD + 时间线构建（图片 IO 已下沉至 `service/ImageFileService`，P3） |
 | `AccountViewModel` | viewmodel/AccountViewModel.ets:18 | `new AccountViewModel()`（非单例，页面持有，`initialize(context)`） | 账号页数据加载/主题/头像 |
-| `BackupManager` | common/managers/BackupManager.ets:19 | `await BackupManager.getInstance()` | 创建/恢复 zip 备份 |
+| `BackupManager` | service/BackupManager.ets:19 | `await BackupManager.getInstance()` | 创建/恢复 zip 备份 |
 | `RefreshManager` | common/managers/RefreshManager.ets:5 | `RefreshManager.getInstance()`（同步） | 跨页刷新观察者 |
 
 > 所有单例均从 `AppStorage.get('uiContext')` 获取上下文，**无依赖注入**（重构 A5）；组件内直接调用单例分布见 §8 表格。
@@ -368,9 +369,8 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | `togglePin(id)` / `getPinnedRecords()` | 282/297 | 置顶切换 / 获取收藏 |
 | `deleteRecord(id)` | 302 | **删除记录关联的所有图片文件**（:312-324） |
 | `buildTimeline()` | 331 | 按年/月/日分组构建 `TimelineData`，年份/月份降序，当前年与当前月默认展开 |
-| `saveImageToSandbox(sourceUri)` | 414 | 复制到 `filesDir/records/record_<ts>.jpg`，返回 URI |
-| `getImageUri(path)` | 461 | 旧沙箱路径 → URI 兼容 |
-| `uriToSandboxPath(uri)` | 474 | URI → 沙箱路径（与 MorePageHelper/BackupManager 重复实现） |
+| `saveImageToSandbox(sourceUri)` | 387 | 委托 `service/ImageFileService.saveRecordImage`（P3 下沉） |
+| `getImageUri(path)` | 397 | 委托 `service/ImageFileService.getImageUri`（P3 下沉） |
 | `generateId()` | 491 | `Date.now().toString(36) + Math.random().toString(36).substring(2)` |
 
 ### 8.2 AccountViewModel（viewmodel/AccountViewModel.ets，页面持有非单例）
@@ -386,7 +386,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | `onThemeChange(value)` | 288 | 显示格式→存储格式→ThemeManager.updateTheme→applyTheme→`AppStorage('currentTheme')` |
 | `onChangeAvatar()` | 359 | PhotoViewPicker 选 1 张图 → copyImageToSandbox |
 | `saveProfile(name, birthday, gender, avatarPath)` | 494 | 性别转存储格式（男→male 等）→ `ConfigManager.updateProfile` |
-| `copyImageToSandbox(sourceUri)` | 416 | 删旧头像缓存（`avatar*` 前缀文件）→ 复制为 `filesDir/avatar_<ts>.jpg` → 存 URI 到 ConfigManager |
+| `copyImageToSandbox(sourceUri)` | 391 | 委托 `service/ImageFileService.copyAvatar`（含删旧 `avatar*` 缓存）→ 存 URI 到 ConfigManager（P3 下沉） |
 
 ---
 
@@ -462,7 +462,9 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | common/utils/AccountUtils.ets | AccountUtils | `themeToDisplay/displayToTheme`（light↔浅色模式 等）、`convertGenderToDisplay/Storage`（male↔男 等）、`showToastSafely(promptAction, message, duration)` |
 | common/utils/ImageBase64Utils.ets | ImageBase64Utils | `imageToBase64(path)`（util.Base64Helper）/ `base64ToImage(base64, outPath)` / `uriToSandboxPath` / `getAvatarSavePath` → `filesDir/avatar.jpg` |
 | common/utils/ImagePickerUtils.ets | ImagePickerUtils + `ImagePickResult` + `enum ImagePickMode` | `pickImage(context, mode)`：CAMERA 走 `cameraPicker.pick`（需 CAMERA 权限）、GALLERY 走 `photoAccessHelper.PhotoViewPicker`；`showErrorToast` |
-| common/utils/MorePageHelper.ets | MorePageHelper | `deleteDirectory` / `uriToSandboxPath` / `readFileContent` / `writeFileContent` / `copyFile` / `fileExists` / `ensureDirectory` |
+| common/utils/MorePageHelper.ets | MorePageHelper | `deleteDirectory` / `uriToSandboxPath`（委托 ImagePathUtils）/ `readFileContent` / `writeFileContent` / `copyFile` / `fileExists` / `ensureDirectory` |
+| common/utils/ImagePathUtils.ets | ImagePathUtils | ★ P3 新增：`uriToSandboxPath`（统一实现）/ `sandboxPathToUri` / `getFileName` |
+| service/ImageFileService.ets | ImageFileService | ★ P3 新增：`saveRecordImage` / `getImageUri` / `deleteImageFiles` / `copyAvatar`（记录图片与头像的沙箱 IO） |
 | common/ColorUtils.ets | ColorUtils | `withAlpha(hex, alpha)` → rgba、`primaryLight`(α32)/`primaryExtraLight`(α20)/`primaryUltraLight`(α15) |
 | utils/ShareUtils.ets | ShareUtils | `shareComponent(uiContext, componentId, context, title?, desc?)`：getComponentSnapshot → packToData(jpeg 95) → 存 `cacheDir/share_<ts>.jpg` → `systemShare.ShareController.show`；`cleanupOldShareImages` |
 | utils/ImageGenerator.ets | ImageGenerator | `generateSolidColorImage`（存 `filesDir/records`）、`generateGradientImage`（存 `filesDir/sample_images`），BGRA_8888 逐像素生成 |
@@ -532,8 +534,8 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | 5 | `JSON.parse(JSON.stringify(...))` 深拷贝 | NowPage.ets:412-431（refreshTimeline） | B6 |
 | 6 | 调试日志泛滥（`console.info` 100+，含 `>>>`/`[StorageDebug]`/`[ConfigManager]` 等） | 全工程 | B3 |
 | 7 | `uiContext` 获取失败时 `getPromptAction` 等生命周期初始化风险 | NowPage.ets:82 等 | B7 |
-| 8 | `uriToSandboxPath` 三处重复实现 | NowViewModel.ets:474 / BackupManager.ets:324 / MorePageHelper.ets:43 | C1 |
-| 9 | 无业务单测；ViewModel 直接 import fileIo（Preferences 已由 repository 层封装） | NowViewModel.ets:9、AccountViewModel | A3/C2/P4（P2 已解决 Preferences 直接引用） |
+| 8 | ~~`uriToSandboxPath` 三处重复实现~~ ✅ 已收敛 | 统一至 `common/utils/ImagePathUtils.ets`（P3 轮次 4）；MorePageHelper 保留委托兼容 | C1 已解决 |
+| 9 | 无业务单测；~~ViewModel 直接 import fileIo~~ ✅ 已部分解决 | NowViewModel 的 fileIo 已下沉至 `service/ImageFileService`（P3 轮次 4）；AccountViewModel 仍直接 import fileIo（loadSavedAvatar 用）；单测未补 | A3/C2/P4 |
 | 10 | 页面/组件硬依赖单例 + AppStorage，不可注入 | 全工程 | A5/P6 |
 | 11 | `imagePaths` 存在「URI」与「沙箱路径」两种历史格式 | §4.3 | 重构注意 |
 | 12 | 示例数据含预设表外标签 id（`entertainment`/`family`） | NowViewModel.ets:139/165 | 显示回退 |

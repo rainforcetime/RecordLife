@@ -1,12 +1,13 @@
-// 备份管理器：common/utils/BackupManager.ets
+// 备份管理器：service/BackupManager.ets（P3 从 common/managers 迁入）
 import { common } from '@kit.AbilityKit'
 import { zlib } from '@kit.BasicServicesKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { util } from '@kit.ArkTS'
-import { LifeRecord } from '../types'
-import { NowViewModel } from '../../viewmodel/NowViewModel'
-import { RecordRepository } from '../../repository/RecordRepository'
-import { AppInfoManager } from '../../config/AppInfoConfig'
+import { LifeRecord } from '../common/types'
+import { NowViewModel } from '../viewmodel/NowViewModel'
+import { RecordRepository } from '../repository/RecordRepository'
+import { AppInfoManager } from '../config/AppInfoConfig'
+import { ImagePathUtils } from '../common/utils/ImagePathUtils'
 
 // 备份元数据结构
 interface BackupMetadata {
@@ -114,7 +115,7 @@ export class BackupManager {
         if (record.imagePaths && record.imagePaths.length > 0) {
           for (const imagePath of record.imagePaths) {
             // 将 URI 转换为沙箱路径
-            const sandboxPath = this.uriToSandboxPath(imagePath)
+            const sandboxPath = ImagePathUtils.uriToSandboxPath(imagePath)
             
             // 检查图片文件是否存在
             if (fileIo.accessSync(sandboxPath)) {
@@ -226,7 +227,7 @@ export class BackupManager {
           
           for (const oldImagePath of record.imagePaths) {
             // 从旧路径提取文件名
-            const oldSandboxPath = this.uriToSandboxPath(oldImagePath)
+            const oldSandboxPath = ImagePathUtils.uriToSandboxPath(oldImagePath)
             const fileName = oldSandboxPath.split('/').pop()
             
             if (fileName) {
@@ -237,7 +238,7 @@ export class BackupManager {
               if (fileIo.accessSync(srcPath)) {
                 fileIo.copyFileSync(srcPath, destPath)
                 // 转换为 URI 格式
-                const newUri = this.sandboxPathToUri(destPath)
+                const newUri = ImagePathUtils.sandboxPathToUri(destPath)
                 newImagePaths.push(newUri)
               }
             }
@@ -310,31 +311,6 @@ export class BackupManager {
     } catch (error) {
       console.error('[BackupManager] 删除目录失败: ' + JSON.stringify(error))
     }
-  }
-  
-  // 将 URI 转换为沙箱路径（用于文件操作）
-  private uriToSandboxPath(uri: string): string {
-    if (uri.startsWith('file://')) {
-      // URI 格式: file://<bundleName>/data/storage/... 或 file:///data/storage/...
-      let path = uri.substring(7)  // 移除 'file://'
-      
-      // 找到第一个 '/' 的位置，从那里开始截取路径
-      const slashIndex = path.indexOf('/')
-      if (slashIndex !== -1) {
-        path = path.substring(slashIndex)
-      }
-      
-      return path
-    }
-    return uri  // 已经是沙箱路径格式
-  }
-  
-  // 将沙箱路径转换为 URI 格式
-  private sandboxPathToUri(path: string): string {
-    if (path.startsWith('file://')) {
-      return path  // 已经是 URI 格式
-    }
-    return `file://${path}`
   }
   
   // 获取上下文

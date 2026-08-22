@@ -10,6 +10,7 @@ import { ThemeManager } from '../config/ThemeManager'
 import { AccountUtils } from '../common/utils/AccountUtils'
 import { TimeUtils } from '../common/utils/TimeUtils'
 import { AccountProfile, ThemeSettings, AccountDataStatistics, AvatarInfo } from '../model/AccountModel'
+import { ImageFileService } from '../service/ImageFileService'
 
 // 向后兼容：AccountPage.ets 通过 AccountViewModel 导入这些类型
 export { AccountProfile, AccountDataStatistics }
@@ -386,79 +387,19 @@ export class AccountViewModel {
     }
   }
 
-  // 删除旧的头像缓存文件
-  private deleteOldAvatarCache(): void {
-    if (!this.context) {
-      return
-    }
-    try {
-      const filesDir = this.context.filesDir
-      // 列出目录下的所有文件（返回的是文件名数组，不是完整路径）
-      const fileNames = fileIo.listFileSync(filesDir)
-      for (const fileName of fileNames) {
-        // 删除以 avatar 开头的文件
-        if (fileName.startsWith('avatar')) {
-          const filePath = `${filesDir}/${fileName}`
-          try {
-            fileIo.unlinkSync(filePath)
-            console.info('删除旧头像缓存: ' + filePath)
-          } catch (e) {
-            console.error('删除旧头像缓存失败: ' + filePath + ', 错误: ' + JSON.stringify(e))
-          }
-        }
-      }
-    } catch (error) {
-      console.error('列出头像目录失败: ' + JSON.stringify(error))
-    }
-  }
-
-  // 复制图片到沙箱目录
+  // 复制图片到沙箱目录（图片 IO 已下沉至 service/ImageFileService，P3）
   private async copyImageToSandbox(sourceUri: string): Promise<string | null> {
     if (!this.context) {
       console.error('上下文为空，无法复制图片')
       return null
     }
 
-    let sourceFile: fileIo.File | null = null
-    try {
-      // 删除旧的头像缓存文件
-      this.deleteOldAvatarCache()
-
-      // 打开源图片文件
-      sourceFile = fileIo.openSync(sourceUri, fileIo.OpenMode.READ_ONLY)
-
-      // 生成新的文件名（使用时间戳避免重复）
-      let timestamp = Date.now()
-      let fileName = `avatar_${timestamp}.jpg`
-      // 沙箱目录路径
-      let sandboxPath = `${this.context.filesDir}/${fileName}`
-
-      // 使用同步方法复制文件到沙箱目录
-      fileIo.copyFileSync(sourceFile.fd, sandboxPath)
-
-      console.info('图片复制成功，沙箱路径: ' + sandboxPath)
-
-      // 将沙箱路径转换为URI（Image组件需要URI格式）
-      let avatarUri = fileUri.getUriFromPath(sandboxPath)
-      console.info('头像URI: ' + avatarUri)
-
-      // 保存头像路径到首选项（保存URI）
+    const avatarUri = await ImageFileService.copyAvatar(this.context, sourceUri)
+    if (avatarUri) {
+      // 保存头像路径到配置（统一存储）
       await this.saveAvatarPath(avatarUri)
-
-      return avatarUri
-    } catch (error) {
-      console.error('复制图片失败: ' + JSON.stringify(error))
-      return null
-    } finally {
-      // 关闭源文件
-      if (sourceFile) {
-        try {
-          fileIo.closeSync(sourceFile)
-        } catch (closeError) {
-          console.error('关闭文件失败: ' + JSON.stringify(closeError))
-        }
-      }
     }
+    return avatarUri
   }
 
   // 保存头像路径到ConfigManager（统一存储）

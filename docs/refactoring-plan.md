@@ -303,8 +303,8 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | --- | --- | --- | --- | --- |
 | P0 | 数据兼容性基线锁定（确认旧备份可导入） | ⬜ | — | 备份格式已记录在 §0；尚未做导入冒烟测试 |
 | P1 | 类型层重构（`types.ets` 拆分、消除重复定义） | ✅ | 2026-08-22 | `model/` 目录已创建（5 文件）；`UserProfile`/`DataStatistics` 重复已消除；UI DTO 重命名为 `AccountProfile`/`AccountDataStatistics`；旧文件保留 re-export 兼容 |
-| P2 | Model / Repository 层抽取 | ⬜ | — | 无 `model/` `repository/` 目录；数据访问散落在 ViewModel / ConfigManager / BackupManager |
-| P3 | Service 层抽取（备份 / 导入导出 / 图片） | ⬜ | — | 无 `service/` 目录；`MorePageBackupHandler` 19.9KB、`ConfigManager` 18.7KB、`BackupManager` 11.9KB 均过大 |
+| P2 | Model / Repository 层抽取 | ✅ | 2026-08-22 | `repository/` 已创建（`ConfigRepository` / `RecordRepository`，见轮次 3）；Preferences 访问收敛至 repository 层，store/key 常量集中定义 |
+| P3 | Service 层抽取（备份 / 导入导出 / 图片） | 🟦 | 2026-08-22 | `service/` 已建立（ImageFileService 图片 IO + BackupManager 迁入，见轮次 4）；剩余：ConfigManager 标签/导出导入拆分、MorePageBackupHandler 拆分、BackupManager 改依赖 RecordRepository |
 | P4 | ViewModel 瘦身（IO 职责下沉） | ⬜ | — | `NowViewModel` 15.7KB 直接 import `@ohos.data.preferences`；`AccountViewModel` 19.1KB 含重复类型 |
 | P5 | Page 层清理（`@Entry` 标注、路由注册） | ⬜ | — | `NowPage.ets` 误标 `@Entry`（Tab 内容页不应标注）；`main_pages.json` 含 4 页 |
 | P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
@@ -470,11 +470,41 @@ entry/src/main/ets/
 
 **下一轮计划**：P3 — 主题服务重构（ThemeConfig 动态分发 → 资源系统 `$r` 引用）；或 P4 — ViewModel 瘦身 / fileIo 抽象
 
+### 轮次 4 — 2026-08-22（P3 Service 层抽取 · 第一部分）
+
+**本轮目标**：建立 `service/` 目录，下沉图片 IO（A3 部分），迁移 BackupManager 至 service 层，统一 `uriToSandboxPath` 三处重复实现（技术文档 §14 问题 8）。
+
+**涉及文件**：
+- `common/utils/ImagePathUtils.ets`（新增）— `uriToSandboxPath` / `sandboxPathToUri` / `getFileName`
+- `service/ImageFileService.ets`（新增）— `saveRecordImage` / `getImageUri` / `deleteImageFiles` / `copyAvatar`
+- `service/BackupManager.ets`（迁移自 `common/managers/`）— 路径工具改用 ImagePathUtils，删除私有副本
+- `viewmodel/NowViewModel.ets` — 图片 IO 委托 ImageFileService，删除私有 `uriToSandboxPath` 与 `fileIo/fileUri` import
+- `viewmodel/AccountViewModel.ets` — `copyImageToSandbox` 委托 `ImageFileService.copyAvatar`，删除 `deleteOldAvatarCache`
+- `common/utils/MorePageHelper.ets` — `uriToSandboxPath` 委托 ImagePathUtils（方法签名不变）
+- `pages/MorePage.ets`、`common/handlers/MorePageBackupHandler.ets` — BackupManager import 路径更新
+
+**已完成**：
+- [x] 新建 `service/` 目录（2 文件）
+- [x] `ImagePathUtils`：统一 `uriToSandboxPath` / `sandboxPathToUri`（消除 NowViewModel / BackupManager / MorePageHelper 三处重复）
+- [x] `ImageFileService`：记录图片保存 / URI 转换 / 批量删除 / 头像复制下沉
+- [x] BackupManager 迁入 `service/`（**逻辑零改动**，纯搬移 + 路径工具统一）
+- [x] NowViewModel / AccountViewModel 图片 IO 委托化，公开 API 签名不变（组件无感知）
+- [x] 静态验证通过（import 一致性 / ArkTS 约束 / git 改动面核对）
+
+**遗留问题**：
+- ⚠️ 本机无 hvigor 编译环境，未做编译与真机旧备份导入冒烟验证；BackupManager 为纯搬移（逻辑零改动），需在 DevEco 中回归（见 §10.3 记录）
+- ConfigManager 拆分（标签管理 / 导出导入独立）未做 — P3 剩余
+- MorePageBackupHandler（19.9KB）拆分未做 — P3 剩余
+- BackupManager 仍通过 `NowViewModel.getInstance()` 取记录（service → viewmodel 反向依赖，理想应改依赖 `RecordRepository`）— P3 剩余
+
+**下一轮计划**：P3 续 — 拆分 ConfigManager（标签管理独立 Service / 导出导入）与 MorePageBackupHandler
+
 ### 10.3 数据兼容性验证记录
 
 | 验证时间 | 备份文件来源 | 导入结果 | 验证人 | 备注 |
 | --- | --- | --- | --- | --- |
 | — | — | — | — | 重构尚未开始 |
+| 2026-08-22 | —（未真机验证） | 未执行 | 轮次 4 | BackupManager 纯搬移（逻辑零改动），仅静态验证；需 DevEco 编译 + 旧备份导入冒烟后补记 |
 
 ### 10.4 上下文恢复检查清单
 
