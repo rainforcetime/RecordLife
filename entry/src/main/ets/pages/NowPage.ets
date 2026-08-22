@@ -718,36 +718,31 @@ struct NowPage {
 
   // ==================== 撤销删除（更新计划二期） ====================
 
-  // 显示撤销提示条（3 秒倒计时：进度条满 → 空，动画结束自动隐藏）
+  // 显示撤销提示条（3 秒倒计时：进度条满 → 空）
+  // 注：Progress.value 非可动画属性（animateTo 会直接跳变），用定时器逐步递减实现平滑动画
   private showUndoBarWithCount(count: number) {
     this.undoCount = count
     this.undoProgress = 100
     this.showUndoBar = true
     if (this.undoBarTimer !== -1) {
-      clearTimeout(this.undoBarTimer)
+      clearInterval(this.undoBarTimer)
     }
-    // 用动画驱动进度条 100 → 0（3s 线性），动画结束即隐藏提示条
-    this.getUIContext().animateTo({
-      duration: 3000,
-      curve: Curve.Linear,
-      onFinish: () => {
+    // 30ms 递减 1，共 100 步 ≈ 3 秒；走完自动隐藏提示条
+    this.undoBarTimer = setInterval(() => {
+      this.undoProgress -= 1
+      if (this.undoProgress <= 0) {
+        this.undoProgress = 0
+        clearInterval(this.undoBarTimer)
         this.undoBarTimer = -1
         this.showUndoBar = false
       }
-    }, () => {
-      this.undoProgress = 0
-    })
-    // 兜底计时器（动画异常中断时仍隐藏）
-    this.undoBarTimer = setTimeout(() => {
-      this.undoBarTimer = -1
-      this.showUndoBar = false
-    }, 3200)
+    }, 30)
   }
 
   // 隐藏撤销提示条
   private hideUndoBar() {
     if (this.undoBarTimer !== -1) {
-      clearTimeout(this.undoBarTimer)
+      clearInterval(this.undoBarTimer)
       this.undoBarTimer = -1
     }
     this.showUndoBar = false
