@@ -200,42 +200,44 @@ export struct FilterBar {
   build() {
     // 筛选入口按钮（点击打开筛选弹窗，替代长距离横向滑动，更新计划五期）
     Row() {
-      Text('☰')
-        .fontSize(15)
-        .fontColor(this.themeColors.primary)
+      Row() {
+        Text('☰')
+          .fontSize(15)
+          .fontColor(this.themeColors.primary)
 
-      Text(this.getFilterSummary())
-        .fontSize(14)
-        .fontColor(this.themeColors.primary)
-        .fontWeight(FontWeight.Medium)
-        .margin({ left: 6 })
+        Text(this.getFilterSummary())
+          .fontSize(14)
+          .fontColor(this.themeColors.primary)
+          .fontWeight(FontWeight.Medium)
+          .margin({ left: 6 })
 
-      // 筛选计数徽标（有筛选时显示）
-      if (this.getFilterCount() > 0) {
-        Text(this.getFilterCount().toString())
-          .fontSize(11)
-          .fontColor('#FFFFFF')
-          .textAlign(TextAlign.Center)
-          .width(18)
-          .height(18)
-          .borderRadius(9)
-          .backgroundColor(this.themeColors.primary)
-          .margin({ left: 4 })
+        // 筛选计数徽标（有筛选时显示）
+        if (this.getFilterCount() > 0) {
+          Text(this.getFilterCount().toString())
+            .fontSize(11)
+            .fontColor('#FFFFFF')
+            .textAlign(TextAlign.Center)
+            .width(18)
+            .height(18)
+            .borderRadius(9)
+            .backgroundColor(this.themeColors.primary)
+            .margin({ left: 4 })
+        }
       }
+      .padding({ left: 14, right: 14, top: 7, bottom: 7 })
+      .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
+      .borderRadius(16)
+      .onClick(() => {
+        this.showFilterSheet = true
+      })
+      .bindSheet($$this.showFilterSheet, this.FilterSheetBuilder(), {
+        height: '65%',
+        backgroundColor: this.themeColors.cardBackground,
+        dragBar: true
+      })
     }
-    .padding({ left: 14, right: 14, top: 7, bottom: 7 })
-    .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
-    .borderRadius(16)
-    .onClick(() => {
-      this.showFilterSheet = true
-    })
-    .bindSheet($$this.showFilterSheet, this.FilterSheetBuilder(), {
-      height: '65%',
-      backgroundColor: this.themeColors.cardBackground,
-      dragBar: true
-    })
-    .alignSelf(ItemAlign.Start)
-    .margin({ left: 4 })
+    .width('100%')
+    .justifyContent(FlexAlign.Start)
   }
 
   // 筛选入口摘要（无筛选显示「筛选」）
