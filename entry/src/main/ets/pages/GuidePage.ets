@@ -134,6 +134,10 @@ struct GuidePage {
       Logger.error('[GuidePage] 标记引导失败: ' + JSON.stringify(error))
     }
     // 替换当前页为主页（不再返回引导页）
-    this.getUIContext().getRouter().replaceUrl({ url: 'pages/Index' })
+    try {
+      this.getUIContext().getRouter().replaceUrl({ url: 'pages/Index' })
+    } catch (error) {
+      Logger.error('[GuidePage] 跳转主页失败: ' + JSON.stringify(error))
+    }
   }
 }

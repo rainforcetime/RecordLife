@@ -81,7 +81,14 @@ export struct CalendarView {
   // 星期标题（国际化：读 week_short 数组资源）
   private getWeekdayHeaders(): string[] {
     const rm = this.getUIContext().getHostContext()?.resourceManager
-    return rm ? rm.getStringArrayByNameSync('week_short') : []
+    if (!rm) {
+      return []
+    }
+    try {
+      return rm.getStringArrayByNameSync('week_short')
+    } catch (error) {
+      return []
+    }
   }
   
   build() {

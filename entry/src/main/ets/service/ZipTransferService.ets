@@ -25,16 +25,20 @@ export class ZipTransferService {
     if (uriResult && uriResult.length > 0) {
       const saveUri: string = uriResult[0]
 
-      // 读取 zip 内容并写入目标文件
-      const zipFile = fileIo.openSync(zipPath, fileIo.OpenMode.READ_ONLY)
-      const stat = fileIo.statSync(zipFile.fd)
-      const buffer = new ArrayBuffer(stat.size)
-      fileIo.readSync(zipFile.fd, buffer)
-      fileIo.closeSync(zipFile)
+      try {
+        // 读取 zip 内容并写入目标文件（IO 异常捕获后重新抛出，保持冒泡语义）
+        const zipFile = fileIo.openSync(zipPath, fileIo.OpenMode.READ_ONLY)
+        const stat = fileIo.statSync(zipFile.fd)
+        const buffer = new ArrayBuffer(stat.size)
+        fileIo.readSync(zipFile.fd, buffer)
+        fileIo.closeSync(zipFile)
 
-      const destFile = fileIo.openSync(saveUri, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
-      fileIo.writeSync(destFile.fd, buffer)
-      fileIo.closeSync(destFile)
+        const destFile = fileIo.openSync(saveUri, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
+        fileIo.writeSync(destFile.fd, buffer)
+        fileIo.closeSync(destFile)
+      } catch (error) {
+        throw error
+      }
 
       return true
     }
@@ -56,16 +60,20 @@ export class ZipTransferService {
     if (uriResult && uriResult.length > 0) {
       const selectUri: string = uriResult[0]
 
-      // 将选中的文件复制到沙箱临时目录
-      const srcFile = fileIo.openSync(selectUri, fileIo.OpenMode.READ_ONLY)
-      const stat = fileIo.statSync(srcFile.fd)
-      const buffer = new ArrayBuffer(stat.size)
-      fileIo.readSync(srcFile.fd, buffer)
-      fileIo.closeSync(srcFile)
+      try {
+        // 将选中的文件复制到沙箱临时目录（IO 异常捕获后重新抛出，保持冒泡语义）
+        const srcFile = fileIo.openSync(selectUri, fileIo.OpenMode.READ_ONLY)
+        const stat = fileIo.statSync(srcFile.fd)
+        const buffer = new ArrayBuffer(stat.size)
+        fileIo.readSync(srcFile.fd, buffer)
+        fileIo.closeSync(srcFile)
 
-      const destFile = fileIo.openSync(destPath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
-      fileIo.writeSync(destFile.fd, buffer)
-      fileIo.closeSync(destFile)
+        const destFile = fileIo.openSync(destPath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
+        fileIo.writeSync(destFile.fd, buffer)
+        fileIo.closeSync(destFile)
+      } catch (error) {
+        throw error
+      }
 
       return true
     }

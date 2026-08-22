@@ -13,6 +13,7 @@ import { Mood } from '../../model/RecordModel'
 import { common } from '@kit.AbilityKit'
 import { display } from '@kit.ArkUI'
 import { ColorUtils } from '../../common/ColorUtils'
+import { AccountUtils } from '../../common/utils/AccountUtils'
 import { Logger } from '../../common/utils/Logger'
 
 // 筛选 chip（独立组件：@Prop isSelected 随父状态响应式更新）
@@ -155,13 +156,13 @@ export struct FilterBar {
     // 如果点击的是当前已选中的标签，取消选择（回到"全部"状态）
     if (this.isTagSelected(tagId)) {
       this.selectedTagIds = []
-      this.getUIContext().getPromptAction().showToast({ message: $r('app.string.filter_cancelled'), duration: 1500 })
+      AccountUtils.showToastSafely(this.getUIContext().getPromptAction(), $r('app.string.filter_cancelled'), 1500)
     } else {
       // 否则替换为新选择的标签（单选）
       this.selectedTagIds = [tagId]
       const tag = this.availableTags.find(t => t.id === tagId)
       const tagName = tag ? tag.name : tagId
-      this.getUIContext().getPromptAction().showToast({ message: $r('app.string.tag_selected', tagName), duration: 1500 })
+      AccountUtils.showToastSafely(this.getUIContext().getPromptAction(), $r('app.string.tag_selected', tagName), 1500)
     }
 
     // 触发回调（选择标签后关闭气泡）
@@ -176,12 +177,12 @@ export struct FilterBar {
     if (this.filterMood === moodId) {
       // 取消选择
       this.filterMood = ''
-      this.getUIContext().getPromptAction().showToast({ message: $r('app.string.filter_cancelled'), duration: 1500 })
+      AccountUtils.showToastSafely(this.getUIContext().getPromptAction(), $r('app.string.filter_cancelled'), 1500)
     } else {
       // 选中
       this.filterMood = moodId
       const emoji = MoodUtils.getMoodEmoji(moodId, this.moods)
-      this.getUIContext().getPromptAction().showToast({ message: $r('app.string.mood_selected', emoji), duration: 1500 })
+      AccountUtils.showToastSafely(this.getUIContext().getPromptAction(), $r('app.string.mood_selected', emoji), 1500)
     }
     // 选择即关闭气泡
     this.showFilterPopup = false
@@ -278,6 +279,15 @@ export struct FilterBar {
     return count
   }
 
+  // 气泡宽度（屏宽 - 8vp；display 可能抛异常，兜底 320）
+  private getPopupWidth(): number {
+    try {
+      return this.getUIContext().px2vp(display.getDefaultDisplaySync().width) - 8
+    } catch (error) {
+      return 320
+    }
+  }
+
   // 筛选弹窗（心情单选 + 标签单选 + 清除全部；内容可滚动，高度调小）
   @Builder
   FilterSheetBuilder() {
@@ -356,7 +366,7 @@ export struct FilterBar {
       .width('100%')
       .height(150)
     }
-    .width(this.getUIContext().px2vp(display.getDefaultDisplaySync().width) - 8)  // 与搜索栏同宽（屏宽 - 左右 4vp×2）
+    .width(this.getPopupWidth())  // 与搜索栏同宽（屏宽 - 左右 4vp×2）
     .constraintSize({ maxHeight: '35%' })
     .padding({ left: 14, right: 14, top: 6, bottom: 8 })
     .backgroundColor(this.themeColors.cardBackground)
