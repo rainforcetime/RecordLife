@@ -875,6 +875,33 @@ entry/src/main/ets/
 
 **下一轮计划**：可选 — 预设标签名国际化（数据层显示映射）或收工
 
+### 轮次 20 — 2026-08-22（预设标签名国际化）
+
+> 前置：用户确认 B3 日志收敛后继续，选择完成预设标签国际化。
+
+**本轮目标**：`DEFAULT_TAGS` 10 个预设标签名（'工作'/'生活' 等）国际化——id → 资源显示映射，中英文切换标签名。
+
+**涉及文件**（7 .ets + 2 string.json）：
+- `common/utils/TagDisplayUtils.ets`（新增）— `buildDisplayTags(customTags, rm)`（构建显示用标签列表，预设名读资源）/ `getDisplayTagName(tagId, customTags, rm)`（单标签显示名）；`PRESET_TAG_RES_KEYS` id → 资源 key 映射
+- string.json base/en 新增 10 个 `tag_name_*`（Work/Life/Travel/Food/Health/Study/Sport/Hobby/Friends/Other）
+- 显示层 6 处改用：`TagSelector`（TagSelector + TagDisplay 两处 loadTags）、`TagFilterBar`、`TimelineSection`（搜索标签匹配）、`NowPage`（搜索标签匹配）、`ShareRecordCard`
+
+**设计要点**：
+- `TagModel.DEFAULT_TAGS` 保持**数据层**（name 为数据值，含 id/color/icon，与自定义标签同结构）；国际化在显示层映射，不影响存储/导入导出格式（C4 兼容：records[].tags 引用 Tag.id 不变）
+- 搜索匹配改用显示名（用户输入当前语言关键词，如 en 搜 'Work' 可命中 work 标签）
+- 自定义标签（用户数据 name）不受影响
+
+**已完成**：
+- [x] 资源双语言完整（base/en 各 317 key，无重复）
+- [x] 显示层全部标签名展示/匹配路径国际化
+- [x] 数据层与导入导出格式零改动（C4 红线未触）
+
+**遗留问题**：
+- ⚠️ 需 DevEco 编译 + 实机回归：中英文下标签选择器/筛选栏/时间线标签名/按标签搜索/分享卡片标签
+- `TagModel` 的 `getAllTags`/`getTagNameById` 保留为数据层工具（`TagDisplayUtils` 依赖）
+
+**下一轮计划**：无（重构 + 国际化全部完成）；项目可发布
+
 ### 10.3 数据兼容性验证记录
 
 | 验证时间 | 备份文件来源 | 导入结果 | 验证人 | 备注 |
