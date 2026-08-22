@@ -88,6 +88,7 @@ export default class EntryAbility extends UIAbility {
     let page = 'pages/Index';
     try {
       const hasSeenGuide = await GuideRepository.hasSeenGuide(this.context);
+      hilog.info(DOMAIN, 'testTag', 'Guide flag check: %{public}s -> page %{public}s', hasSeenGuide ? 'seen' : 'not-seen', hasSeenGuide ? 'Index' : 'GuidePage');
       if (!hasSeenGuide) {
         page = 'pages/GuidePage';
       }
