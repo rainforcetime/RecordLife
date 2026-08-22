@@ -114,21 +114,29 @@ export struct FilterBar {
       this.loadTags()
       // 加载自定义心情（更新计划二期）
       this.moodService = await MoodService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
-      this.moods = MoodUtils.getAllMoods(this.moodService.getCustomMoods())
+      this.loadMoods()
     } catch (error) {
       Logger.error('[FilterBar] 初始化失败: ' + JSON.stringify(error))
     }
   }
 
   private onTagVersionChange() {
-    Logger.info('[FilterBar] tagVersion 改变，重新加载标签')
+    Logger.info('[FilterBar] tagVersion 改变，重新加载标签与心情')
     this.loadTags()
+    this.loadMoods()
   }
 
   private loadTags() {
     if (this.tagService) {
       const customTags = this.tagService.getCustomTags()
       this.availableTags = buildDisplayTags(customTags, this.getUIContext().getHostContext()?.resourceManager ?? null)
+    }
+  }
+
+  // 加载自定义心情（更新计划二期；随 tagVersion 变化重载，确保管理页增删后同步）
+  private loadMoods() {
+    if (this.moodService) {
+      this.moods = MoodUtils.getAllMoods(this.moodService.getCustomMoods())
     }
   }
 
