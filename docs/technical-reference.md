@@ -75,7 +75,7 @@ interface LifeRecord {
   imagePaths?: string[]; // 可选，URI 或旧沙箱路径
   tags?: string[];       // 可选，标签 ID 数组
   isPinned?: boolean;    // 可选，置顶
-  mood?: string;         // 可选，心情（更新计划二期：'happy'|'calm'|'excited'|'sad'|'tired'）
+  mood?: string;         // 可选，心情 id（更新计划二期：预置 'happy' 等或自定义 'mood_xxx'，emoji 经 MoodUtils 映射）
 }
 interface ImageInfo { path: string; uri?: string; thumbnailPath?: string; }
 interface TimelineData { years: TimelineYear[] }
@@ -111,6 +111,7 @@ interface AppSettings {
   targetAge: number;         // 默认 80
   customTags: Tag[];         // 用户自定义标签
   fontSize?: string;         // 'small'|'medium'|'large'，默认 'medium'，更新计划一期；经 AppStorage('fontScale') 0.9/1.0/1.15 作用于记录内容文本
+  customMoods?: Mood[];      // 用户自定义心情（更新计划二期，MoodService 管理）
 }
 interface BackupConfig { autoBackup: boolean; backupFrequency: number; lastBackupTime: string; backupPath: string; cloudBackup: CloudBackupConfig | null }
 interface CloudBackupConfig { enabled: boolean; provider: string /* 'huawei'|'custom' */; syncInterval: number }
@@ -469,7 +470,8 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | common/utils/MorePageHelper.ets | MorePageHelper | `deleteDirectory` / `uriToSandboxPath`（委托 ImagePathUtils）/ `fileExists`（`readFileContent`/`writeFileContent`/`copyFile`/`ensureDirectory` 死代码已删，P6 轮次 21） |
 | common/utils/ImagePathUtils.ets | ImagePathUtils | ★ P3 新增：`uriToSandboxPath`（统一实现）/ `sandboxPathToUri` / `getFileName` |
 | common/utils/TagDisplayUtils.ets | TagDisplayUtils | ★ P6 轮次 20 新增：`buildDisplayTags(customTags, rm)` / `getDisplayTagName(tagId, customTags, rm)`（预设标签 id → 资源显示名映射；`DEFAULT_TAGS.name` 保持数据层） |
-| common/utils/MoodUtils.ets | MoodUtils | ★ 更新计划二期：`MOODS`（5 档心情）/ `getMoodEmoji(mood)` / `isValidMood(mood)`（纯函数，可单测） |
+| common/utils/MoodUtils.ets | MoodUtils | ★ 更新计划二期：`PRESET_MOODS`（5 预置）/ `PRESET_MOOD_EMOJIS`（24 候选池）/ `getMoodEmoji(id, customMoods?)` / `isValidMood` / `getAllMoods(customMoods?)`（纯函数，可单测） |
+| service/MoodService.ets | MoodService | ★ 更新计划二期：自定义心情 CRUD（`getCustomMoods`/`addCustomMood`/`deleteCustomMood`，读写 `config.settings.customMoods`，预置不可改） |
 | common/utils/Logger.ets | Logger | ★ B3 轮次 19 新增：`info/warn/error`（hilog 封装 + `setDebugEnabled` 开关，error 恒输出）；全工程 `console.*` 已统一至此 |
 | service/ImageFileService.ets | ImageFileService | ★ P3 新增：`saveRecordImage` / `getImageUri` / `deleteImageFiles` / `copyAvatar`（记录图片与头像的沙箱 IO） |
 | service/ZipTransferService.ets | ZipTransferService | ★ P3 新增：`saveZipToDocument` / `pickZipToSandbox`（DocumentViewPicker zip 保存/选择 + 沙箱复制；取消返回 false，IO 异常冒泡） |

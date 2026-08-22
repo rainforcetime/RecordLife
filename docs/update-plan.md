@@ -295,6 +295,13 @@
 - [x] 记录卡片内容上方展示心情 emoji；时间线按心情筛选（与标签筛选叠加）
 - [x] 单测 8 用例（emoji 映射 + 合法性）
 
+**补充（心情增强）**：
+- [x] 心情筛选/选择 toast（`mood_selected`，取消复用 `filter_cancelled`）
+- [x] 自定义心情：`Mood` 模型 + `AppSettings.customMoods?` + `service/MoodService`（CRUD，预置不可改）
+- [x] 心情管理并入标签管理弹窗（TagManagementDialog 下方区块：预置+自定义 emoji 列表、自定义可删、24 个候选 emoji 挑选添加）
+- [x] MoodUtils 扩展（`getAllMoods`/`getMoodEmoji(id, customMoods?)`/候选池）；MoodSelector/FilterBar/RecordCard 适配
+- [x] 资源 +4 key（mood_selected/mood_management/mood_custom_hint/mood_picker_hint，340 key × 2）；单测扩展至 17 用例（自定义查找/合并/候选池）
+
 **遗留问题**：
 - 撤销删除未做（二期剩余）
 - 心情筛选与搜索/标签筛选叠加逻辑正确性需实机验证

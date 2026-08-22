@@ -2,6 +2,9 @@
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { Tag } from '../../common/types'
 import { TagService } from '../../service/TagService'
+import { MoodService } from '../../service/MoodService'
+import { MoodUtils } from '../../common/utils/MoodUtils'
+import { Mood } from '../../model/RecordModel'
 import { common } from '@kit.AbilityKit'
 import { RefreshManager } from '../../common/managers/RefreshManager'
 import { Logger } from '../../common/utils/Logger'
@@ -44,12 +47,24 @@ export struct TagManagementDialog {
   // TagService
   private tagService: TagService | null = null
 
+  // 自定义心情（更新计划二期）
+  @State private customMoods: Mood[] = []
+  @State private showMoodPicker: boolean = false
+  private moodService: MoodService | null = null
+
   async aboutToAppear() {
     Logger.info('[TagMgmtDialog] aboutToAppear 开始')
     this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
     Logger.info('[TagMgmtDialog] tagService 初始化完成: ' + (this.tagService !== null))
     this.loadTags()
     Logger.info('[TagMgmtDialog] aboutToAppear 完成, customTags count: ' + this.customTags.length)
+    // 加载自定义心情（更新计划二期）
+    try {
+      this.moodService = await MoodService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
+      this.loadMoods()
+    } catch (error) {
+      Logger.error('[TagMgmtDialog] 加载心情失败: ' + JSON.stringify(error))
+    }
   }
 
   private loadTags() {
@@ -168,6 +183,34 @@ export struct TagManagementDialog {
     this.loadTags()
     RefreshManager.getInstance().refresh()
     Logger.info('[TagMgmtDialog] deleteTag 完成')
+  }
+
+  // ==================== 心情管理（更新计划二期） ====================
+
+  private loadMoods() {
+    if (this.moodService) {
+      this.customMoods = [...this.moodService.getCustomMoods()]
+    }
+  }
+
+  // 添加自定义心情
+  private async addMood(emoji: string) {
+    if (!this.moodService) {
+      return
+    }
+    await this.moodService.addCustomMood(emoji)
+    this.loadMoods()
+    RefreshManager.getInstance().refresh()
+  }
+
+  // 删除自定义心情
+  private async deleteMood(mood: Mood) {
+    if (!this.moodService) {
+      return
+    }
+    await this.moodService.deleteCustomMood(mood.id)
+    this.loadMoods()
+    RefreshManager.getInstance().refresh()
   }
 
   build() {
@@ -304,6 +347,107 @@ export struct TagManagementDialog {
         }
         .width('100%')
         .padding({ top: 24, bottom: 24 })
+      }
+
+      // ==================== 心情管理（更新计划二期） ====================
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ top: 8, bottom: 16 })
+
+      Row() {
+        Text($r('app.string.mood_management'))
+          .fontSize(16)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(this.themeColors.textPrimary)
+          .layoutWeight(1)
+
+        // 添加心情按钮
+        SymbolGlyph($r('sys.symbol.plus'))
+          .fontSize(18)
+          .fontColor([this.themeColors.primary])
+          .onClick(() => {
+            this.showMoodPicker = !this.showMoodPicker
+          })
+      }
+      .width('100%')
+      .margin({ bottom: 8 })
+
+      Text($r('app.string.mood_custom_hint'))
+        .fontSize(12)
+        .fontColor(this.themeColors.textSecondary)
+        .width('100%')
+        .margin({ bottom: 12 })
+
+      // 心情列表（预置 + 自定义）
+      Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
+        ForEach(MoodUtils.getAllMoods(this.customMoods), (mood: Mood) => {
+          Stack({ alignContent: Alignment.TopEnd }) {
+            Column() {
+              Text(mood.emoji)
+                .fontSize(24)
+            }
+            .width(44)
+            .height(44)
+            .borderRadius(22)
+            .backgroundColor(this.themeColors.background)
+            .border({ width: 1, color: this.themeColors.border })
+            .justifyContent(FlexAlign.Center)
+            .alignItems(HorizontalAlign.Center)
+
+            // 自定义心情可删除（预置不可删）
+            if (mood.id.startsWith('mood_')) {
+              Column() {
+                Text('×')
+                  .fontSize(12)
+                  .fontColor('#FFFFFF')
+              }
+              .width(16)
+              .height(16)
+              .borderRadius(8)
+              .backgroundColor(this.themeColors.error)
+              .justifyContent(FlexAlign.Center)
+              .alignItems(HorizontalAlign.Center)
+              .onClick(() => {
+                this.deleteMood(mood)
+              })
+            }
+          }
+          .width(48)
+          .height(48)
+          .margin({ right: 8, bottom: 8 })
+        }, (mood: Mood) => mood.id)
+      }
+      .width('100%')
+
+      // emoji 选择面板（添加自定义心情）
+      if (this.showMoodPicker) {
+        Text($r('app.string.mood_picker_hint'))
+          .fontSize(12)
+          .fontColor(this.themeColors.textSecondary)
+          .width('100%')
+          .margin({ top: 4, bottom: 8 })
+
+        Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
+          ForEach(MoodUtils.PRESET_MOOD_EMOJIS, (emoji: string) => {
+            Column() {
+              Text(emoji)
+                .fontSize(20)
+            }
+            .width(40)
+            .height(40)
+            .borderRadius(20)
+            .backgroundColor(this.themeColors.background)
+            .border({ width: 1, color: this.themeColors.border })
+            .justifyContent(FlexAlign.Center)
+            .alignItems(HorizontalAlign.Center)
+            .margin({ right: 8, bottom: 8 })
+            .onClick(() => {
+              this.addMood(emoji)
+            })
+          }, (emoji: string) => emoji)
+        }
+        .width('100%')
+        .margin({ bottom: 8 })
       }
     }
     .width('100%')

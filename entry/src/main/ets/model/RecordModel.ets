@@ -9,7 +9,13 @@ export interface LifeRecord {
   imagePaths?: string[];    // 图片路径数组（可选）
   tags?: string[];          // 标签ID数组（可选）
   isPinned?: boolean;       // 是否置顶（可选）
-  mood?: string;            // 心情（可选，更新计划二期：'happy'|'calm'|'excited'|'sad'|'tired'）
+  mood?: string;            // 心情（可选，更新计划二期：心情 id，预置或自定义）
+}
+
+// 心情（更新计划二期：自定义心情）
+export interface Mood {
+  id: string;               // 心情唯一标识（预置为 'happy' 等；自定义为 'mood_xxx'）
+  emoji: string;            // 心情 emoji
 }
 
 // 图片信息接口

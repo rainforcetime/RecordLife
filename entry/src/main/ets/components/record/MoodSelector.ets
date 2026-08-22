@@ -1,7 +1,11 @@
-// 心情选择器组件（更新计划二期：心情标记）
-// 一排 emoji 圆钮单选，再点已选项取消（selectedMood = ''）
+// 心情选择器组件（更新计划二期：心情标记 + 自定义心情）
+// 一排 emoji 圆钮单选，再点已选项取消（selectedMood = ''）；含预置 + 自定义心情
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { MoodUtils } from '../../common/utils/MoodUtils'
+import { MoodService } from '../../service/MoodService'
+import { Mood } from '../../model/RecordModel'
+import { common } from '@kit.AbilityKit'
+import { Logger } from '../../common/utils/Logger'
 
 @Component
 export struct MoodSelector {
@@ -10,25 +14,18 @@ export struct MoodSelector {
   // 选中心情（'' = 未选择）；双向绑定
   @Link selectedMood: string
 
-  // 读取心情名称资源（国际化）
-  private getMoodName(mood: string): string {
-    const rm = this.getUIContext().getHostContext()?.resourceManager
-    if (!rm) {
-      return ''
-    }
-    switch (mood) {
-      case 'happy':
-        return rm.getStringByNameSync('mood_happy')
-      case 'calm':
-        return rm.getStringByNameSync('mood_calm')
-      case 'excited':
-        return rm.getStringByNameSync('mood_excited')
-      case 'sad':
-        return rm.getStringByNameSync('mood_sad')
-      case 'tired':
-        return rm.getStringByNameSync('mood_tired')
-      default:
-        return ''
+  // 全部心情（预置 + 自定义）
+  @State private moods: Mood[] = MoodUtils.getAllMoods()
+
+  // MoodService
+  private moodService: MoodService | null = null
+
+  async aboutToAppear() {
+    try {
+      this.moodService = await MoodService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
+      this.moods = MoodUtils.getAllMoods(this.moodService.getCustomMoods())
+    } catch (error) {
+      Logger.error('[MoodSelector] 加载自定义心情失败: ' + JSON.stringify(error))
     }
   }
 
@@ -41,34 +38,35 @@ export struct MoodSelector {
         .width('100%')
         .margin({ bottom: 8 })
 
-      // 心情选项行
-      Row({ space: 10 }) {
-        ForEach(MoodUtils.MOODS, (mood: string) => {
-          Column() {
-            Text(MoodUtils.getMoodEmoji(mood))
-              .fontSize(24)
-            Text(this.getMoodName(mood))
-              .fontSize(11)
-              .fontColor(this.selectedMood === mood ? this.themeColors.primary : this.themeColors.textSecondary)
-              .margin({ top: 4 })
-          }
-          .width(56)
-          .padding({ top: 10, bottom: 10 })
-          .alignItems(HorizontalAlign.Center)
-          .backgroundColor(this.selectedMood === mood ? this.themeColors.primaryLight : this.themeColors.background)
-          .borderRadius(12)
-          .border({
-            width: this.selectedMood === mood ? 1.5 : 1,
-            color: this.selectedMood === mood ? this.themeColors.primary : this.themeColors.border
-          })
-          .onClick(() => {
-            // 再点已选项 → 取消
-            this.selectedMood = this.selectedMood === mood ? '' : mood
-          })
-        }, (mood: string) => mood)
+      // 心情选项行（emoji，可横向滚动）
+      Scroll() {
+        Row({ space: 10 }) {
+          ForEach(this.moods, (mood: Mood) => {
+            Column() {
+              Text(mood.emoji)
+                .fontSize(26)
+            }
+            .width(48)
+            .height(48)
+            .justifyContent(FlexAlign.Center)
+            .alignItems(HorizontalAlign.Center)
+            .backgroundColor(this.selectedMood === mood.id ? this.themeColors.primaryLight : this.themeColors.background)
+            .borderRadius(24)
+            .border({
+              width: this.selectedMood === mood.id ? 1.5 : 1,
+              color: this.selectedMood === mood.id ? this.themeColors.primary : this.themeColors.border
+            })
+            .onClick(() => {
+              // 再点已选项 → 取消
+              this.selectedMood = this.selectedMood === mood.id ? '' : mood.id
+            })
+          }, (mood: Mood) => mood.id)
+        }
+        .padding({ right: 4 })
       }
+      .scrollable(ScrollDirection.Horizontal)
+      .scrollBar(BarState.Off)
       .width('100%')
-      .justifyContent(FlexAlign.Start)
     }
     .width('100%')
   }

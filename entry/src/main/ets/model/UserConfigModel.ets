@@ -5,6 +5,7 @@
 
 import { TimeUtils } from '../common/utils/TimeUtils';
 import { Tag } from './TagModel';
+import { Mood } from './RecordModel';
 
 // 云备份配置
 export interface CloudBackupConfig {
@@ -36,6 +37,7 @@ export interface AppSettings {
   // 自定义标签
   customTags: Tag[]; // 用户自定义的标签列表
   fontSize?: string; // 'small' | 'medium' | 'large'（可选，默认 'medium'，更新计划一期）
+  customMoods?: Mood[]; // 用户自定义的心情列表（可选，更新计划二期）
 }
 
 // 备份配置
@@ -103,7 +105,8 @@ export async function createDefaultConfig(): Promise<UserConfig> {
     isRemainingMode: false,   // 默认已存活模式
     targetAge: 80,            // 默认目标年龄80岁
     customTags: [],           // 默认无自定义标签
-    fontSize: 'medium'        // 默认字体大小
+    fontSize: 'medium',       // 默认字体大小
+    customMoods: []           // 默认无自定义心情
   };
 
   const backup: BackupConfig = {
@@ -160,7 +163,8 @@ export function createDefaultConfigSync(): UserConfig {
     isRemainingMode: false,   // 默认已存活模式
     targetAge: 80,            // 默认目标年龄80岁
     customTags: [],           // 默认无自定义标签
-    fontSize: 'medium'        // 默认字体大小
+    fontSize: 'medium',       // 默认字体大小
+    customMoods: []           // 默认无自定义心情
   };
 
   const backup: BackupConfig = {

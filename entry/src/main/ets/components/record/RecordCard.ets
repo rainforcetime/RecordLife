@@ -7,6 +7,8 @@ import { TagDisplay } from '../common/TagSelector'
 import { ShareRecordCard } from '../share/ShareRecordCard'
 import { ShareUtils } from '../../common/utils/ShareUtils'
 import { MoodUtils } from '../../common/utils/MoodUtils'
+import { MoodService } from '../../service/MoodService'
+import { Mood } from '../../model/RecordModel'
 import { common } from '@kit.AbilityKit'
 import { ColorUtils } from '../../common/ColorUtils'
 import { Logger } from '../../common/utils/Logger'
@@ -36,6 +38,9 @@ export struct RecordCard {
 
   // 全局字体缩放系数（更新计划一期；AppStorage fontScale 由字体大小设置写入）
   @StorageProp('fontScale') fontScale: number = 1.0
+
+  // 自定义心情（更新计划二期：展示自定义心情 emoji）
+  @State private customMoods: Mood[] = []
   
   // 回调函数
   onEdit?: (record: LifeRecord) => void
@@ -61,6 +66,13 @@ export struct RecordCard {
     this.viewModel = await NowViewModel.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
     // 初始化分享卡片ID
     this.shareCardId = `share_card_${this.record.id}`
+    // 加载自定义心情（更新计划二期）
+    try {
+      const moodService = await MoodService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
+      this.customMoods = moodService.getCustomMoods()
+    } catch (error) {
+      Logger.error('[RecordCard] 加载自定义心情失败: ' + JSON.stringify(error))
+    }
   }
   
   build() {
@@ -84,8 +96,8 @@ export struct RecordCard {
         }
 
         // 心情展示（更新计划二期）
-        if (this.record.mood && MoodUtils.getMoodEmoji(this.record.mood).length > 0) {
-          Text(MoodUtils.getMoodEmoji(this.record.mood))
+        if (this.record.mood && MoodUtils.getMoodEmoji(this.record.mood, this.customMoods).length > 0) {
+          Text(MoodUtils.getMoodEmoji(this.record.mood, this.customMoods))
             .fontSize(22)
             .margin({ bottom: 8 })
         }

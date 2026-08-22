@@ -1343,6 +1343,22 @@
     {
       "name": "mood_filter_all",
       "value": "全部"
+    },
+    {
+      "name": "mood_selected",
+      "value": "已选择心情 %s"
+    },
+    {
+      "name": "mood_management",
+      "value": "心情管理"
+    },
+    {
+      "name": "mood_custom_hint",
+      "value": "自定义心情，点击 + 从 emoji 中挑选"
+    },
+    {
+      "name": "mood_picker_hint",
+      "value": "选择心情 emoji"
     }
   ]
 }

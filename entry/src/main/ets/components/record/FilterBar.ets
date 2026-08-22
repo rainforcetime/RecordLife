@@ -7,6 +7,8 @@ import { Tag, DEFAULT_TAGS } from '../../common/types'
 import { buildDisplayTags } from '../../common/utils/TagDisplayUtils'
 import { MoodUtils } from '../../common/utils/MoodUtils'
 import { TagService } from '../../service/TagService'
+import { MoodService } from '../../service/MoodService'
+import { Mood } from '../../model/RecordModel'
 import { common } from '@kit.AbilityKit'
 import { promptAction } from '@kit.ArkUI'
 import { Logger } from '../../common/utils/Logger'
@@ -88,12 +90,18 @@ export struct FilterBar {
   // 可用标签（内部动态加载）
   @State availableTags: Tag[] = DEFAULT_TAGS
 
+  // 全部心情（预置 + 自定义，更新计划二期）
+  @State private moods: Mood[] = MoodUtils.getAllMoods()
+
   // 标签版本号（由父组件传入，变化时重新加载）
   @Watch('onTagVersionChange')
   @Prop tagVersion: number = 0
 
   // TagService
   private tagService: TagService | null = null
+
+  // MoodService（更新计划二期）
+  private moodService: MoodService | null = null
 
   // 是否无任何筛选（"全部"选中态）
   private isNoFilter(): boolean {
@@ -104,6 +112,9 @@ export struct FilterBar {
     try {
       this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.loadTags()
+      // 加载自定义心情（更新计划二期）
+      this.moodService = await MoodService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
+      this.moods = MoodUtils.getAllMoods(this.moodService.getCustomMoods())
     } catch (error) {
       Logger.error('[FilterBar] 初始化失败: ' + JSON.stringify(error))
     }
@@ -146,9 +157,18 @@ export struct FilterBar {
     }
   }
 
-  // 切换心情（单选，再点取消；不影响标签筛选）
-  private toggleMood(mood: string) {
-    this.filterMood = this.filterMood === mood ? '' : mood
+  // 切换心情（单选，再点取消；不影响标签筛选；更新计划二期：toast 反馈）
+  private toggleMood(moodId: string) {
+    if (this.filterMood === moodId) {
+      // 取消选择
+      this.filterMood = ''
+      promptAction.showToast({ message: $r('app.string.filter_cancelled'), duration: 1500 })
+    } else {
+      // 选中
+      this.filterMood = moodId
+      const emoji = MoodUtils.getMoodEmoji(moodId, this.moods)
+      promptAction.showToast({ message: $r('app.string.mood_selected', emoji), duration: 1500 })
+    }
     if (this.onChange) {
       this.onChange()
     }
@@ -179,16 +199,16 @@ export struct FilterBar {
         })
 
         // 心情筛选（更新计划二期）
-        ForEach(MoodUtils.MOODS, (mood: string) => {
+        ForEach(this.moods, (mood: Mood) => {
           FilterChip({
-            label: MoodUtils.getMoodEmoji(mood),
+            label: mood.emoji,
             color: this.themeColors.primary,
-            isSelected: this.filterMood === mood,
+            isSelected: this.filterMood === mood.id,
             onChipClick: () => {
-              this.toggleMood(mood)
+              this.toggleMood(mood.id)
             }
           })
-        }, (mood: string) => `mood-${mood}`)
+        }, (mood: Mood) => `mood-${mood.id}`)
 
         // 心情与标签分隔线
         if (this.availableTags.length > 0) {

@@ -1343,6 +1343,22 @@
     {
       "name": "mood_filter_all",
       "value": "All"
+    },
+    {
+      "name": "mood_selected",
+      "value": "Mood selected: %s"
+    },
+    {
+      "name": "mood_management",
+      "value": "Moods"
+    },
+    {
+      "name": "mood_custom_hint",
+      "value": "Add custom moods with the + button"
+    },
+    {
+      "name": "mood_picker_hint",
+      "value": "Pick a mood emoji"
     }
   ]
 }
