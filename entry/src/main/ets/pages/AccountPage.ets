@@ -524,10 +524,10 @@ export struct AccountPage {
         .margin({ left: 15 })
         .height(0.5)
       
-      // 标签管理
+      // 个性化管理（标签/心情/模板）
       SettingItem({
         label: $r('app.string.personalization_management'),
-        summary: $r('app.string.manage_tags')
+        summary: $r('app.string.personalization_summary')
       })
       .onClick(() => {
         this.tagManagementDialogController.open()

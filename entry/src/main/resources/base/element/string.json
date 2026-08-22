@@ -1443,6 +1443,10 @@
     {
       "name": "template_tab",
       "value": "模板"
+    },
+    {
+      "name": "personalization_summary",
+      "value": "管理标签、心情与记录模板"
     }
   ]
 }

@@ -1443,6 +1443,10 @@
     {
       "name": "template_tab",
       "value": "Templates"
+    },
+    {
+      "name": "personalization_summary",
+      "value": "Manage tags, moods & templates"
     }
   ]
 }
