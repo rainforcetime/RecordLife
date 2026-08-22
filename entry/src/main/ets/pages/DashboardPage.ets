@@ -208,6 +208,16 @@ struct DashboardPage {
                     .fontSize(12)
                     .fontColor(milestone.reached ? this.themeColors.success : this.themeColors.textSecondary)
                     .margin({ top: 2 })
+
+                  // 未来里程碑进度条（当前已活天数占该里程碑比例）
+                  if (!milestone.reached) {
+                    Progress({ value: this.getMilestoneProgress(milestone.daysFromBirth), total: 100, type: ProgressType.Linear })
+                      .width('100%')
+                      .height(3)
+                      .color(this.themeColors.primary)
+                      .backgroundColor(this.themeColors.divider)
+                      .margin({ top: 6 })
+                  }
                 }
                 .layoutWeight(1)
                 .alignItems(HorizontalAlign.Start)
@@ -251,18 +261,39 @@ struct DashboardPage {
       return type
     }
     switch (type) {
+      case 'days_1000':
+        return rm.getStringByNameSync('milestone_days_1000')
       case 'days_10000':
         return rm.getStringByNameSync('milestone_days_10000')
+      case 'days_20000':
+        return rm.getStringByNameSync('milestone_days_20000')
+      case 'days_30000':
+        return rm.getStringByNameSync('milestone_days_30000')
       case 'age_18':
         return rm.getStringByNameSync('milestone_age_18')
+      case 'age_30':
+        return rm.getStringByNameSync('milestone_age_30')
       case 'age_50':
         return rm.getStringByNameSync('milestone_age_50')
+      case 'quarter_target':
+        return rm.getStringByNameSync('milestone_quarter_target')
       case 'half_target':
         return rm.getStringByNameSync('milestone_half_target')
+      case 'three_quarters_target':
+        return rm.getStringByNameSync('milestone_three_quarters_target')
       case 'target':
       default:
         return rm.getStringByNameSync('milestone_target')
     }
+  }
+
+  // 未来里程碑当前进度（已活天数/该里程碑天数，0-100）
+  private getMilestoneProgress(daysFromBirth: number): number {
+    if (daysFromBirth <= 0) {
+      return 100
+    }
+    const percent = Math.round(this.lifeProgress.livedDays / daysFromBirth * 100)
+    return percent > 100 ? 100 : percent
   }
 
   // 统计卡片

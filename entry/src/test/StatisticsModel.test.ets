@@ -88,15 +88,14 @@ export default function statisticsTest() {
     it('已达成与未来里程碑正确', 0, () => {
       const birth = TimeUtils.parseDate('1990-06-15');
       const ms = StatisticsUtils.getLifeMilestones(birth, 80, TimeUtils.parseDate('2025-06-15'));
-      expect(ms.length).assertEqual(5);
-      // 1 万天与 18 岁已达成
-      expect(ms[0].type).assertEqual('days_10000');
+      expect(ms.length).assertEqual(11);
+      // 升序：第 1000 天最早，目标年龄最后
+      expect(ms[0].type).assertEqual('days_1000');
       expect(ms[0].reached).assertTrue();
-      expect(ms[0].date).assertEqual('2017-10-31');
-      // 目标年龄未达成，倒计时正确
-      expect(ms[4].type).assertEqual('target');
-      expect(ms[4].reached).assertFalse();
-      expect(ms[4].daysLeft).assertEqual(80 * 365 - 12785);
+      expect(ms[0].date).assertEqual('1993-03-11');
+      expect(ms[10].type).assertEqual('target');
+      expect(ms[10].reached).assertFalse();
+      expect(ms[10].daysLeft).assertEqual(80 * 365 - 12785);
     });
 
     it('出生当天全部未达成', 0, () => {

@@ -1583,6 +1583,30 @@
     {
       "name": "milestone_target",
       "value": "目标年龄"
+    },
+    {
+      "name": "milestone_days_1000",
+      "value": "第 1000 天"
+    },
+    {
+      "name": "milestone_days_20000",
+      "value": "第 2 万天"
+    },
+    {
+      "name": "milestone_days_30000",
+      "value": "第 3 万天"
+    },
+    {
+      "name": "milestone_age_30",
+      "value": "30 岁"
+    },
+    {
+      "name": "milestone_quarter_target",
+      "value": "目标年龄 1/4"
+    },
+    {
+      "name": "milestone_three_quarters_target",
+      "value": "目标年龄 3/4"
     }
   ]
 }

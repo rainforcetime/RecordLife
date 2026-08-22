@@ -1583,6 +1583,30 @@
     {
       "name": "milestone_target",
       "value": "Target age"
+    },
+    {
+      "name": "milestone_days_1000",
+      "value": "1,000th day"
+    },
+    {
+      "name": "milestone_days_20000",
+      "value": "20,000th day"
+    },
+    {
+      "name": "milestone_days_30000",
+      "value": "30,000th day"
+    },
+    {
+      "name": "milestone_age_30",
+      "value": "Age 30"
+    },
+    {
+      "name": "milestone_quarter_target",
+      "value": "Quarter of target"
+    },
+    {
+      "name": "milestone_three_quarters_target",
+      "value": "Three quarters of target"
     }
   ]
 }

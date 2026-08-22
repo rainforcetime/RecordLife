@@ -139,8 +139,11 @@ export class StatisticsUtils {
   }
 
   /**
-   * 生命里程碑列表（按距出生天数升序；type 供 UI 层映射文案）
-   * 里程碑：1 万天 / 18 岁 / 50 岁 / 目标年龄一半 / 目标年龄
+   * 生命里程碑列表（按距出生天数升序去重；type 供 UI 层映射文案）
+   * 天数里程碑：1000 / 1 万 / 2 万 / 3 万天
+   * 年龄里程碑：18 / 30 / 50 岁
+   * 目标比例：1/4 / 1/2 / 3/4 / 目标年龄
+   * 说明：不同 targetAge 下年龄与比例可能同日，按出现顺序去重（保留先出现者）
    */
   static getLifeMilestones(birthDate: Date, targetAge: number, now?: Date): LifeMilestone[] {
     const safeTarget = targetAge > 0 ? targetAge : 80
@@ -148,15 +151,32 @@ export class StatisticsUtils {
     const base = birthDate.getTime()
 
     const candidates: Array<[string, number]> = [
-      ['days_10000', 10000],
+      ['days_1000', 1000],
       ['age_18', 18 * 365],
-      ['age_50', 50 * 365],
+      ['days_10000', 10000],
+      ['age_30', 30 * 365],
+      ['quarter_target', Math.floor(safeTarget / 4) * 365],
+      ['days_20000', 20000],
       ['half_target', Math.floor(safeTarget / 2) * 365],
+      ['age_50', 50 * 365],
+      ['three_quarters_target', Math.floor(safeTarget * 3 / 4) * 365],
+      ['days_30000', 30000],
       ['target', safeTarget * 365]
     ]
 
-    const milestones: LifeMilestone[] = []
+    // 按天数去重（同日保留先出现者）并升序
+    const seen = new Set<number>()
+    const sorted: Array<[string, number]> = []
     for (const candidate of candidates) {
+      if (!seen.has(candidate[1])) {
+        seen.add(candidate[1])
+        sorted.push(candidate)
+      }
+    }
+    sorted.sort((a, b) => a[1] - b[1])
+
+    const milestones: LifeMilestone[] = []
+    for (const candidate of sorted) {
       // ArkTS 不支持解构声明，改用索引访问
       const type = candidate[0]
       const daysFromBirth = candidate[1]
