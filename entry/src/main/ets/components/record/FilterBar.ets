@@ -200,7 +200,7 @@ export struct FilterBar {
   build() {
     // 筛选入口按钮（点击打开筛选弹窗，替代长距离横向滑动，更新计划五期）
     Row() {
-      SymbolGlyph($r('sys.symbol.slider_horizontal_3'))
+      Text('☰')
         .fontSize(15)
         .fontColor(this.themeColors.primary)
 
