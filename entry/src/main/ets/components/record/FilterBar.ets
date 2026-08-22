@@ -163,13 +163,14 @@ export struct FilterBar {
       promptAction.showToast({ message: $r('app.string.tag_selected', tagName), duration: 1500 })
     }
 
-    // 触发回调
+    // 触发回调（选择标签后关闭气泡）
+    this.showFilterPopup = false
     if (this.onChange) {
       this.onChange()
     }
   }
 
-  // 切换心情（单选，再点取消；不影响标签筛选；更新计划二期：toast 反馈）
+  // 切换心情（单选，再点取消；不影响标签筛选；选择后关闭气泡）
   private toggleMood(moodId: string) {
     if (this.filterMood === moodId) {
       // 取消选择
@@ -181,16 +182,19 @@ export struct FilterBar {
       const emoji = MoodUtils.getMoodEmoji(moodId, this.moods)
       promptAction.showToast({ message: $r('app.string.mood_selected', emoji), duration: 1500 })
     }
+    // 选择即关闭气泡
+    this.showFilterPopup = false
     if (this.onChange) {
       this.onChange()
     }
   }
 
-  // 清除所有筛选（标签 + 心情）
+  // 清除所有筛选（标签 + 心情；关闭气泡）
   private clearAll() {
     if (this.selectedTagIds.length > 0 || this.filterMood.length > 0) {
       this.selectedTagIds = []
       this.filterMood = ''
+      this.showFilterPopup = false
       if (this.onChange) {
         this.onChange()
       }
@@ -227,7 +231,8 @@ export struct FilterBar {
     .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
     .borderRadius(16)
     .onClick(() => {
-      this.showFilterPopup = true
+      // 手动 toggle：不依赖 $$ 外部关闭回写（该 SDK 不支持自动复位）
+      this.showFilterPopup = !this.showFilterPopup
     })
     .bindPopup($$this.showFilterPopup, {
       builder: () => {
@@ -237,8 +242,6 @@ export struct FilterBar {
       offset: { x: 0, y: 6 },
       enableArrow: true,
       arrowPointPosition: ArrowPointPosition.START,
-      // 透明遮罩：点击外部关闭气泡，$$ 双向绑定自动复位状态（可再次点击弹出）
-      mask: { color: '#00000000' },
       backgroundBlurStyle: BlurStyle.NONE
     })
   }
