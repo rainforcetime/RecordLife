@@ -26,6 +26,9 @@ export struct UserInfoSection {
     userSignature: ''
   }
   
+  // 隐私模式（更新计划三期：隐藏出生日期）
+  @Prop privacyMode: boolean = false
+  
   // 编辑资料回调
   onEditProfile?: () => void
   
@@ -169,21 +172,37 @@ export struct UserInfoSection {
         .backgroundColor(this.getLabelBackgroundColor())
         .borderRadius(12)
 
-        // 出生日期标签
-        Row() {
-          SymbolGlyph($r('sys.symbol.calendar'))
-            .fontSize(13)
-            .fontColor([this.getLabelTextColor()])
-            .margin({ right: 4 })
-          Text(this.userInfo.userBirthday)
-            .fontSize(13)
-            .fontColor(this.getLabelTextColor())
-            .fontWeight(FontWeight.Medium)
+        // 出生日期标签（隐私模式隐藏，更新计划三期）
+        if (this.privacyMode) {
+          Row() {
+            Text('🔒')
+              .fontSize(13)
+            Text($r('app.string.privacy_mode_on'))
+              .fontSize(13)
+              .fontColor(this.getLabelTextColor())
+              .fontWeight(FontWeight.Medium)
+              .margin({ left: 4 })
+          }
+          .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+          .backgroundColor(this.getLabelBackgroundColor())
+          .borderRadius(12)
+          .margin({ left: 8 })
+        } else {
+          Row() {
+            SymbolGlyph($r('sys.symbol.calendar'))
+              .fontSize(13)
+              .fontColor([this.getLabelTextColor()])
+              .margin({ right: 4 })
+            Text(this.userInfo.userBirthday)
+              .fontSize(13)
+              .fontColor(this.getLabelTextColor())
+              .fontWeight(FontWeight.Medium)
+          }
+          .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+          .backgroundColor(this.getLabelBackgroundColor())
+          .borderRadius(12)
+          .margin({ left: 8 })
         }
-        .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-        .backgroundColor(this.getLabelBackgroundColor())
-        .borderRadius(12)
-        .margin({ left: 8 })
       }
       .margin({ bottom: 16 })
 

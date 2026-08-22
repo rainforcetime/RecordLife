@@ -382,6 +382,7 @@ export struct AccountPage {
         UserInfoSection({
           themeColors: this.themeColors,
           userInfo: this.userInfo,
+          privacyMode: this.privacyMode,  // 隐私模式（更新计划三期：隐藏出生日期）
           onEditProfile: () => {
             this.onEditProfile()
           },
