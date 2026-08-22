@@ -40,12 +40,14 @@ struct NowPage {
   // 监听搜索关键词改变
   private onSearchTextChange() {
     this.searchKeywordVersion++
+    this.refreshTrigger++  // 强制 ForEach key 变化，避免复用残留导致记录不渲染
     Logger.info('[NowPage] searchText 改变: ' + this.searchText + ', version: ' + this.searchKeywordVersion)
   }
 
   // 监听标签筛选改变
   private onFilterTagIdsChange() {
     this.filterTagIdsVersion++
+    this.refreshTrigger++  // 强制 ForEach key 变化（筛选后记录消失修复）
     Logger.info('[NowPage] filterTagIds 改变: ' + JSON.stringify(this.filterTagIds) + ', version: ' + this.filterTagIdsVersion)
   }
   
@@ -57,6 +59,7 @@ struct NowPage {
   // 监听心情筛选改变
   private onFilterMoodChange() {
     this.filterMoodVersion++
+    this.refreshTrigger++  // 强制 ForEach key 变化（筛选后记录消失修复）
     Logger.info('[NowPage] filterMood 改变: ' + this.filterMood + ', version: ' + this.filterMoodVersion)
   }
 
