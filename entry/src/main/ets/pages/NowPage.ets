@@ -86,6 +86,7 @@ struct NowPage {
   // 撤销删除提示条（更新计划二期）
   @State private showUndoBar: boolean = false
   @State private undoCount: number = 1
+  @State private undoProgress: number = 100  // 3s 倒计时进度（100 → 0，满到空）
   private undoBarTimer: number = -1
   
   // 记录此刻弹窗
@@ -358,24 +359,37 @@ struct NowPage {
       // 撤销删除提示条（更新计划二期；全屏容器点击穿透，仅提示条区域可交互）
       if (this.showUndoBar) {
         Column() {
-          Row() {
-            Text($r('app.string.record_deleted', this.undoCount))
-              .fontSize(14)
-              .fontColor('#FFFFFF')
-              .layoutWeight(1)
+          Column() {
+            Row() {
+              Text($r('app.string.record_deleted', this.undoCount))
+                .fontSize(14)
+                .fontColor('#FFFFFF')
+                .layoutWeight(1)
 
-            Text($r('app.string.undo_delete'))
-              .fontSize(14)
-              .fontColor('#4DA3FF')
-              .fontWeight(FontWeight.Bold)
-              .onClick(() => {
-                this.onUndoDelete()
-              })
+              Text($r('app.string.undo_delete'))
+                .fontSize(14)
+                .fontColor('#4DA3FF')
+                .fontWeight(FontWeight.Bold)
+                .onClick(() => {
+                  this.onUndoDelete()
+                })
+            }
+            .width('100%')
+            .padding({ left: 16, right: 12, top: 12, bottom: 10 })
+
+            // 3 秒倒计时进度条（满 → 空，动画结束提示条隐藏）
+            Progress({ value: this.undoProgress, total: 100, type: ProgressType.Linear })
+              .width('100%')
+              .height(3)
+              .color('#4DA3FF')
+              .backgroundColor('#40FFFFFF')
+              .margin({ bottom: 8 })
           }
           .width('92%')
-          .padding({ left: 16, right: 12, top: 12, bottom: 12 })
+          .padding({ top: 2 })
           .backgroundColor('#E6202020')
           .borderRadius(12)
+          .alignItems(HorizontalAlign.Center)
         }
         .width('100%')
         .height('100%')
@@ -704,17 +718,30 @@ struct NowPage {
 
   // ==================== 撤销删除（更新计划二期） ====================
 
-  // 显示撤销提示条（3 秒后自动隐藏）
+  // 显示撤销提示条（3 秒倒计时：进度条满 → 空，动画结束自动隐藏）
   private showUndoBarWithCount(count: number) {
     this.undoCount = count
+    this.undoProgress = 100
     this.showUndoBar = true
     if (this.undoBarTimer !== -1) {
       clearTimeout(this.undoBarTimer)
     }
+    // 用动画驱动进度条 100 → 0（3s 线性），动画结束即隐藏提示条
+    this.getUIContext().animateTo({
+      duration: 3000,
+      curve: Curve.Linear,
+      onFinish: () => {
+        this.undoBarTimer = -1
+        this.showUndoBar = false
+      }
+    }, () => {
+      this.undoProgress = 0
+    })
+    // 兜底计时器（动画异常中断时仍隐藏）
     this.undoBarTimer = setTimeout(() => {
       this.undoBarTimer = -1
       this.showUndoBar = false
-    }, 3000)
+    }, 3200)
   }
 
   // 隐藏撤销提示条
