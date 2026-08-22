@@ -1267,6 +1267,22 @@
     {
       "name": "tag_name_other",
       "value": "Other"
+    },
+    {
+      "name": "life_day",
+      "value": "Day %d of life"
+    },
+    {
+      "name": "life_week",
+      "value": "Week %d"
+    },
+    {
+      "name": "birthday_countdown",
+      "value": "%d days to birthday"
+    },
+    {
+      "name": "birthday_today",
+      "value": "🎂 Birthday today!"
     }
   ]
 }

@@ -1267,6 +1267,22 @@
     {
       "name": "tag_name_other",
       "value": "其他"
+    },
+    {
+      "name": "life_day",
+      "value": "生命中第 %d 天"
+    },
+    {
+      "name": "life_week",
+      "value": "第 %d 周"
+    },
+    {
+      "name": "birthday_countdown",
+      "value": "距下次生日 %d 天"
+    },
+    {
+      "name": "birthday_today",
+      "value": "🎂 今天生日！"
     }
   ]
 }
