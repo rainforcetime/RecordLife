@@ -10,7 +10,7 @@ import { TagService } from '../../service/TagService'
 import { MoodService } from '../../service/MoodService'
 import { Mood } from '../../model/RecordModel'
 import { common } from '@kit.AbilityKit'
-import { promptAction } from '@kit.ArkUI'
+import { promptAction, display } from '@kit.ArkUI'
 import { ColorUtils } from '../../common/ColorUtils'
 import { Logger } from '../../common/utils/Logger'
 
@@ -355,7 +355,7 @@ export struct FilterBar {
       .width('100%')
       .height(150)
     }
-    .width(280)
+    .width(px2vp(display.getDefaultDisplaySync().width) - 8)  // 与搜索栏同宽（屏宽 - 左右 4vp×2）
     .constraintSize({ maxHeight: '35%' })
     .padding({ left: 14, right: 14, top: 6, bottom: 8 })
     .backgroundColor(this.themeColors.cardBackground)
