@@ -304,27 +304,32 @@ export struct TagManagementDialog {
   }
 
   build() {
-    // 整体可滚动（输入法弹出时表单不被遮挡）
-    Scroll() {
-      if (this.isEditing) {
-        // 标签编辑视图全屏
-        this.TagEditView()
-      } else {
-        // 管理分页 Tab（标签 / 心情 / 模板）
-        this.TabBarRow()
-
-        if (this.currentTab === 0) {
-          this.TagListView()
-        } else if (this.currentTab === 1) {
-          this.MoodView()
+    // CustomDialog 弹窗背景透明，需最外层容器自带背景（Tab 栏 + 内容整体不透明）
+    Column() {
+      Scroll() {
+        if (this.isEditing) {
+          // 标签编辑视图全屏
+          this.TagEditView()
         } else {
-          this.TemplateView()
+          // 管理分页 Tab（标签 / 心情 / 模板）
+          this.TabBarRow()
+
+          if (this.currentTab === 0) {
+            this.TagListView()
+          } else if (this.currentTab === 1) {
+            this.MoodView()
+          } else {
+            this.TemplateView()
+          }
         }
       }
+      .scrollBar(BarState.Off)
+      .width('100%')
+      .constraintSize({ maxHeight: '85%' })
     }
-    .scrollBar(BarState.Off)
     .width('100%')
-    .constraintSize({ maxHeight: '85%' })
+    .backgroundColor(this.themeColors.cardBackground)
+    .borderRadius(15)
   }
 
   // 管理分页 Tab 栏
