@@ -84,8 +84,13 @@ export class NowViewModel {
         this.records.sort((a, b) => b.timestamp - a.timestamp)
       } else {
         this.records = []
-        // 首次使用，初始化示例数据
-        await this.initSampleData()
+        // 仅「未初始化过示例」时生成示例（首次安装 / 重置后标记被清除）；
+        // 用户手动删光记录后不再重复生成（标记已置位）
+        const sampleInitialized = await RecordRepository.isSampleDataInitialized(this.context)
+        if (!sampleInitialized) {
+          await this.initSampleData()
+          await RecordRepository.markSampleDataInitialized(this.context)
+        }
       }
     } catch (error) {
       Logger.error('[NowViewModel] 加载记录失败: ' + JSON.stringify(error))

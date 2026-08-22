@@ -189,6 +189,9 @@ export class MorePageConfigHandler {
       // 4. 清空 Preferences 中的记录数据
       await RecordRepository.clearRecords(context)
       
+      // 5. 清除示例数据初始化标记（重启后重新生成示例，与首次安装一致）
+      await RecordRepository.clearSampleDataFlag(context)
+      
       Logger.info('[MorePageConfigHandler] 记录数据已清空')
       
       return records.length
