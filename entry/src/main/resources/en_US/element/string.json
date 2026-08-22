@@ -1427,6 +1427,22 @@
     {
       "name": "template_empty",
       "value": "No templates yet, add in settings"
+    },
+    {
+      "name": "personalization_management",
+      "value": "Personalization"
+    },
+    {
+      "name": "tag_tab",
+      "value": "Tags"
+    },
+    {
+      "name": "mood_tab",
+      "value": "Moods"
+    },
+    {
+      "name": "template_tab",
+      "value": "Templates"
     }
   ]
 }

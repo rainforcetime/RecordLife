@@ -340,9 +340,9 @@ export struct TagManagementDialog {
   @Builder
   TabBarRow() {
     Row() {
-      this.TabItem($r('app.string.tag_management'), 0)
-      this.TabItem($r('app.string.mood_management'), 1)
-      this.TabItem($r('app.string.record_template'), 2)
+      this.TabItem($r('app.string.tag_tab'), 0)
+      this.TabItem($r('app.string.mood_tab'), 1)
+      this.TabItem($r('app.string.template_tab'), 2)
     }
     .width('100%')
     .padding({ left: 20, right: 20, top: 16, bottom: 8 })
@@ -372,7 +372,7 @@ export struct TagManagementDialog {
     Column() {
       // 标题
       Row() {
-        Text($r('app.string.tag_management'))
+        Text($r('app.string.tag_tab'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
@@ -507,7 +507,7 @@ export struct TagManagementDialog {
     Column() {
       // 标题
       Row() {
-        Text($r('app.string.mood_management'))
+        Text($r('app.string.mood_tab'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
@@ -628,7 +628,7 @@ export struct TagManagementDialog {
     Column() {
       // 标题
       Row() {
-        Text($r('app.string.record_template'))
+        Text($r('app.string.template_tab'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)

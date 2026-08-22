@@ -526,7 +526,7 @@ export struct AccountPage {
       
       // 标签管理
       SettingItem({
-        label: $r('app.string.tag_management'),
+        label: $r('app.string.personalization_management'),
         summary: $r('app.string.manage_tags')
       })
       .onClick(() => {

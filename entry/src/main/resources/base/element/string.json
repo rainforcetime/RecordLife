@@ -1427,6 +1427,22 @@
     {
       "name": "template_empty",
       "value": "暂无模板，可在设置中添加"
+    },
+    {
+      "name": "personalization_management",
+      "value": "个性化管理"
+    },
+    {
+      "name": "tag_tab",
+      "value": "标签"
+    },
+    {
+      "name": "mood_tab",
+      "value": "心情"
+    },
+    {
+      "name": "template_tab",
+      "value": "模板"
     }
   ]
 }
