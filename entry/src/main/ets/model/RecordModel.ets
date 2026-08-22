@@ -1,4 +1,5 @@
 // 记录领域模型
+import { TimeUtils } from '../common/utils/TimeUtils'
 
 // 记录接口
 export interface LifeRecord {
@@ -43,6 +44,91 @@ export interface TimelineYear {
 // 时间线数据
 export interface TimelineData {
   years: TimelineYear[];
+}
+
+// ==================== 时间线构建（纯函数，可单测） ====================
+
+// 构建时间线数据（按年/月/日分组，降序排列，当前年月默认展开）
+// 自 NowViewModel.buildTimeline 下沉（P4），纯函数无副作用，可直接单测
+export function buildTimelineData(records: LifeRecord[], now: Date): TimelineData {
+  const currentYear = TimeUtils.getFullYear(now);
+  const currentMonth = TimeUtils.getMonth(now);
+
+  // 按年月日分组
+  const yearMap = new Map<number, Map<number, Map<number, LifeRecord[]>>>();
+
+  for (const record of records) {
+    const date = new Date(record.timestamp);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+
+    if (!yearMap.has(year)) {
+      yearMap.set(year, new Map<number, Map<number, LifeRecord[]>>());
+    }
+
+    const monthMap = yearMap.get(year)!;
+    if (!monthMap.has(month)) {
+      monthMap.set(month, new Map<number, LifeRecord[]>());
+    }
+
+    const dayMap = monthMap.get(month)!;
+    if (!dayMap.has(day)) {
+      dayMap.set(day, []);
+    }
+
+    dayMap.get(day)!.push(record);
+  }
+
+  // 构建时间线结构
+  const years: TimelineYear[] = [];
+  const sortedYears = Array.from(yearMap.keys()).sort((a, b) => b - a); // 降序
+
+  for (const year of sortedYears) {
+    const monthMap = yearMap.get(year)!;
+    const months: TimelineMonth[] = [];
+    const sortedMonths = Array.from(monthMap.keys()).sort((a, b) => b - a);
+
+    for (const month of sortedMonths) {
+      const dayMap = monthMap.get(month)!;
+      const days: TimelineDay[] = [];
+      const sortedDays = Array.from(dayMap.keys()).sort((a, b) => b - a);
+
+      for (const day of sortedDays) {
+        const dayRecords = dayMap.get(day)!;
+        days.push({
+          day: day,
+          records: dayRecords,
+          isExpanded: false // 默认折叠
+        });
+      }
+
+      months.push({
+        month: month,
+        days: days,
+        isExpanded: false // 默认折叠
+      });
+    }
+
+    years.push({
+      year: year,
+      months: months,
+      isExpanded: year === currentYear // 当前年份默认展开
+    });
+  }
+
+  // 如果有当前年份，展开当前月份
+  if (years.length > 0 && years[0].year === currentYear) {
+    const currentYearNode = years[0];
+    for (const monthNode of currentYearNode.months) {
+      if (monthNode.month === currentMonth) {
+        monthNode.isExpanded = true;
+        break;
+      }
+    }
+  }
+
+  return { years: years };
 }
 
 // ==================== 日历数据结构 ====================

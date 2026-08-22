@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 RecordLife 项目的**现状实现快照**，供不同窗口/会话的 AI 重构任务作为唯一参考，避免每次从头通读全部源码。
 > **配套文档**：`docs/refactoring-plan.md` 是重构方案与进度跟踪；本文档只描述**当前代码实际怎么实现**，两者配合使用。
-> **最后更新**：2026-08-22（P4 viewmodel 瘦身第一部分完成；基于当前工作区源码逐文件核对）
+> **最后更新**：2026-08-22（P4 viewmodel 瘦身完成；基于当前工作区源码逐文件核对）
 > **阅读方式**：全文关键结论均附 `file:line` 引用，可快速定位源码；改动任何涉及数据模型 / 持久化 / 备份导入导出的代码前，**必须先读 §5 与 §6**。
 
 ---
@@ -79,6 +79,7 @@ interface LifeRecord {
 }
 interface ImageInfo { path: string; uri?: string; thumbnailPath?: string; }
 interface TimelineData { years: TimelineYear[] }
+- 纯函数 `buildTimelineData(records, now): TimelineData`（P4 新增）：按年/月/日分组、降序排列、当前年月默认展开，逻辑原在 NowViewModel.buildTimeline，现可单测。
 interface TimelineYear  { year: number; months: TimelineMonth[]; isExpanded: boolean }
 interface TimelineMonth { month: number; days: TimelineDay[]; isExpanded: boolean }
 interface TimelineDay   { day: number; records: LifeRecord[]; isExpanded: boolean }
@@ -370,7 +371,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | `updateRecord(id, content, imagePaths?, tags?)` | 233 | 更新内容/标签；**删除不再引用的旧图片文件**（:252-268） |
 | `togglePin(id)` / `getPinnedRecords()` | 282/297 | 置顶切换 / 获取收藏 |
 | `deleteRecord(id)` | 302 | **删除记录关联的所有图片文件**（:312-324） |
-| `buildTimeline()` | 331 | 按年/月/日分组构建 `TimelineData`，年份/月份降序，当前年与当前月默认展开 |
+| `buildTimeline()` | 303 | 委托 `model/RecordModel.buildTimelineData(this.records, TimeUtils.now())`（P4 纯函数化，可单测） |
 | `saveImageToSandbox(sourceUri)` | 387 | 委托 `service/ImageFileService.saveRecordImage`（P3 下沉） |
 | `getImageUri(path)` | 397 | 委托 `service/ImageFileService.getImageUri`（P3 下沉） |
 | `generateId()` | 491 | `Date.now().toString(36) + Math.random().toString(36).substring(2)` |

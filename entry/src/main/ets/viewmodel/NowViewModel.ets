@@ -1,6 +1,6 @@
 // NowPage 业务逻辑类：viewmodel/NowViewModel.ets
 import { common } from '@kit.AbilityKit'
-import { LifeRecord, TimelineYear, TimelineMonth, TimelineDay, TimelineData } from '../common/types'
+import { LifeRecord, TimelineData, buildTimelineData } from '../common/types'
 import { TimeUtils } from '../common/utils/TimeUtils'
 import { ImageGenerator } from '../utils/ImageGenerator'
 import { RecordRepository } from '../repository/RecordRepository'
@@ -300,87 +300,9 @@ export class NowViewModel {
     return await this.saveRecords()
   }
   
-  // 构建时间线数据
+  // 构建时间线数据（纯函数已下沉至 model/RecordModel.buildTimelineData，P4，可单测）
   buildTimeline(): TimelineData {
-    const now = TimeUtils.now()
-    const currentYear = TimeUtils.getFullYear(now)
-    const currentMonth = TimeUtils.getMonth(now)
-    
-    // 按年月日分组
-    const yearMap = new Map<number, Map<number, Map<number, LifeRecord[]>>>()
-    
-    for (const record of this.records) {
-      const date = new Date(record.timestamp)
-      const year = date.getFullYear()
-      const month = date.getMonth() + 1
-      const day = date.getDate()
-      
-      if (!yearMap.has(year)) {
-        yearMap.set(year, new Map<number, Map<number, LifeRecord[]>>())
-      }
-      
-      const monthMap = yearMap.get(year)!
-      if (!monthMap.has(month)) {
-        monthMap.set(month, new Map<number, LifeRecord[]>())
-      }
-      
-      const dayMap = monthMap.get(month)!
-      if (!dayMap.has(day)) {
-        dayMap.set(day, [])
-      }
-      
-      dayMap.get(day)!.push(record)
-    }
-    
-    // 构建时间线结构
-    const years: TimelineYear[] = []
-    const sortedYears = Array.from(yearMap.keys()).sort((a, b) => b - a) // 降序
-    
-    for (const year of sortedYears) {
-      const monthMap = yearMap.get(year)!
-      const months: TimelineMonth[] = []
-      const sortedMonths = Array.from(monthMap.keys()).sort((a, b) => b - a)
-      
-      for (const month of sortedMonths) {
-        const dayMap = monthMap.get(month)!
-        const days: TimelineDay[] = []
-        const sortedDays = Array.from(dayMap.keys()).sort((a, b) => b - a)
-        
-        for (const day of sortedDays) {
-          const records = dayMap.get(day)!
-          days.push({
-            day: day,
-            records: records,
-            isExpanded: false // 默认折叠
-          })
-        }
-        
-        months.push({
-          month: month,
-          days: days,
-          isExpanded: false // 默认折叠
-        })
-      }
-      
-      years.push({
-        year: year,
-        months: months,
-        isExpanded: year === currentYear // 当前年份默认展开
-      })
-    }
-    
-    // 如果有当前年份，展开当前月份
-    if (years.length > 0 && years[0].year === currentYear) {
-      const currentYearNode = years[0]
-      for (const monthNode of currentYearNode.months) {
-        if (monthNode.month === currentMonth) {
-          monthNode.isExpanded = true
-          break
-        }
-      }
-    }
-    
-    return { years: years }
+    return buildTimelineData(this.records, TimeUtils.now())
   }
   
   // 保存图片到沙箱目录（返回 URI 格式）

@@ -305,7 +305,7 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | P1 | 类型层重构（`types.ets` 拆分、消除重复定义） | ✅ | 2026-08-22 | `model/` 目录已创建（5 文件）；`UserProfile`/`DataStatistics` 重复已消除；UI DTO 重命名为 `AccountProfile`/`AccountDataStatistics`；旧文件保留 re-export 兼容 |
 | P2 | Model / Repository 层抽取 | ✅ | 2026-08-22 | `repository/` 已创建（`ConfigRepository` / `RecordRepository`，见轮次 3）；Preferences 访问收敛至 repository 层，store/key 常量集中定义 |
 | P3 | Service 层抽取（备份 / 导入导出 / 图片） | ✅ | 2026-08-22 | `service/` 共 5 文件（ImageFileService 图片 IO / TagService 标签 CRUD / ZipTransferService zip 传输 / ConfigTransferService 配置导入导出 / BackupManager）；ConfigManager 18.3KB → 9.8KB，MorePageBackupHandler 19.9KB → 16.3KB（见轮次 4~7）；⚠️ 导出导入改动需实机旧备份导入验证（P8 回归，用户有实机可验证） |
-| P4 | ViewModel 瘦身（IO 职责下沉） | 🟦 | 2026-08-22 | AccountViewModel 已瘦身（19.1KB → 13.9KB：存储统计下沉 `StorageService`、`[StorageDebug]` 日志清零，见轮次 8）；剩余：NowViewModel.buildTimeline 抽纯函数（可测试）、AccountViewModel 细节清理 |
+| P4 | ViewModel 瘦身（IO 职责下沉） | ✅ | 2026-08-22 | AccountViewModel 19.1KB → 13.9KB（存储统计下沉 `StorageService`、`[StorageDebug]` 日志清零，轮次 8）；NowViewModel.buildTimeline 抽为 `model/RecordModel.buildTimelineData` 纯函数（可单测，轮次 9）；Preferences/fileIo 直接引用已消除（P2/P3）；细节清理并入 P6 |
 | P5 | Page 层清理（`@Entry` 标注、路由注册） | ⬜ | — | `NowPage.ets` 误标 `@Entry`（Tab 内容页不应标注）；`main_pages.json` 含 4 页 |
 | P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
 | P7 | `@kit.*` 统一 & 依赖整理 | ⬜ | — | 11 处旧式 `@ohos.*` import 分布在 7 个文件 |
@@ -596,6 +596,27 @@ entry/src/main/ets/
 - `StorageService.formatStorageSize` / `calcUsageDays` 可单测（C2）
 
 **下一轮计划**：P4 续 — NowViewModel 时间线构建抽纯函数（`buildTimeline(records)` → `model/` 或 `common/` 纯函数，可单测）；或 P5 — Page 层清理（NowPage `@Entry` 修正）
+
+### 轮次 9 — 2026-08-22（P4 ViewModel 瘦身 · 完成：时间线构建纯函数化）
+
+> 前置：用户实机验证轮次 8 改动 ✅ 通过。
+
+**本轮目标**：NowViewModel.buildTimeline 抽为 `model/RecordModel.buildTimelineData` 纯函数（可测试性基础，P4 收尾）。
+
+**涉及文件**：
+- `model/RecordModel.ets`（修改）— 新增 `buildTimelineData(records: LifeRecord[], now: Date): TimelineData` 纯函数（逻辑逐行迁自 NowViewModel，`now` 参数化；依赖 `TimeUtils`）
+- `viewmodel/NowViewModel.ets`（修改）— `buildTimeline()` 改为委托 `buildTimelineData(this.records, TimeUtils.now())`；清理未使用类型 import（TimelineYear/Month/Day）
+
+**已完成**：
+- [x] `buildTimelineData` 纯函数（无副作用，可单测——为 P6 铺路）
+- [x] NowViewModel 公开 API 不变（组件无感知）
+- [x] 静态验证通过（行为等价 / import 清理 / ArkTS 约束）
+
+**遗留问题**：
+- ⚠️ 需用户 DevEco 编译 + 实机回归「时间线展示」（分组/展开/当前年月默认展开）
+- `buildTimelineData` / `StorageService.formatStorageSize` / `calcUsageDays` 均为可单测纯函数（C2 待 P6 补测试）
+
+**下一轮计划**：P5 — Page 层清理（`NowPage` 误标 `@Entry` 修正 + `main_pages.json` 路由同步）
 
 ### 10.3 数据兼容性验证记录
 
