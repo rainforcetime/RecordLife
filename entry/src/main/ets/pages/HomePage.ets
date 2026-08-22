@@ -621,10 +621,10 @@ export struct HomePage {
             offsetX: 0,
             offsetY: 4
           })
-        }
         .width('100%')
         .backgroundColor(this.themeColors.background)
         .padding({ left: 16, right: 16, bottom: 16 })
+      }
       }
       .width('100%')
       .height('100%')
