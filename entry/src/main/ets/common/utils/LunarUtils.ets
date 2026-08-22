@@ -2,8 +2,33 @@
  * 农历工具类（common/utils/LunarUtils.ets）
  * 公历 ↔ 农历转换（查表法，1900-2100）+ 农历生日相关
  * 纯函数，可单测；数据表为标准农历信息（高位闰月天数/闰月，低位各月大小）
+ * 注意：自包含 UTC+8 处理，不依赖 TimeUtils（避免与 TimeUtils 的循环依赖导致未初始化）
  */
-import { TimeUtils } from './TimeUtils'
+
+// UTC+8 偏移（毫秒）
+const TZ_OFFSET_MS = 8 * 60 * 60 * 1000
+// 一天的毫秒数
+const DAY_MS = 24 * 60 * 60 * 1000
+
+// 解析 YYYY-MM-DD 为 UTC+8 0 点
+function parseUtc8Date(dateStr: string): Date {
+  const utc = new Date(dateStr + 'T00:00:00Z')
+  return new Date(utc.getTime() - TZ_OFFSET_MS)
+}
+
+// 格式化 Date 为 YYYY-MM-DD（UTC+8）
+function formatUtc8Date(date: Date): string {
+  const b = new Date(date.getTime() + TZ_OFFSET_MS)
+  const y = b.getUTCFullYear()
+  const m = (b.getUTCMonth() + 1).toString().padStart(2, '0')
+  const d = b.getUTCDate().toString().padStart(2, '0')
+  return y + '-' + m + '-' + d
+}
+
+// 获取 UTC+8 年份
+function getUtc8Year(date: Date): number {
+  return new Date(date.getTime() + TZ_OFFSET_MS).getUTCFullYear()
+}
 
 // 农历日期
 export interface LunarDate {
@@ -40,8 +65,7 @@ const LUNAR_INFO: number[] = [
 ]
 
 // 基准：1900-01-31（UTC+8）= 农历 1900 年正月初一
-const BASE_DATE_MS = TimeUtils.parseDate('1900-01-31').getTime()
-const DAY_MS = 24 * 60 * 60 * 1000
+const BASE_DATE_MS = parseUtc8Date('1900-01-31').getTime()
 
 export class LunarUtils {
   // 该农历年闰月月份（0 = 无闰月）
@@ -77,7 +101,7 @@ export class LunarUtils {
    * 公历转农历
    */
   static solarToLunar(date: Date): LunarDate {
-    const normalized = TimeUtils.parseDate(TimeUtils.formatDate(date))
+    const normalized = parseUtc8Date(formatUtc8Date(date))
     const offset = Math.round((normalized.getTime() - BASE_DATE_MS) / DAY_MS)
 
     // 累减各农历年天数，定位农历年
@@ -153,8 +177,8 @@ export class LunarUtils {
    * 下次农历生日的公历日期（今天生日返回今天）
    */
   static getNextLunarBirthday(birthSolar: Date, now: Date): Date {
-    const today = TimeUtils.parseDate(TimeUtils.formatDate(now))
-    const currentYear = TimeUtils.getFullYear(today)
+    const today = parseUtc8Date(formatUtc8Date(now))
+    const currentYear = getUtc8Year(today)
     let birthday = LunarUtils.getLunarBirthdayInYear(birthSolar, currentYear)
     if (birthday.getTime() < today.getTime()) {
       birthday = LunarUtils.getLunarBirthdayInYear(birthSolar, currentYear + 1)
