@@ -26,11 +26,13 @@ export struct AccountPage {
     userBirthday: '1990-01-15',
     userGender: '',
     userAvatar: '',
-    hasCustomAvatar: false
+    hasCustomAvatar: false,
+    userSignature: ''
   }
   
   // 设置项状态
   @State currentTheme: string = ''
+  @State currentFontSize: string = 'medium'  // 字体大小（更新计划一期）
   
   // 数据统计
   @State statisticsInfo: AccountDataStatistics = {
@@ -67,9 +69,10 @@ export struct AccountPage {
       userName: this.userInfo.userName,
       userBirthday: this.userInfo.userBirthday,
       userGender: this.userInfo.userGender,
+      userSignature: this.userInfo.userSignature,
       themeColors: this.themeColors,
-      onSave: (name: string, birthday: string, gender: string) => {
-        this.onSaveProfile(name, birthday, gender)
+      onSave: (name: string, birthday: string, gender: string, signature: string) => {
+        this.onSaveProfile(name, birthday, gender, signature)
       }
     }),
     autoCancel: true,
@@ -111,6 +114,9 @@ export struct AccountPage {
       
       // 加载主题设置
       await this.loadThemeSettings()
+      
+      // 加载字体大小设置（更新计划一期）
+      this.currentFontSize = this.viewModel.getFontSize()
       
       // 加载应用信息
       await this.loadAppInfo()
@@ -165,7 +171,8 @@ export struct AccountPage {
       userBirthday: profile.birthday,
       userGender: profile.gender,
       userAvatar: this.userInfo.userAvatar,
-      hasCustomAvatar: this.userInfo.hasCustomAvatar
+      hasCustomAvatar: this.userInfo.hasCustomAvatar,
+      userSignature: profile.signature
     }
   }
   
@@ -207,7 +214,8 @@ export struct AccountPage {
       userBirthday: this.userInfo.userBirthday,
       userGender: this.userInfo.userGender,
       userAvatar: avatarInfo.avatar,
-      hasCustomAvatar: avatarInfo.hasCustomAvatar
+      hasCustomAvatar: avatarInfo.hasCustomAvatar,
+      userSignature: this.userInfo.userSignature
     }
   }
   
@@ -231,6 +239,28 @@ export struct AccountPage {
       AccountUtils.showToastSafely(this.promptAction, $r('app.string.theme_settings_save_failed'))
     }
   }
+
+  // 字体大小选项（国际化：读资源）
+  private getFontSizeOptions(): string[] {
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    if (!rm) {
+      return []
+    }
+    return [rm.getStringByNameSync('font_size_small'), rm.getStringByNameSync('font_size_medium'), rm.getStringByNameSync('font_size_large')]
+  }
+
+  // 字体大小切换处理
+  private async onFontSizeChange(value: string) {
+    this.currentFontSize = value
+    const success = await this.viewModel.setFontSize(value)
+    if (success) {
+      AccountUtils.showToastSafely(this.promptAction, $r('app.string.font_size_saved'))
+      // 通知其他页面刷新（时间线字体缩放）
+      RefreshManager.getInstance().refresh()
+    } else {
+      AccountUtils.showToastSafely(this.promptAction, $r('app.string.font_size_save_failed'))
+    }
+  }
   
   // 编辑资料处理
   private onEditProfile() {
@@ -239,9 +269,9 @@ export struct AccountPage {
   }
   
   // 保存用户资料
-  private async onSaveProfile(name: string, birthday: string, gender: string) {
+  private async onSaveProfile(name: string, birthday: string, gender: string, signature: string) {
     const avatarPath = this.userInfo.hasCustomAvatar ? this.userInfo.userAvatar : ''
-    const success = await this.viewModel.saveProfile(name, birthday, gender, avatarPath)
+    const success = await this.viewModel.saveProfile(name, birthday, gender, avatarPath, signature)
     
     if (success) {
       // 必须替换整个对象才能触发子组件 @Prop 更新
@@ -250,7 +280,8 @@ export struct AccountPage {
         userBirthday: birthday,
         userGender: gender,
         userAvatar: this.userInfo.userAvatar,
-        hasCustomAvatar: this.userInfo.hasCustomAvatar
+        hasCustomAvatar: this.userInfo.hasCustomAvatar,
+        userSignature: signature
       }
       
       Logger.info('用户资料保存成功')
@@ -371,6 +402,21 @@ export struct AccountPage {
         options: this.getThemeOptions(),
         onSelect: (value: string) => {
           this.onThemeChange(value)
+        }
+      })
+      
+      Divider()
+        .color(this.themeColors.divider)
+        .margin({ left: 15 })
+        .height(0.5)
+      
+      // 字体大小设置（选择器，更新计划一期）
+      SettingItemWithSelector({
+        label: $r('app.string.font_size_settings'),
+        currentValue: this.currentFontSize,
+        options: this.getFontSizeOptions(),
+        onSelect: (value: string) => {
+          this.onFontSizeChange(value)
         }
       })
       

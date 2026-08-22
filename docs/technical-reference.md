@@ -98,7 +98,7 @@ interface Tag { id: string; name: string; color: string; /* 十六进制 */ icon
 ### 3.3 用户配置（`model/UserConfigModel.ets`，持久化层）
 
 ```ts
-interface UserProfile { name: string; birthDate: string /* yyyy-MM-dd */; gender: string /* 'male'|'female'|'other'|'' */; avatar: string /* file:// URI 或沙箱路径或 base64 */ }
+interface UserProfile { name: string; birthDate: string /* yyyy-MM-dd */; gender: string /* 'male'|'female'|'other'|'' */; avatar: string /* file:// URI 或沙箱路径或 base64 */; signature?: string /* 签名/座右铭，可选，更新计划一期 */ }
 interface AppSettings {
   theme: string;             // 'light' | 'dark' | 'auto'
   language: string;          // 'zh-CN' | 'en-US'
@@ -109,6 +109,7 @@ interface AppSettings {
   isRemainingMode: boolean;  // true 剩余模式（false 已存活）
   targetAge: number;         // 默认 80
   customTags: Tag[];         // 用户自定义标签
+  fontSize?: string;         // 'small'|'medium'|'large'，默认 'medium'，更新计划一期；经 AppStorage('fontScale') 0.9/1.0/1.15 作用于记录内容文本
 }
 interface BackupConfig { autoBackup: boolean; backupFrequency: number; lastBackupTime: string; backupPath: string; cloudBackup: CloudBackupConfig | null }
 interface CloudBackupConfig { enabled: boolean; provider: string /* 'huawei'|'custom' */; syncInterval: number }

@@ -19,6 +19,7 @@ export interface UserProfile {
   birthDate: string;
   gender: string; // 'male' | 'female' | 'other' | ''
   avatar: string;
+  signature?: string; // 签名/座右铭（可选，更新计划一期）
 }
 
 // 应用设置
@@ -34,6 +35,7 @@ export interface AppSettings {
   targetAge: number; // 目标年龄
   // 自定义标签
   customTags: Tag[]; // 用户自定义的标签列表
+  fontSize?: string; // 'small' | 'medium' | 'large'（可选，默认 'medium'，更新计划一期）
 }
 
 // 备份配置
@@ -87,7 +89,8 @@ export async function createDefaultConfig(): Promise<UserConfig> {
     name: '',
     birthDate: '1990-01-01',
     gender: '',
-    avatar: ''
+    avatar: '',
+    signature: ''
   };
 
   const settings: AppSettings = {
@@ -99,7 +102,8 @@ export async function createDefaultConfig(): Promise<UserConfig> {
     isAccumulatedMode: true,  // 默认累计模式
     isRemainingMode: false,   // 默认已存活模式
     targetAge: 80,            // 默认目标年龄80岁
-    customTags: []            // 默认无自定义标签
+    customTags: [],           // 默认无自定义标签
+    fontSize: 'medium'        // 默认字体大小
   };
 
   const backup: BackupConfig = {
@@ -142,7 +146,8 @@ export function createDefaultConfigSync(): UserConfig {
     name: '',
     birthDate: '1990-01-01',
     gender: '',
-    avatar: ''
+    avatar: '',
+    signature: ''
   };
 
   const settings: AppSettings = {
@@ -154,7 +159,8 @@ export function createDefaultConfigSync(): UserConfig {
     isAccumulatedMode: true,  // 默认累计模式
     isRemainingMode: false,   // 默认已存活模式
     targetAge: 80,            // 默认目标年龄80岁
-    customTags: []            // 默认无自定义标签
+    customTags: [],           // 默认无自定义标签
+    fontSize: 'medium'        // 默认字体大小
   };
 
   const backup: BackupConfig = {

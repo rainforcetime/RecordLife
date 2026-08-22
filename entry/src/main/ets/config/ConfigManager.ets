@@ -57,6 +57,9 @@ export class ConfigManager {
       // 加载配置
       await this.loadConfig();
       Logger.info('ConfigManager.init: 配置加载完成')
+      
+      // 同步字体缩放系数到 AppStorage（更新计划一期；供全局文本缩放，避免重启后丢失）
+      AppStorage.setOrCreate('fontScale', this.getFontScale(this.getFontSize()));
     } catch (error) {
       Logger.error('ConfigManager init failed: ' + JSON.stringify(error));
       // 使用默认配置
@@ -135,7 +138,7 @@ export class ConfigManager {
   }
 
   // 更新用户档案
-  async updateProfile(name: string, birthDate: string, gender: string, avatar: string): Promise<boolean> {
+  async updateProfile(name: string, birthDate: string, gender: string, avatar: string, signature?: string): Promise<boolean> {
     if (!this.config) {
       return false;
     }
@@ -144,6 +147,10 @@ export class ConfigManager {
     this.config.profile.birthDate = birthDate;
     this.config.profile.gender = gender;
     this.config.profile.avatar = avatar;
+    // 签名（可选字段，更新计划一期；未传时保留现值）
+    if (signature !== undefined) {
+      this.config.profile.signature = signature;
+    }
     
     return await this.saveConfig();
   }
@@ -227,6 +234,44 @@ export class ConfigManager {
     const config = this.getConfig();
     // 使用TimeUtils解析日期（UTC+8时区）
     return TimeUtils.parseDate(config.profile.birthDate);
+  }
+
+  // 获取字体大小设置（更新计划一期；兜底 'medium'）
+  getFontSize(): string {
+    const config = this.getConfig();
+    const fontSize = config.settings.fontSize;
+    if (fontSize === 'small' || fontSize === 'large') {
+      return fontSize;
+    }
+    return 'medium';
+  }
+
+  // 设置字体大小并保存（同步写入 AppStorage fontScale，供全局文本缩放）
+  async setFontSize(fontSize: string): Promise<boolean> {
+    if (fontSize !== 'small' && fontSize !== 'medium' && fontSize !== 'large') {
+      return false;
+    }
+    if (!this.config) {
+      return false;
+    }
+
+    this.config.settings.fontSize = fontSize;
+    const success = await this.saveConfig();
+    if (success) {
+      AppStorage.setOrCreate('fontScale', this.getFontScale(fontSize));
+    }
+    return success;
+  }
+
+  // 字体档位 → 缩放系数（纯函数，供 UI 读取）
+  getFontScale(fontSize: string): number {
+    if (fontSize === 'small') {
+      return 0.9;
+    }
+    if (fontSize === 'large') {
+      return 1.15;
+    }
+    return 1.0;
   }
 
   // 重置为默认配置

@@ -9,6 +9,7 @@ export interface AccountProfile {
   gender: string;
   avatar: string;
   hasCustomAvatar: boolean;
+  signature: string;
 }
 
 // 主题设置（UI 层）

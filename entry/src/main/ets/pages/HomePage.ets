@@ -36,6 +36,7 @@ export struct HomePage {
   };
   @State @Watch('onBirthDateChanged') birthDate: Date = new Date('1990-01-01T00:00:00Z');
   @State @Watch('onTargetAgeChanged') targetAge: number = 80; // 目标年龄，默认80岁
+  @State signature: string = ''; // 签名/座右铭（更新计划一期）
   @State userConfig: UserConfig | null = null;
   @State isAccumulatedMode: boolean = true; // true: 累计模式, false: 非累计模式
   @State isRemainingMode: boolean = false; // true: 剩余模式, false: 已存活模式
@@ -130,6 +131,9 @@ export struct HomePage {
     this.configManager = await ConfigManager.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext);
     this.userConfig = this.configManager.getConfig();
     
+    // 加载签名（可选字段，旧配置缺省为空）
+    this.signature = this.userConfig?.profile?.signature ?? '';
+    
     // 加载出生日期
     this.birthDate = this.configManager.getBirthDate();
     
@@ -155,6 +159,8 @@ export struct HomePage {
         if (newBirthDate.getTime() !== this.birthDate.getTime()) {
           this.birthDate = newBirthDate
         }
+        // 同步刷新签名（我的页保存后）
+        this.signature = this.configManager.getConfig()?.profile?.signature ?? ''
       }
     })
   }
@@ -347,6 +353,17 @@ export struct HomePage {
               .fontSize(14)
               .fontColor(this.themeColors.textSecondary)
               .margin({ top: 6 })
+
+            // 签名/座右铭（有值才展示，更新计划一期）
+            if (this.signature && this.signature.length > 0) {
+              Text(this.signature)
+                .fontSize(15)
+                .fontColor(this.themeColors.primary)
+                .fontStyle(FontStyle.Italic)
+                .margin({ top: 8 })
+                .maxLines(2)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
         }
         .width('100%')
         .alignItems(HorizontalAlign.Center)

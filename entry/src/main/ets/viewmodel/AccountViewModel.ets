@@ -55,7 +55,8 @@ export class AccountViewModel {
       birthday: '1990-01-15',
       gender: rm ? rm.getStringByNameSync('gender_other') : '',
       avatar: '',
-      hasCustomAvatar: false
+      hasCustomAvatar: false,
+      signature: ''
     }
 
     if (!this.configManager) {
@@ -79,6 +80,11 @@ export class AccountViewModel {
       // 加载性别
       if (profile.gender && profile.gender.length > 0) {
         defaultProfile.gender = AccountUtils.convertGenderToDisplay(profile.gender, rm)
+      }
+
+      // 加载签名（可选字段，旧配置缺省为空）
+      if (profile.signature && profile.signature.length > 0) {
+        defaultProfile.signature = profile.signature
       }
 
       Logger.info('用户资料加载成功')
@@ -380,7 +386,7 @@ export class AccountViewModel {
   }
 
   // 保存用户资料
-  async saveProfile(name: string, birthday: string, gender: string, avatarPath: string): Promise<boolean> {
+  async saveProfile(name: string, birthday: string, gender: string, avatarPath: string, signature: string): Promise<boolean> {
     if (!this.configManager) {
       Logger.error('配置管理器未初始化')
       return false
@@ -390,8 +396,8 @@ export class AccountViewModel {
       // 转换性别格式
       const genderStorage = AccountUtils.convertGenderToStorage(gender, this.getRm())
 
-      // 保存到配置管理器
-      const success = await this.configManager.updateProfile(name, birthday, genderStorage, avatarPath)
+      // 保存到配置管理器（签名可选字段，更新计划一期）
+      const success = await this.configManager.updateProfile(name, birthday, genderStorage, avatarPath, signature)
 
       if (success) {
         Logger.info('用户资料保存成功')
@@ -409,6 +415,22 @@ export class AccountViewModel {
   // 获取配置管理器
   getConfigManager(): ConfigManager | null {
     return this.configManager
+  }
+
+  // 获取字体大小设置（更新计划一期）
+  getFontSize(): string {
+    if (!this.configManager) {
+      return 'medium'
+    }
+    return this.configManager.getFontSize()
+  }
+
+  // 设置字体大小（持久化 + AppStorage fontScale）
+  async setFontSize(fontSize: string): Promise<boolean> {
+    if (!this.configManager) {
+      return false
+    }
+    return await this.configManager.setFontSize(fontSize)
   }
 
   // 获取上下文

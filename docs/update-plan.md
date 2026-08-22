@@ -171,7 +171,7 @@
 
 | 期次 | 建议版本 | 描述 | 状态 | 完成日期 | 备注 |
 | --- | --- | --- | --- | --- | --- |
-| 一期 | 2.1 | 轻量增强：周数/总天数、生日提醒、签名、字体大小（纯函数 + 可选字段） | 🔄 | 进行中 | 轮次 1 完成 3 个纯函数 + 单测（15 用例）+ HomePage 展示；签名/字体设置待做（轮次 2） |
+| 一期 | 2.1 | 轻量增强：周数/总天数、生日提醒、签名、字体大小（纯函数 + 可选字段） | ✅ | 2026-08-22 | 轮次 1~2 完成：3 个生命里程碑纯函数 + 15 单测 + HomePage 展示 + 签名（编辑/我的页/首页展示）+ 字体大小设置（记录内容缩放，AppStorage fontScale）；涉及数据模型可选字段，需 §8 备份导入回归 |
 | 二期 | 2.2 | 记录体验：心情标记（🔥）、撤销删除（`LifeRecord.mood?`） | ⬜ | — | 涉及数据模型扩展，需 §8 备份导入回归 |
 | 三期 | 2.3 | 效率与隐私：缓存清理、隐私模式、记录模板 | ⬜ | — | — |
 | 四期 | 2.4 | 提醒与引导：每日提醒通知（🔥）、引导页 | ⬜ | — | **开工前先做通知能力验证**（§2 矩阵） |
@@ -246,6 +246,32 @@
 - 待 DevEco 编译 + 实机验证（首页新增行显示正确；生日当天显示 🎂 文案）
 
 **下一轮计划**：一期剩余两项 — 签名/座右铭、字体大小设置（均新增可选字段，需 §8 备份导入回归）
+
+### 轮次 2 — 2026-08-22（一期完成：签名/座右铭 + 字体大小设置）
+
+**本轮目标**：完成一期剩余两项——签名/座右铭、字体大小设置，一期全部收口。
+
+**涉及文件**：
+- `model/UserConfigModel.ets`（`UserProfile.signature?` + `AppSettings.fontSize?` 可选字段，双工厂默认值）
+- `config/ConfigManager.ets`（`updateProfile` 第 5 参 signature；`getFontSize`/`setFontSize`/`getFontScale`；init 时同步 `AppStorage('fontScale')`）
+- `viewmodel/AccountViewModel.ets`（`loadUserProfile` 读签名、`saveProfile` 5 参透传、`getFontSize`/`setFontSize`）
+- `model/AccountModel.ets`（`AccountProfile.signature`）；`components/user/UserInfoSection.ets`（`UserInfo.userSignature` + 用户名下展示）
+- `components/dialog/EditProfileDialog.ets`（签名输入框 + onSave 4 参）
+- `pages/AccountPage.ets`（签名映射/透传、字体大小设置项三选、toast）
+- `pages/HomePage.ets`（标题区签名展示 + RefreshManager 同步）
+- `components/record/RecordCard.ets`（记录内容 fontSize/lineHeight × fontScale）
+- `resources/base|en_US/element/string.json`（+8 key：signature/signature_hint/font_size_*，329 key × 2）
+
+**已完成**：
+- [x] 签名：编辑资料弹窗输入 → 持久化（可选字段，旧配置缺省空）→ 我的页用户名下 + 首页标题区展示（有值才显示）
+- [x] 字体：我的页设置项（小/中/大）→ `AppSettings.fontSize` 持久化 + `AppStorage('fontScale')`（0.9/1.0/1.15）→ 时间线记录内容文本缩放；**启动时 init 同步 fontScale，重启不丢失**
+- [x] 兼容性：`updateProfile` 未传 signature 保留现值（saveAvatarPath 4 参调用不受影响）；旧配置缺字段走默认
+
+**遗留问题**：
+- 字体缩放目前仅作用于记录内容文本（RecordCard），其余页面文本未缩放（后续可扩展）
+- 待 DevEco 编译 + 实机验证：签名编辑/展示、字体三档切换即时生效、重启后字体保持、旧备份导入（新增可选字段）
+
+**下一轮计划**：二期 — 心情标记（🔥，`LifeRecord.mood?`）+ 撤销删除；开工前读 §2 矩阵与 §9 检查清单
 
 ---
 

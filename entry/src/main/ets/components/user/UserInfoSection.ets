@@ -8,6 +8,7 @@ export interface UserInfo {
   userGender: string
   userAvatar: string
   hasCustomAvatar: boolean
+  userSignature: string
 }
 
 @Component
@@ -21,7 +22,8 @@ export struct UserInfoSection {
     userBirthday: '1990-01-15',
     userGender: '',
     userAvatar: '',
-    hasCustomAvatar: false
+    hasCustomAvatar: false,
+    userSignature: ''
   }
   
   // 编辑资料回调
@@ -138,6 +140,17 @@ export struct UserInfoSection {
         .fontWeight(FontWeight.Bold)
         .fontColor(this.themeColors.textPrimary)
         .margin({ bottom: 16 })
+
+      // 签名/座右铭（有值才展示，更新计划一期）
+      if (this.userInfo.userSignature && this.userInfo.userSignature.length > 0) {
+        Text(this.userInfo.userSignature)
+          .fontSize(14)
+          .fontColor(this.themeColors.textSecondary)
+          .textAlign(TextAlign.Center)
+          .maxLines(2)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .margin({ bottom: 16 })
+      }
 
       // 用户信息标签
       Row() {

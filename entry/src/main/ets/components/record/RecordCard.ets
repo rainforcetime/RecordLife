@@ -32,6 +32,9 @@ export struct RecordCard {
   
   // 搜索关键词（用于高亮）
   @Prop searchKeyword: string = ''
+
+  // 全局字体缩放系数（更新计划一期；AppStorage fontScale 由字体大小设置写入）
+  @StorageProp('fontScale') fontScale: number = 1.0
   
   // 回调函数
   onEdit?: (record: LifeRecord) => void
@@ -167,22 +170,22 @@ export struct RecordCard {
     if (keyword.length === 0) {
       // 无关键词，直接显示原文
       Text(text)
-        .fontSize(15)
+        .fontSize(15 * this.fontScale)
         .fontColor(this.themeColors.textPrimary)
         .width('100%')
-        .lineHeight(22)
+        .lineHeight(22 * this.fontScale)
     } else {
       // 有关键词，分段高亮显示
       Text() {
         ForEach(this.splitTextByKeyword(text, keyword), (segment: TextSegment) => {
           Span(segment.text)
-            .fontSize(15)
+            .fontSize(15 * this.fontScale)
             .fontColor(segment.isHighlight ? this.themeColors.primary : this.themeColors.textPrimary)
             .fontWeight(segment.isHighlight ? FontWeight.Bold : FontWeight.Normal)
         }, (segment: TextSegment, index: number) => `segment-${index}`)
       }
       .width('100%')
-      .lineHeight(22)
+      .lineHeight(22 * this.fontScale)
     }
   }
   

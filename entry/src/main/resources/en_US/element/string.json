@@ -1283,6 +1283,38 @@
     {
       "name": "birthday_today",
       "value": "🎂 Birthday today!"
+    },
+    {
+      "name": "signature",
+      "value": "Signature & motto"
+    },
+    {
+      "name": "signature_hint",
+      "value": "Enter a signature or motto"
+    },
+    {
+      "name": "font_size_settings",
+      "value": "Font size"
+    },
+    {
+      "name": "font_size_small",
+      "value": "Small"
+    },
+    {
+      "name": "font_size_medium",
+      "value": "Medium"
+    },
+    {
+      "name": "font_size_large",
+      "value": "Large"
+    },
+    {
+      "name": "font_size_saved",
+      "value": "Font size saved"
+    },
+    {
+      "name": "font_size_save_failed",
+      "value": "Failed to save font size"
     }
   ]
 }

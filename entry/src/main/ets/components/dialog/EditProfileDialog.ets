@@ -9,9 +9,10 @@ export struct EditProfileDialog {
   @State editBirthday: string = ''
   @State editGender: string = ''
   @State selectedGenderIndex: number = 0
+  @State editSignature: string = ''
 
   // 回调函数
-  onSave: (name: string, birthday: string, gender: string) => void = () => {}
+  onSave: (name: string, birthday: string, gender: string, signature: string) => void = () => {}
 
   // 弹窗控制器
   controller: CustomDialogController
@@ -20,6 +21,7 @@ export struct EditProfileDialog {
   @Prop userName: string = ''
   @Prop userBirthday: string = ''
   @Prop userGender: string = ''
+  @Prop userSignature: string = ''
   
   // 主题颜色配置
   @Prop themeColors: ThemeColors = ThemeConfig.getColors(false)
@@ -29,6 +31,7 @@ export struct EditProfileDialog {
     this.editName = this.userName
     this.editBirthday = this.userBirthday
     this.editGender = this.userGender
+    this.editSignature = this.userSignature
     this.selectedGenderIndex = this.getGenderOptions().indexOf(this.userGender)
     if (this.selectedGenderIndex < 0) {
       this.selectedGenderIndex = 0
@@ -140,6 +143,28 @@ export struct EditProfileDialog {
         .padding(12)
       }
       .width('100%')
+      .margin({ bottom: 20 })
+
+      // 签名/座右铭输入（更新计划一期）
+      Column() {
+        Text($r('app.string.signature'))
+          .fontSize(14)
+          .fontColor(this.themeColors.textSecondary)
+          .width('100%')
+          .margin({ bottom: 8 })
+
+        TextInput({ text: this.editSignature, placeholder: $r('app.string.signature_hint') })
+          .fontSize(16)
+          .height(45)
+          .backgroundColor(this.themeColors.background)
+          .fontColor(this.themeColors.textPrimary)
+          .placeholderColor(this.themeColors.textTertiary)
+          .borderRadius(8)
+          .onChange((value: string) => {
+            this.editSignature = value
+          })
+      }
+      .width('100%')
       .margin({ bottom: 30 })
 
       // 操作按钮
@@ -171,7 +196,7 @@ export struct EditProfileDialog {
             }
 
             // 调用保存回调
-            this.onSave(this.editName.trim(), this.editBirthday, this.editGender)
+            this.onSave(this.editName.trim(), this.editBirthday, this.editGender, this.editSignature.trim())
 
             // 关闭弹窗
             this.controller.close()
