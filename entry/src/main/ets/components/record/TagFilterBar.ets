@@ -2,6 +2,7 @@
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { Tag, DEFAULT_TAGS, getAllTags } from '../../common/types'
 import { TagService } from '../../service/TagService'
+import { common } from '@kit.AbilityKit'
 import { promptAction } from '@kit.ArkUI'
 
 @Component
@@ -26,7 +27,7 @@ export struct TagFilterBar {
 
   async aboutToAppear() {
     try {
-      this.tagService = await TagService.getInstance()
+      this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.loadTags()
     } catch (error) {
       console.error('[TagFilterBar] 初始化失败: ' + JSON.stringify(error))

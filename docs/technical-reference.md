@@ -214,7 +214,7 @@ interface DateDifference { years; months; days }
 | `BackupManager` | service/BackupManager.ets:19 | `await BackupManager.getInstance()` | 创建/恢复 zip 备份 |
 | `RefreshManager` | common/managers/RefreshManager.ets:5 | `RefreshManager.getInstance()`（同步） | 跨页刷新观察者 |
 
-> 所有单例均从 `AppStorage.get('uiContext')` 获取上下文，**无依赖注入**（重构 A5）；组件内直接调用单例分布见 §8 表格。
+> 所有单例均支持 `getInstance(context?)` 显式注入（A5 已解决，轮次 17）：context 注入优先，未传时回退 `AppStorage.get('uiContext')`；EntryAbility 入口注入 `this.context`，各页面/组件/Handler 传 `getUIContext().getHostContext()` 或自身 context。
 
 ### 5.3 RefreshManager 跨页刷新
 
@@ -544,7 +544,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | 7 | `uiContext` 获取失败时 `getPromptAction` 等生命周期初始化风险 | NowPage.ets:82 等 | B7 |
 | 8 | ~~`uriToSandboxPath` 三处重复实现~~ ✅ 已收敛 | 统一至 `common/utils/ImagePathUtils.ets`（P3 轮次 4）；MorePageHelper 保留委托兼容 | C1 已解决 |
 | 9 | ~~无业务单测~~ ✅ 已解决（15 用例）；ViewModel fileIo 已下沉 | NowViewModel 的 fileIo 已下沉至 `service/ImageFileService`（P3 轮次 4）；AccountViewModel 仍直接 import fileIo（loadSavedAvatar 用）；单测见 `entry/src/test/`（P6 轮次 11） | A3/C2/P4 |
-| 10 | 页面/组件硬依赖单例 + AppStorage，不可注入 | 全工程 | A5/P6 |
+| 10 | ~~页面/组件硬依赖单例 + AppStorage，不可注入~~ ✅ 已解决 | 单例 `getInstance(context?)` 支持显式注入 + AppStorage 兜底（A5 轮次 17） | A5/P6 已解决 |
 | 11 | `imagePaths` 存在「URI」与「沙箱路径」两种历史格式 | §4.3 | 重构注意 |
 | 12 | 示例数据含预设表外标签 id（`entertainment`/`family`） | NowViewModel.ets:139/165 | 显示回退 |
 | 13 | plan §0.1 备份格式快照与当前代码有出入（图片文件名/records 文件名/记录数组） | §6.2 ⚠️ | 验证以实际代码为准 |

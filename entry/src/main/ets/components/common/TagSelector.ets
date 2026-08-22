@@ -2,6 +2,7 @@
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { Tag, DEFAULT_TAGS, getAllTags } from '../../common/types'
 import { TagService } from '../../service/TagService'
+import { common } from '@kit.AbilityKit'
 
 @Component
 export struct TagSelector {
@@ -21,7 +22,7 @@ export struct TagSelector {
 
   async aboutToAppear() {
     try {
-      this.tagService = await TagService.getInstance()
+      this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.loadTags()
     } catch (error) {
       console.error('[TagSelector] 初始化失败: ' + JSON.stringify(error))
@@ -162,7 +163,7 @@ export struct TagDisplay {
 
   async aboutToAppear() {
     try {
-      this.tagService = await TagService.getInstance()
+      this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.loadTags()
     } catch (error) {
       console.error('[TagDisplay] 初始化失败: ' + JSON.stringify(error))

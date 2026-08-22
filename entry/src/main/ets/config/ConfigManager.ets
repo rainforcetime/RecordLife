@@ -16,34 +16,30 @@ export class ConfigManager {
 
   private constructor() {}
 
-  // 获取单例实例
-  static async getInstance(): Promise<ConfigManager> {
+  // 获取单例实例（支持显式注入 context，A5 构造器注入；未传时回退 AppStorage）
+  static async getInstance(context?: common.UIAbilityContext): Promise<ConfigManager> {
     if (!ConfigManager.instance) {
       ConfigManager.instance = new ConfigManager();
-      await ConfigManager.instance.init();
-    } else if (!ConfigManager.instance.context) {
-      // 如果 instance 存在但 context 未初始化，重新初始化
-      console.info('ConfigManager.getInstance: context 未初始化，重新初始化');
-      await ConfigManager.instance.init();
+      await ConfigManager.instance.init(context);
+    } else if (context && !ConfigManager.instance.context) {
+      // 已有 instance 但 context 未初始化，用显式传入的 context 重新初始化
+      console.info('ConfigManager.getInstance: 使用注入的 context 重新初始化');
+      await ConfigManager.instance.init(context);
     }
     return ConfigManager.instance;
   }
 
-  // 初始化配置管理器
-  private async init(): Promise<void> {
+  // 初始化配置管理器（context 显式注入优先，否则回退 AppStorage）
+  private async init(context?: common.UIAbilityContext): Promise<void> {
     console.info('ConfigManager.init 开始')
     
     try {
-      // 获取 Preferences 实例
-      // 使用 UIContext 获取上下文（替代已废弃的 getContext）
-      let uiContext = AppStorage.get('uiContext') as common.UIAbilityContext;
-      console.info('ConfigManager.init: uiContext - ' + (uiContext ? '存在' : '不存在'))
-      
-      // 如果 uiContext 不存在，尝试从 AppStorage 获取 uiContext
+      // 优先使用显式注入的 context（A5），否则从 AppStorage 获取
+      let uiContext = context;
       if (!uiContext) {
         uiContext = AppStorage.get('uiContext') as common.UIAbilityContext;
-        console.info('ConfigManager.init: 从 AppStorage 获取 uiContext - ' + (uiContext ? '成功' : '失败'))
       }
+      console.info('ConfigManager.init: uiContext - ' + (uiContext ? '存在' : '不存在'))
       
       if (!uiContext) {
         console.warn('ConfigManager.init: uiContext 不存在，延迟初始化');

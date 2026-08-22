@@ -121,7 +121,7 @@ export struct HomePage {
 
   async aboutToAppear() {
     // 初始化配置管理器
-    this.configManager = await ConfigManager.getInstance();
+    this.configManager = await ConfigManager.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext);
     this.userConfig = this.configManager.getConfig();
     
     // 加载出生日期

@@ -3,6 +3,7 @@
 import { LifeRecord, DEFAULT_TAGS } from '../../common/types'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
+import { common } from '@kit.AbilityKit'
 
 @Component
 export struct ShareRecordCard {
@@ -13,7 +14,7 @@ export struct ShareRecordCard {
   private viewModel: NowViewModel | null = null
   
   async aboutToAppear() {
-    this.viewModel = await NowViewModel.getInstance()
+    this.viewModel = await NowViewModel.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
   }
   
   build() {

@@ -16,26 +16,29 @@ export class NowViewModel {
   
   private constructor() {}
   
-  // 获取单例实例
-  static async getInstance(): Promise<NowViewModel> {
+  // 获取单例实例（支持显式注入 context，A5；未传时回退 AppStorage）
+  static async getInstance(context?: common.UIAbilityContext): Promise<NowViewModel> {
     if (!NowViewModel.instance) {
       NowViewModel.instance = new NowViewModel()
-      await NowViewModel.instance.init()
-    } else if (!NowViewModel.instance.context) {
-      await NowViewModel.instance.init()
+      await NowViewModel.instance.init(context)
+    } else if (context && !NowViewModel.instance.context) {
+      await NowViewModel.instance.init(context)
     }
     return NowViewModel.instance
   }
   
-  // 初始化
-  private async init(): Promise<void> {
+  // 初始化（context 显式注入优先，否则回退 AppStorage）
+  private async init(context?: common.UIAbilityContext): Promise<void> {
     console.info('[NowViewModel] init 开始')
     
     // 最多重试3次，每次间隔100ms
     for (let retry = 0; retry < 3; retry++) {
       try {
-        // 获取上下文
-        let uiContext = AppStorage.get('uiContext') as common.UIAbilityContext
+        // 获取上下文（注入优先，A5）
+        let uiContext = context
+        if (!uiContext) {
+          uiContext = AppStorage.get('uiContext') as common.UIAbilityContext
+        }
         if (!uiContext) {
           uiContext = AppStorage.get('context') as common.UIAbilityContext
         }

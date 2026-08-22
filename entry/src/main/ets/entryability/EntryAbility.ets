@@ -26,11 +26,11 @@ export default class EntryAbility extends UIAbility {
   // 初始化主题设置
   private async initTheme(): Promise<void> {
     try {
-      // 初始化主题管理器（会自动从ConfigManager读取主题并初始化AppStorage）
-      const themeManager = await ThemeManager.getInstance();
+      // 初始化主题管理器（显式注入 context，A5 入口注入）
+      const themeManager = await ThemeManager.getInstance(this.context);
       
-      // 从ConfigManager获取主题设置
-      const configManager = await ConfigManager.getInstance();
+      // 从ConfigManager获取主题设置（显式注入 context）
+      const configManager = await ConfigManager.getInstance(this.context);
       const theme = configManager.getTheme();
       
       // 根据保存的主题设置应用颜色模式
@@ -69,8 +69,8 @@ export default class EntryAbility extends UIAbility {
     // 如果当前是跟随系统模式，更新 AppStorage 中的主题状态
     const currentTheme = AppStorage.get('appTheme') as string;
     if (currentTheme === 'auto') {
-      // 通知主题管理器系统主题已变化
-      const themeManager = await ThemeManager.getInstance();
+      // 通知主题管理器系统主题已变化（显式注入 context，A5）
+      const themeManager = await ThemeManager.getInstance(this.context);
       themeManager.onSystemColorModeChange(newConfig.colorMode);
     }
   }

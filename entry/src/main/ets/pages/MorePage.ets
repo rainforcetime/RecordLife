@@ -207,11 +207,11 @@ struct MorePage {
       console.info('MorePage: context 已获取 - ' + (this.context ? '成功' : '失败'))
       
       // 初始化配置管理器
-      this.configManager = await ConfigManager.getInstance()
+      this.configManager = await ConfigManager.getInstance(this.context)
       console.info('MorePage: configManager 已初始化 - ' + (this.configManager ? '成功' : '失败'))
       
       // 初始化备份管理器
-      this.backupManager = await BackupManager.getInstance()
+      this.backupManager = await BackupManager.getInstance(this.context)
       console.info('MorePage: backupManager 已初始化 - ' + (this.backupManager ? '成功' : '失败'))
     } catch (error) {
       console.error('MorePage 初始化失败: ' + JSON.stringify(error))

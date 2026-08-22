@@ -49,7 +49,7 @@ export struct EditRecordDialog {
   
   async aboutToAppear() {
     this.promptAction = this.getUIContext().getPromptAction()
-    this.viewModel = await NowViewModel.getInstance()
+    this.viewModel = await NowViewModel.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
     
     // 初始化本地数组副本
     this.localImagePaths = [...this.editImagePaths]

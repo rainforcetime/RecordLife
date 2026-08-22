@@ -161,7 +161,7 @@ export class MorePageBackupHandler {
       console.info('[MorePageBackupHandler] 用户配置已导出')
       
       // 3. 导出此刻记录
-      const viewModel = await NowViewModel.getInstance()
+      const viewModel = await NowViewModel.getInstance(context)
       const records = viewModel.getRecords()
       
       // 从AppInfoManager获取应用版本号

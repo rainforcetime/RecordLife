@@ -3,6 +3,7 @@
  * 自定义标签 CRUD：读写 ConfigManager 的 config.settings.customTags
  * 拆分自 ConfigManager（P3 重构，解决 A2 职责过重）；ConfigManager 不再承担标签管理
  */
+import { common } from '@kit.AbilityKit'
 import { ConfigManager } from '../config/ConfigManager'
 import { Tag } from '../common/types'
 
@@ -12,13 +13,13 @@ export class TagService {
 
   private constructor() {}
 
-  // 获取单例实例（内部懒加载 ConfigManager 单例）
-  static async getInstance(): Promise<TagService> {
+  // 获取单例实例（支持显式注入 context，A5；透传至 ConfigManager）
+  static async getInstance(context?: common.UIAbilityContext): Promise<TagService> {
     if (!TagService.instance) {
       TagService.instance = new TagService()
-      TagService.instance.configManager = await ConfigManager.getInstance()
+      TagService.instance.configManager = await ConfigManager.getInstance(context)
     } else if (!TagService.instance.configManager) {
-      TagService.instance.configManager = await ConfigManager.getInstance()
+      TagService.instance.configManager = await ConfigManager.getInstance(context)
     }
     return TagService.instance
   }

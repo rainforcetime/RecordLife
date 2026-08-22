@@ -810,6 +810,33 @@ entry/src/main/ets/
 
 **下一轮计划**：无（重构目标全部达成）；后续可选：A5 注入、B3 日志收敛、预设标签国际化
 
+### 轮次 17 — 2026-08-22（A5 构造器注入 · 完成）
+
+> 前置：用户要求动手实施 A5。
+
+**本轮目标**：为四个单例 + TagService 引入构造器注入能力（`getInstance(context?)` 显式传参，AppStorage 兜底），消除隐式全局依赖，提升可测试性/可替换性。
+
+**涉及文件**（21 .ets）：
+- 单例改造：`ConfigManager` / `ThemeManager` / `NowViewModel` / `BackupManager` / `TagService` 的 `getInstance(context?: common.UIAbilityContext)` + `init(context?)`——注入优先，未传回退 `AppStorage.get('uiContext')`；`ThemeManager.init` / `TagService.getInstance` 透传至 ConfigManager
+- 入口注入：`EntryAbility` 三处（initTheme ×2、onConfigurationUpdate）传 `this.context`
+- 调用方迁移（16 处）：Handler（MorePageBackupHandler/MorePageConfigHandler 传 context 参数）、页面（HomePage/NowPage/MorePage 传 `getUIContext().getHostContext()` 或 `this.context`）、ViewModel（AccountViewModel 传 `this.context`）、组件（EditRecordDialog/AddRecordSection/RecordCard/ShareRecordCard/BirthDateRow/TargetAgeRow/TagSelector/TagManagementDialog/TagFilterBar/TimelineSection 传 `getUIContext().getHostContext()`，3 个组件补 `common` import）
+
+**设计要点**：
+- 首次调用决定单例 context；`else if (context && !instance.context)` 支持"已有实例但 context 未初始化"时用注入值补初始化
+- 运行时行为不变（EntryAbility 入口注入的 this.context 与原 AppStorage 值一致）；**测试场景可显式注入 mock context**
+
+**已完成**：
+- [x] 全工程 `Xxx.getInstance()` 无参调用清零（grep 验证）
+- [x] 单例支持注入 + 兜底双路径，运行时行为等价
+- [x] 22 文件改动，静态验证通过（import / 类型 / 调用一致性）
+
+**遗留问题**：
+- ⚠️ 需 DevEco 编译 + 实机回归（App 启动主题、时间线、账号、备份导出入口、标签管理——重点确认单例首次初始化正常）
+- 组件统一通过 `getUIContext().getHostContext() as common.UIAbilityContext` 获取 context（`as` 断言），仍依赖 UIContext 宿主存在（组件生命周期内必然成立）
+- 单例仍为全局单例（`instance` 静态缓存）——彻底移除单例需更大改造，非 A5 目标
+
+**下一轮计划**：无（重构 + A5 全部完成）；可选：B3 日志收敛（统一 hilog）、预设标签国际化
+
 ### 10.3 数据兼容性验证记录
 
 | 验证时间 | 备份文件来源 | 导入结果 | 验证人 | 备注 |

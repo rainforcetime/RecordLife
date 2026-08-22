@@ -87,7 +87,7 @@ struct NowPage {
     this.promptAction = this.getUIContext().getPromptAction()
     
     // 初始化 ViewModel
-    this.viewModel = await NowViewModel.getInstance()
+    this.viewModel = await NowViewModel.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
     
     // 注册全局刷新回调
     RefreshManager.getInstance().register('NowPage', () => {
@@ -98,7 +98,7 @@ struct NowPage {
     
     // 加载自定义标签（用于搜索时标签名称匹配）
     try {
-      const ts = await TagService.getInstance()
+      const ts = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.customTags = ts.getCustomTags()
     } catch (error) {
       console.error('[NowPage] 加载自定义标签失败: ' + JSON.stringify(error))
@@ -399,7 +399,7 @@ struct NowPage {
   // 重新加载自定义标签
   private async reloadCustomTags() {
     try {
-      const ts = await TagService.getInstance()
+      const ts = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.customTags = ts.getCustomTags()
       this.tagVersion++  // 触发子组件重载标签
     } catch (error) {

@@ -26,21 +26,26 @@ export class BackupManager {
   
   private constructor() {}
   
-  // 获取单例实例
-  static async getInstance(): Promise<BackupManager> {
+  // 获取单例实例（支持显式注入 context，A5；未传时回退 AppStorage）
+  static async getInstance(context?: common.UIAbilityContext): Promise<BackupManager> {
     if (!BackupManager.instance) {
       BackupManager.instance = new BackupManager()
-      await BackupManager.instance.init()
+      await BackupManager.instance.init(context)
+    } else if (context && !BackupManager.instance.context) {
+      await BackupManager.instance.init(context)
     }
     return BackupManager.instance
   }
   
-  // 初始化
-  private async init(): Promise<void> {
+  // 初始化（context 显式注入优先，否则回退 AppStorage）
+  private async init(context?: common.UIAbilityContext): Promise<void> {
     console.info('[BackupManager] init 开始')
     
-    // 获取上下文
-    let uiContext = AppStorage.get('uiContext') as common.UIAbilityContext
+    // 获取上下文（注入优先，A5）
+    let uiContext = context
+    if (!uiContext) {
+      uiContext = AppStorage.get('uiContext') as common.UIAbilityContext
+    }
     if (!uiContext) {
       uiContext = AppStorage.get('context') as common.UIAbilityContext
     }

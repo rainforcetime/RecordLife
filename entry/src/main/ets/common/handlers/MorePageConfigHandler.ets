@@ -148,7 +148,7 @@ export class MorePageConfigHandler {
   static async deleteAllRecords(context: common.UIAbilityContext): Promise<number> {
     try {
       // 1. 获取所有记录
-      const viewModel = await NowViewModel.getInstance()
+      const viewModel = await NowViewModel.getInstance(context)
       const records = viewModel.getRecords()
       
       // 2. 删除沙盒目录下的所有文件和目录

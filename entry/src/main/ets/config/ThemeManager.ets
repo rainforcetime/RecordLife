@@ -16,20 +16,20 @@ export class ThemeManager {
   
   private constructor() {}
   
-  // 获取单例实例（异步模式，统一与其他Manager一致）
-  static async getInstance(): Promise<ThemeManager> {
+  // 获取单例实例（支持显式注入 context，A5；未传时回退 AppStorage）
+  static async getInstance(context?: common.UIAbilityContext): Promise<ThemeManager> {
     if (!ThemeManager.instance) {
       ThemeManager.instance = new ThemeManager()
-      await ThemeManager.instance.init()
+      await ThemeManager.instance.init(context)
     }
     return ThemeManager.instance
   }
   
-  // 初始化主题管理器
-  private async init(): Promise<void> {
+  // 初始化主题管理器（context 传递至 ConfigManager）
+  private async init(context?: common.UIAbilityContext): Promise<void> {
     try {
-      // 获取ConfigManager实例
-      this.configManager = await ConfigManager.getInstance()
+      // 获取ConfigManager实例（传递注入的 context）
+      this.configManager = await ConfigManager.getInstance(context)
       
       // 从ConfigManager读取主题设置
       const savedTheme = this.configManager.getTheme() as ThemeMode

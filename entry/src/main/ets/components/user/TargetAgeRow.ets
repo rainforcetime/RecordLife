@@ -1,6 +1,7 @@
 // 目标年龄选择组件
 import { ConfigManager } from '../../config/ConfigManager';
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig';
+import { common } from '@kit.AbilityKit';
 
 @Component
 export struct TargetAgeRow {
@@ -13,7 +14,7 @@ export struct TargetAgeRow {
   private configManager: ConfigManager | null = null;
 
   aboutToAppear() {
-    ConfigManager.getInstance().then((manager: ConfigManager) => {
+    ConfigManager.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext).then((manager: ConfigManager) => {
       this.configManager = manager;
     });
   }

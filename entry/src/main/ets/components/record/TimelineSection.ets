@@ -4,6 +4,7 @@ import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { RecordCard } from './RecordCard'
 import { ColorUtils } from '../../common/ColorUtils'
 import { TagService } from '../../service/TagService'
+import { common } from '@kit.AbilityKit'
 
 // 日期分组数据结构
 interface DateGroup {
@@ -53,7 +54,7 @@ export struct TimelineSection {
   
   async aboutToAppear() {
     try {
-      this.tagService = await TagService.getInstance()
+      this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
       this.customTags = this.tagService.getCustomTags()
     } catch (error) {
       console.error('[TimelineSection] 初始化失败: ' + JSON.stringify(error))

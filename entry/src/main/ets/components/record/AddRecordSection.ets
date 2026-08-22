@@ -41,7 +41,7 @@ export struct AddRecordSection {
     // 获取 PromptAction
     this.promptAction = this.getUIContext().getPromptAction()
     // 同步获取已初始化的 ViewModel 实例
-    NowViewModel.getInstance().then((vm) => {
+    NowViewModel.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext).then((vm) => {
       this.viewModel = vm
       console.info('[AddRecordSection] ViewModel 获取成功')
     })

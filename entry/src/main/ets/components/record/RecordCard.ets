@@ -53,7 +53,7 @@ export struct RecordCard {
   private shareCardId: string = ''
   
   async aboutToAppear() {
-    this.viewModel = await NowViewModel.getInstance()
+    this.viewModel = await NowViewModel.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
     // 初始化分享卡片ID
     this.shareCardId = `share_card_${this.record.id}`
   }

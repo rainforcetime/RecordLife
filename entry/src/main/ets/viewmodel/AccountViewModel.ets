@@ -28,10 +28,10 @@ export class AccountViewModel {
       this.context = context
       console.info('AccountViewModel: context 已获取 - ' + (this.context ? '成功' : '失败'))
       
-      this.configManager = await ConfigManager.getInstance()
+      this.configManager = await ConfigManager.getInstance(this.context)
       console.info('AccountViewModel: configManager 已初始化 - ' + (this.configManager ? '成功' : '失败'))
       
-      this.themeManager = await ThemeManager.getInstance()
+      this.themeManager = await ThemeManager.getInstance(this.context)
       console.info('AccountViewModel: themeManager 已初始化 - ' + (this.themeManager ? '成功' : '失败'))
     } catch (error) {
       console.error('AccountViewModel 初始化失败: ' + JSON.stringify(error))

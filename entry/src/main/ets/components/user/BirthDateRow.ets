@@ -2,6 +2,7 @@
 import { ConfigManager } from '../../config/ConfigManager';
 import { TimeUtils } from '../../common/utils/TimeUtils';
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig';
+import { common } from '@kit.AbilityKit';
 
 @Component
 export struct BirthDateRow {
@@ -14,7 +15,7 @@ export struct BirthDateRow {
   private configManager: ConfigManager | null = null;
 
   aboutToAppear() {
-    ConfigManager.getInstance().then(manager => {
+    ConfigManager.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext).then(manager => {
       this.configManager = manager;
     });
   }

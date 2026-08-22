@@ -2,6 +2,7 @@
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { Tag } from '../../common/types'
 import { TagService } from '../../service/TagService'
+import { common } from '@kit.AbilityKit'
 import { RefreshManager } from '../../common/managers/RefreshManager'
 
 // 预设可选颜色
@@ -44,7 +45,7 @@ export struct TagManagementDialog {
 
   async aboutToAppear() {
     console.info('[TagMgmtDialog] aboutToAppear 开始')
-    this.tagService = await TagService.getInstance()
+    this.tagService = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
     console.info('[TagMgmtDialog] tagService 初始化完成: ' + (this.tagService !== null))
     this.loadTags()
     console.info('[TagMgmtDialog] aboutToAppear 完成, customTags count: ' + this.customTags.length)
