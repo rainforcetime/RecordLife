@@ -82,6 +82,11 @@ struct NowPage {
   
   // 编辑心情时的临时变量（更新计划二期；'' = 未选择）
   @State private editMood: string = ''
+
+  // 撤销删除提示条（更新计划二期）
+  @State private showUndoBar: boolean = false
+  @State private undoCount: number = 1
+  private undoBarTimer: number = -1
   
   // 记录此刻弹窗
   @State private showAddRecordDialog: boolean = false
@@ -349,6 +354,36 @@ struct NowPage {
         dragBar: true,
         showClose: true
       })
+      
+      // 撤销删除提示条（更新计划二期；全屏容器点击穿透，仅提示条区域可交互）
+      if (this.showUndoBar) {
+        Column() {
+          Row() {
+            Text($r('app.string.record_deleted', this.undoCount))
+              .fontSize(14)
+              .fontColor('#FFFFFF')
+              .layoutWeight(1)
+
+            Text($r('app.string.undo_delete'))
+              .fontSize(14)
+              .fontColor('#4DA3FF')
+              .fontWeight(FontWeight.Bold)
+              .onClick(() => {
+                this.onUndoDelete()
+              })
+          }
+          .width('92%')
+          .padding({ left: 16, right: 12, top: 12, bottom: 12 })
+          .backgroundColor('#E6202020')
+          .borderRadius(12)
+        }
+        .width('100%')
+        .height('100%')
+        .justifyContent(FlexAlign.End)
+        .alignItems(HorizontalAlign.Center)
+        .padding({ bottom: 104 })  // 避开右下角浮动按钮
+        .hitTestBehavior(HitTestMode.Transparent)
+      }
     }
     .width('100%')
     .height('100%')
@@ -643,11 +678,8 @@ struct NowPage {
             const success = await this.viewModel.deleteRecord(record.id)
             
             if (success) {
-              try {
-                this.promptAction.showToast({ message: $r('app.string.delete_success') })
-              } catch (error) {
-                Logger.error('[NowPage] showToast failed: ' + JSON.stringify(error))
-              }
+              // 显示撤销提示条（3 秒窗口，替代成功 toast；更新计划二期）
+              this.showUndoBarWithCount(1)
               // 通过 RefreshManager 统一刷新（已注册回调，自动触发 refreshTimeline）
               RefreshManager.getInstance().refresh()
             } else {
@@ -668,6 +700,48 @@ struct NowPage {
         }
       }
     })
+  }
+
+  // ==================== 撤销删除（更新计划二期） ====================
+
+  // 显示撤销提示条（3 秒后自动隐藏）
+  private showUndoBarWithCount(count: number) {
+    this.undoCount = count
+    this.showUndoBar = true
+    if (this.undoBarTimer !== -1) {
+      clearTimeout(this.undoBarTimer)
+    }
+    this.undoBarTimer = setTimeout(() => {
+      this.undoBarTimer = -1
+      this.showUndoBar = false
+    }, 3000)
+  }
+
+  // 隐藏撤销提示条
+  private hideUndoBar() {
+    if (this.undoBarTimer !== -1) {
+      clearTimeout(this.undoBarTimer)
+      this.undoBarTimer = -1
+    }
+    this.showUndoBar = false
+  }
+
+  // 撤销删除
+  private async onUndoDelete() {
+    if (!this.viewModel) {
+      return
+    }
+    this.hideUndoBar()
+    const success = await this.viewModel.undoDelete()
+    if (success) {
+      try {
+        this.promptAction?.showToast({ message: $r('app.string.undo_success') })
+      } catch (error) {
+        Logger.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+      }
+      // 通过 RefreshManager 统一刷新（恢复的记录重新出现在时间线）
+      RefreshManager.getInstance().refresh()
+    }
   }
 }
 

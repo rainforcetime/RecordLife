@@ -1359,6 +1359,18 @@
     {
       "name": "mood_picker_hint",
       "value": "Pick a mood emoji"
+    },
+    {
+      "name": "record_deleted",
+      "value": "%d record(s) deleted"
+    },
+    {
+      "name": "undo_delete",
+      "value": "Undo"
+    },
+    {
+      "name": "undo_success",
+      "value": "Record restored"
     }
   ]
 }

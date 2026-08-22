@@ -1359,6 +1359,18 @@
     {
       "name": "mood_picker_hint",
       "value": "选择心情 emoji"
+    },
+    {
+      "name": "record_deleted",
+      "value": "已删除 %d 条记录"
+    },
+    {
+      "name": "undo_delete",
+      "value": "撤销"
+    },
+    {
+      "name": "undo_success",
+      "value": "已恢复删除"
     }
   ]
 }

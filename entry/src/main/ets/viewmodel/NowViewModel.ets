@@ -296,25 +296,84 @@ export class NowViewModel {
     return this.records.filter(r => r.isPinned === true)
   }
 
-  // 删除记录
+  // ==================== 撤销删除（更新计划二期） ====================
+
+  // 待撤销的已删除记录（内存暂存，不落盘；3 秒窗口内可撤销，超时清理图片）
+  private pendingDeletedRecords: LifeRecord[] = []
+  private pendingDeleteTimer: number = -1
+
+  // 删除记录（立即持久化删除；3 秒内可撤销；图片文件延迟到撤销窗口结束后清理）
   async deleteRecord(id: string): Promise<boolean> {
     const index = this.records.findIndex(r => r.id === id)
     if (index === -1) {
       Logger.error('[NowViewModel] 未找到记录: ' + id)
       return false
     }
-    
+
     const record = this.records[index]
-    
-    // 如果有图片，删除所有图片文件
-    if (this.context && record.imagePaths && record.imagePaths.length > 0) {
-      ImageFileService.deleteImageFiles(this.context, record.imagePaths)
-    }
-    
     this.records.splice(index, 1)
+    this.pendingDeletedRecords.push(record)
+    const success = await this.saveRecords()
+
+    if (!success) {
+      // 保存失败，回滚
+      this.records.splice(index, 0, record)
+      this.pendingDeletedRecords.pop()
+      return false
+    }
+
+    // 重置 3 秒撤销窗口：到期后清理图片文件
+    this.resetPendingDeleteTimer()
+    return true
+  }
+
+  // 撤销删除（3 秒窗口内；恢复暂存记录并持久化）
+  async undoDelete(): Promise<boolean> {
+    if (this.pendingDeletedRecords.length === 0) {
+      return false
+    }
+    // 取消图片清理计时
+    if (this.pendingDeleteTimer !== -1) {
+      clearTimeout(this.pendingDeleteTimer)
+      this.pendingDeleteTimer = -1
+    }
+    const restored = this.pendingDeletedRecords
+    this.pendingDeletedRecords = []
+    this.records = [...this.records, ...restored]
+    // 按时间戳降序排序（与加载逻辑一致）
+    this.records.sort((a, b) => b.timestamp - a.timestamp)
     return await this.saveRecords()
   }
-  
+
+  // 是否有待撤销的删除（供 UI 判断）
+  canUndoDelete(): boolean {
+    return this.pendingDeletedRecords.length > 0
+  }
+
+  // 重置撤销窗口计时（3 秒后清理暂存记录的图片文件）
+  private resetPendingDeleteTimer() {
+    if (this.pendingDeleteTimer !== -1) {
+      clearTimeout(this.pendingDeleteTimer)
+    }
+    this.pendingDeleteTimer = setTimeout(() => {
+      this.pendingDeleteTimer = -1
+      if (this.pendingDeletedRecords.length === 0) {
+        return
+      }
+      const records = this.pendingDeletedRecords
+      this.pendingDeletedRecords = []
+      // 撤销窗口结束，真正清理图片文件
+      if (this.context) {
+        for (const r of records) {
+          if (r.imagePaths && r.imagePaths.length > 0) {
+            ImageFileService.deleteImageFiles(this.context, r.imagePaths)
+          }
+        }
+      }
+      Logger.info('[NowViewModel] 撤销窗口结束，已清理 ' + records.length + ' 条记录的图片文件')
+    }, 3000)
+  }
+
   // 构建时间线数据（纯函数已下沉至 model/RecordModel.buildTimelineData，P4，可单测）
   buildTimeline(): TimelineData {
     return buildTimelineData(this.records, TimeUtils.now())
