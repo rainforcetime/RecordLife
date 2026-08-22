@@ -8,6 +8,8 @@ import { LunarUtils } from '../common/utils/LunarUtils'
 
 // 一天的毫秒数
 const DAY_MS = 24 * 60 * 60 * 1000
+// UTC+8 偏移（毫秒）
+const TZ_OFFSET_MS = 8 * 60 * 60 * 1000
 
 // 数据看板统计结果
 export interface LifeStatistics {
@@ -142,17 +144,21 @@ export class StatisticsUtils {
   /**
    * 生命里程碑列表（按达成日期升序去重；type 供 UI 层映射文案）
    * 天数里程碑：1000 / 1 万 / 2 万 / 3 万天（出生日 + N 天）
-   * 年龄里程碑：18 / 30 / 50 岁（**按农历生日**，出生农历年 + N 年的同农历月日）
+   * 年龄里程碑：18 / 30 / 50 岁（按生日历法：'lunar'=农历生日，'solar'=公历生日）
    * 目标比例：1/4 / 1/2 / 3/4 / 目标年龄（天数比例）
-   * 说明：同日去重（保留先出现者）；年龄里程碑超出农历数据范围时回退天数计算
+   * 说明：同日去重（保留先出现者）；农历年龄里程碑超出数据范围时回退天数计算
    */
-  static getLifeMilestones(birthDate: Date, targetAge: number, now?: Date): LifeMilestone[] {
+  static getLifeMilestones(birthDate: Date, targetAge: number, now?: Date, calendar?: string): LifeMilestone[] {
     const safeTarget = targetAge > 0 ? targetAge : 80
     const base = birthDate.getTime()
     const today0 = TimeUtils.parseDate(TimeUtils.formatDate(now ?? TimeUtils.now()))
 
     // 出生日期的农历信息（农历生日计算用）
     const birthLunar = LunarUtils.solarToLunar(birthDate)
+    // 出生日期的公历月日分量（UTC+8，公历生日计算用）
+    const birthSolarYear = TimeUtils.getFullYear(birthDate)
+    const birthSolarMonth = TimeUtils.getMonth(birthDate)
+    const birthSolarDay = TimeUtils.getDate(birthDate)
 
     const candidates: Array<[string, number]> = [
       ['days_1000', 1000],
@@ -176,14 +182,20 @@ export class StatisticsUtils {
       const approxDays = candidate[1]
       let date: Date
       if (type.startsWith('age_')) {
-        // 年龄里程碑：出生农历年 + N 年 → 同农历月日（农历生日）
+        // 年龄里程碑：按生日历法计算
         const age = parseInt(type.substring(4))
-        const lunarYear = birthLunar.year + age
-        if (lunarYear <= 2100 && lunarYear >= 1900) {
-          date = LunarUtils.lunarToSolar(lunarYear, birthLunar.month, birthLunar.day, birthLunar.isLeapMonth)
+        if (calendar === 'solar') {
+          // 公历生日：出生月日 + N 年（2/29 平年由 Date.UTC 溢出滚到 3/1）
+          date = new Date(Date.UTC(birthSolarYear + age, birthSolarMonth, birthSolarDay) - TZ_OFFSET_MS)
         } else {
-          // 超出农历数据范围，回退天数计算
-          date = new Date(base + approxDays * DAY_MS)
+          // 农历生日（默认）：出生农历年 + N 年 → 同农历月日
+          const lunarYear = birthLunar.year + age
+          if (lunarYear <= 2100 && lunarYear >= 1900) {
+            date = LunarUtils.lunarToSolar(lunarYear, birthLunar.month, birthLunar.day, birthLunar.isLeapMonth)
+          } else {
+            // 超出农历数据范围，回退天数计算
+            date = new Date(base + approxDays * DAY_MS)
+          }
         }
       } else {
         // 天数/比例里程碑：出生日 + N 天

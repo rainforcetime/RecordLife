@@ -297,6 +297,24 @@ export class ConfigManager {
     return await this.saveConfig();
   }
 
+  // 获取生日历法（更新计划五期；'solar'=公历，'lunar'=农历，兜底农历）
+  getBirthdayCalendar(): string {
+    const config = this.getConfig();
+    return config.settings.birthdayCalendar === 'solar' ? 'solar' : 'lunar';
+  }
+
+  // 设置生日历法并保存
+  async setBirthdayCalendar(calendar: string): Promise<boolean> {
+    if (calendar !== 'solar' && calendar !== 'lunar') {
+      return false;
+    }
+    if (!this.config) {
+      return false;
+    }
+    this.config.settings.birthdayCalendar = calendar;
+    return await this.saveConfig();
+  }
+
   // 重置为默认配置
   async resetToDefault(): Promise<boolean> {
     this.config = await createDefaultConfig();

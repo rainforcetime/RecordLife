@@ -1545,6 +1545,14 @@
       "value": "days"
     },
     {
+      "name": "calendar_lunar",
+      "value": "Lunar"
+    },
+    {
+      "name": "calendar_solar",
+      "value": "Solar"
+    },
+    {
       "name": "life_breakdown",
       "value": "Time lived"
     },

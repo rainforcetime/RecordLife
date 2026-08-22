@@ -187,13 +187,29 @@ export class TimeUtils {
   }
 
   /**
-   * 距下次生日的天数（按农历生日计算，更新计划五期；今天生日返回 0）
-   * @param birthDate 出生日期（公历）
+   * 距下次生日的天数（更新计划五期：支持公历/农历切换；今天生日返回 0）
+   * @param birthDate 出生日期
    * @param now 基准时刻，缺省为当前时间
+   * @param calendar 'lunar'（默认，农历生日）| 'solar'（公历生日）
    * @returns 0~366
    */
-  static getDaysUntilNextBirthday(birthDate: Date, now?: Date): number {
+  static getDaysUntilNextBirthday(birthDate: Date, now?: Date, calendar?: string): number {
     const today = TimeUtils.parseDate(TimeUtils.formatDate(now ?? TimeUtils.now()));
+    if (calendar === 'solar') {
+      // 公历生日：出生月日 + N 年（2/29 平年由 Date.UTC 溢出滚到 3/1）
+      const beijing = new Date(birthDate.getTime() + TIMEZONE_OFFSET_MS);
+      const birthMonth = beijing.getUTCMonth();
+      const birthDay = beijing.getUTCDate();
+      const todayBeijing = new Date(today.getTime() + TIMEZONE_OFFSET_MS);
+      const currentSolarYear = todayBeijing.getUTCFullYear();
+      const thisYearBirthday = Date.UTC(currentSolarYear, birthMonth, birthDay) - TIMEZONE_OFFSET_MS;
+      let nextBirthday = thisYearBirthday;
+      if (thisYearBirthday < today.getTime()) {
+        nextBirthday = Date.UTC(currentSolarYear + 1, birthMonth, birthDay) - TIMEZONE_OFFSET_MS;
+      }
+      return Math.round((nextBirthday - today.getTime()) / DAY_MS);
+    }
+    // 农历生日（默认）
     const nextBirthday = LunarUtils.getNextLunarBirthday(birthDate, today);
     return Math.round((nextBirthday.getTime() - today.getTime()) / DAY_MS);
   }

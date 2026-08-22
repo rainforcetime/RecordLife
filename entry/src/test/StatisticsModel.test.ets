@@ -101,6 +101,14 @@ export default function statisticsTest() {
       expect(ms[1].date).assertEqual('2008-06-10');
     });
 
+    it('公历日历法：18 岁 = 2008-06-15（阳历生日）', 0, () => {
+      const birth = TimeUtils.parseDate('1990-06-15');
+      const ms = StatisticsUtils.getLifeMilestones(birth, 80, TimeUtils.parseDate('2025-06-15'), 'solar');
+      const age18 = ms.find(m => m.type === 'age_18');
+      expect(age18 !== undefined).assertTrue();
+      expect(age18!.date).assertEqual('2008-06-15');
+    });
+
     it('出生当天全部未达成', 0, () => {
       const birth = TimeUtils.parseDate('2025-01-01');
       const ms = StatisticsUtils.getLifeMilestones(birth, 80, TimeUtils.parseDate('2025-01-01'));

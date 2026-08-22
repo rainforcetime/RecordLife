@@ -69,4 +69,14 @@ export default function timeUtilsLifeTest() {
       expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-12-31'))).assertEqual(158);
     });
   });
+
+  describe('getDaysUntilNextBirthday（公历生日）', () => {
+    it('公历生日当天返回0', 0, () => {
+      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-15'), 'solar')).assertEqual(0);
+    });
+
+    it('公历生日已过3天 → 明年生日362天', 0, () => {
+      expect(TimeUtils.getDaysUntilNextBirthday(TimeUtils.parseDate('1990-06-15'), TimeUtils.parseDate('2025-06-18'), 'solar')).assertEqual(362);
+    });
+  });
 }
