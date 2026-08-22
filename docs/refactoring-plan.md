@@ -265,15 +265,15 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 
 ## 8. 验证清单
 
-- [ ] `hvigorw assembleHap` 编译通过，无 Error
-- [ ] 首页存活时间展示正常
-- [ ] 时间线增删改查、标签筛选、收藏正常
-- [ ] 主题明/暗切换正常
-- [ ] 账号资料编辑、统计展示正常
-- [ ] 备份 / 导入导出正常
-- [ ] 图片存储页面正常
-- [ ] 中英文文案无遗漏、无硬编码残留
-- [ ] 核心逻辑单元测试通过
+- [x] `hvigorw assembleHap` 编译通过，无 Error（每轮 DevEco 编译验证）
+- [x] 首页存活时间展示正常（累计/剩余 × 已存活/剩余 模式切换、分享）
+- [x] 时间线增删改查、标签筛选、收藏正常（含当前月展开 off-by-one 修复后回归）
+- [x] 主题明/暗切换正常（AccountUtils 映射资源化后回归）
+- [x] 账号资料编辑、统计展示正常（ViewModel 默认值资源化后回归）
+- [x] 备份 / 导入导出正常（旧备份导入实机验证 ✅，§10.3）
+- [x] 图片存储页面正常（StorageService 资源化后回归）
+- [x] 中英文文案无遗漏、无硬编码残留（B2 国际化轮次 14/15 后中英文各回归）
+- [x] 核心逻辑单元测试通过（15 用例全绿）
 
 ---
 
@@ -310,7 +310,7 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
 | — | 可测试性提升（阶段 6，hypium 单测） | ✅ | 2026-08-22 | 15 个单测覆盖 `buildTimelineData` / `formatStorageSize` / `calcUsageDays` / `validateConfig` / `TimeUtils`（见轮次 11）；⚠️ 构造器注入（A5，去除 AppStorage 硬依赖）为渐进项未全量改造 |
 | P7 | `@kit.*` 统一 & 依赖整理 | ✅ | 2026-08-22 | 8 处旧式 `@ohos.*` import（6 文件）全部统一为 `@kit.*`：`@ohos.data.preferences`→`@kit.ArkData`、`@ohos.file.fs`→`@kit.CoreFileKit`（fileIo 别名）、`@ohos.file.photoAccessHelper`→`@kit.MediaLibraryKit`、`@ohos.app.ability.common`→`@kit.AbilityKit`、`@ohos.promptAction`→`@kit.ArkUI`（见轮次 12）；`@ohos/hypium`/`@ohos/hamock` 为测试框架依赖保留 |
-| P8 | 全量回归 + 旧备份导入冒烟 | 🟦 | — | 最终验收：静态预检完成（@kit 清零 / [StorageDebug] 清零 / 15 单测通过 / 旧备份导入已验）；待实机逐项回归（见轮次 13 验证清单） |
+| P8 | 全量回归 + 旧备份导入冒烟 | ✅ | 2026-08-22 | 最终验收完成：§8 验证清单 9 项全部通过（旧备份导入实机验证见 §10.3；单测 15 用例全绿；中英文回归）；见轮次 16 |
 
 ### 10.2 逐轮工作日志
 
@@ -780,6 +780,35 @@ entry/src/main/ets/
 - `MorePageHelper` `throw new Error('读取/写入/复制/创建目录失败')` 为异常消息（拼接进失败 toast），保留中文（错误路径开发导向）
 
 **下一轮计划**：P8 实机全量回归 → 收官
+
+### 轮次 16 — 2026-08-22（P8 全量回归完成 · 重构收官）
+
+> 前置：用户逐轮实机验证全部通过（含 B2 国际化轮次 15 后中英文回归）。
+
+**本轮目标**：P8 最终验收回填——§8 验证清单 9 项全部勾选，重构收官。
+
+**验收结论**：
+- ✅ 编译无 Error（每轮 DevEco 编译）
+- ✅ 首页 / 时间线（含 off-by-one 修复后回归）/ 主题 / 账号 / 图片存储 功能回归
+- ✅ 备份 / 导入导出 + **旧备份导入冒烟**（§10.3 实机验证 ✅）
+- ✅ 中英文文案回归（B2 国际化轮次 14/15 后）
+- ✅ 单测 15 用例全绿
+
+**涉及文件**：`docs/refactoring-plan.md`（§8 清单勾选、P8 里程碑 ✅）——无代码改动。
+
+**重构最终状态**（里程碑 P0~P8 全部完成）：
+- `service/` 6 文件（ImageFileService / TagService / ZipTransferService / ConfigTransferService / StorageService / BackupManager）
+- `repository/` 2 文件（ConfigRepository / RecordRepository）；`model/` 5 文件
+- ConfigManager 18.7KB → 9.8KB；MorePageBackupHandler 19.9KB → 16.3KB；AccountViewModel 19.1KB → 13.9KB
+- `@ohos.*` 清零；`[StorageDebug]` 日志清零；UI 中文硬编码清零（数据层/异常消息保留）；15 业务单测
+
+**遗留问题**（均为渐进项，不影响发布）：
+- A5 构造器注入（去除 AppStorage 硬依赖）未全量改造
+- `TagModel` 预设标签名 / `MorePageHelper` 异常消息为数据层/错误路径，未国际化
+- `console` 调试日志收敛（B3）为渐进项
+- 硬编码颜色（标签调色板/主题判定）为有意保留
+
+**下一轮计划**：无（重构目标全部达成）；后续可选：A5 注入、B3 日志收敛、预设标签国际化
 
 ### 10.3 数据兼容性验证记录
 
