@@ -1211,6 +1211,22 @@
     {
       "name": "website_label",
       "value": "官方网站"
+    },
+    {
+      "name": "username_default",
+      "value": "用户名"
+    },
+    {
+      "name": "tag_selected",
+      "value": "已选择「%s」"
+    },
+    {
+      "name": "version_value",
+      "value": "版本 %s"
+    },
+    {
+      "name": "calc_failed",
+      "value": "计算失败"
     }
   ]
 }

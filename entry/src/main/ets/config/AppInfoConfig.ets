@@ -45,8 +45,8 @@ export class AppInfoManager {
       const bundleInfo = await bundleManager.getBundleInfoForSelf(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT);
       
       // 从资源文件读取应用名称和描述
-      const appName = await this.getResourceString('app_name', '活着');
-      const appDescription = await this.getResourceString('app_description', '记录生活，珍惜每一刻');
+      const appName = await this.getResourceString('app_name', '');
+      const appDescription = await this.getResourceString('app_description', '');
       
       // 构建应用信息
       this.appInfo = {
@@ -95,12 +95,12 @@ export class AppInfoManager {
    */
   private getDefaultAppInfo(): AppInfoConfig {
     return {
-      appName: '活着',
+      appName: '',
       appVersion: '0.0.1',
       buildNumber: this.generateBuildNumber(),
       developer: 'rainforcetime',
       website: 'https://github.com/rainforcetime/RecordLife',
-      description: '记录生活，珍惜每一刻'
+      description: ''
     };
   }
 

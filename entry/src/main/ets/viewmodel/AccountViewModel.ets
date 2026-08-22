@@ -11,6 +11,7 @@ import { AccountUtils } from '../common/utils/AccountUtils'
 import { AccountProfile, ThemeSettings, AccountDataStatistics, AvatarInfo } from '../model/AccountModel'
 import { ImageFileService } from '../service/ImageFileService'
 import { StorageService } from '../service/StorageService'
+import { resourceManager } from '@kit.LocalizationKit'
 
 // 向后兼容：AccountPage.ets 通过 AccountViewModel 导入这些类型
 export { AccountProfile, AccountDataStatistics }
@@ -37,12 +38,21 @@ export class AccountViewModel {
     }
   }
 
+  // 获取 ResourceManager（用于国际化资源读取）
+  private getRm(): resourceManager.ResourceManager | null {
+    if (!this.context) {
+      return null
+    }
+    return this.context.resourceManager
+  }
+
   // 加载用户资料
   async loadUserProfile(): Promise<AccountProfile> {
+    const rm = this.getRm()
     const defaultProfile: AccountProfile = {
-      name: '用户名',
+      name: rm ? rm.getStringByNameSync('username_default') : '',
       birthday: '1990-01-15',
-      gender: '其他',
+      gender: rm ? rm.getStringByNameSync('gender_other') : '',
       avatar: '',
       hasCustomAvatar: false
     }
@@ -67,7 +77,7 @@ export class AccountViewModel {
 
       // 加载性别
       if (profile.gender && profile.gender.length > 0) {
-        defaultProfile.gender = AccountUtils.convertGenderToDisplay(profile.gender)
+        defaultProfile.gender = AccountUtils.convertGenderToDisplay(profile.gender, rm)
       }
 
       console.info('用户资料加载成功')
@@ -80,31 +90,33 @@ export class AccountViewModel {
 
   // 加载主题设置
   async loadThemeSettings(): Promise<ThemeSettings> {
+    const rm = this.getRm()
     if (!this.configManager) {
-      return { currentTheme: '跟随系统' }
+      return { currentTheme: rm ? rm.getStringByNameSync('follow_system') : '' }
     }
 
     try {
       const config = this.configManager.getConfig()
       const theme = config.settings.theme
-      const currentTheme = AccountUtils.themeToDisplay(theme)
+      const currentTheme = AccountUtils.themeToDisplay(theme, rm)
       return { currentTheme }
     } catch (error) {
       console.error('加载主题设置失败: ' + JSON.stringify(error))
-      return { currentTheme: '跟随系统' }
+      return { currentTheme: rm ? rm.getStringByNameSync('follow_system') : '' }
     }
   }
 
   // 加载应用信息（从AppInfoManager获取）
   async loadAppInfo(): Promise<AppInfo> {
     // 默认应用信息（作为备用）
+    const rm = this.getRm()
     const defaultAppInfo: AppInfo = {
-      appName: '活着',
+      appName: rm ? rm.getStringByNameSync('app_name') : '',
       appVersion: '0.0.1',
       buildNumber: '20260521',
       developer: 'rainforcetime',
       website: 'https://github.com/rainforcetime/RecordLife',
-      description: '记录生活，珍惜每一刻'
+      description: rm ? rm.getStringByNameSync('app_desc') : ''
     };
 
     try {
@@ -128,11 +140,12 @@ export class AccountViewModel {
 
   // 加载数据统计信息
   async loadDataStatistics(): Promise<AccountDataStatistics> {
+    const rm = this.getRm()
     const defaultStatistics: AccountDataStatistics = {
       usageDays: 0,
       dataVersion: 'v0.0.1',
       lastActiveTime: '',
-      storageSize: '计算中...'
+      storageSize: rm ? rm.getStringByNameSync('calculation_hint') : ''
     }
 
     try {
@@ -150,7 +163,7 @@ export class AccountViewModel {
           usageDays: 0,
           dataVersion: `v${appVersion}`,
           lastActiveTime: '',
-          storageSize: '计算中...'
+          storageSize: rm ? rm.getStringByNameSync('calculation_hint') : ''
         };
       }
 
@@ -159,7 +172,7 @@ export class AccountViewModel {
       // 使用天数与存储大小统计已下沉至 service/StorageService（P4）
       const usageDays = StorageService.calcUsageDays(config.metadata.createdAt);
       const lastActiveTime = this.formatDateTime(new Date(config.statistics.lastActiveTime));
-      const storageSize = await StorageService.getAppStorageSize();
+      const storageSize = this.context ? await StorageService.getAppStorageSize(this.context) : ''
 
       const result: AccountDataStatistics = {
         usageDays: usageDays,
@@ -235,7 +248,7 @@ export class AccountViewModel {
 
     try {
       // 转换为存储格式
-      const theme = AccountUtils.displayToTheme(value)
+      const theme = AccountUtils.displayToTheme(value, this.getRm())
       console.info('转换后的主题: ' + theme)
 
       // 通过ThemeManager更新主题（会自动保存到ConfigManager并更新AppStorage）
@@ -374,7 +387,7 @@ export class AccountViewModel {
 
     try {
       // 转换性别格式
-      const genderStorage = AccountUtils.convertGenderToStorage(gender)
+      const genderStorage = AccountUtils.convertGenderToStorage(gender, this.getRm())
 
       // 保存到配置管理器
       const success = await this.configManager.updateProfile(name, birthday, genderStorage, avatarPath)

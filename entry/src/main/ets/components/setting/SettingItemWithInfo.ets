@@ -4,7 +4,7 @@ import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 @Component
 export struct SettingItemWithInfo {
   label: ResourceStr = ''
-  @Prop info: string = ''  // 使用@Prop装饰器，支持父组件数据更新
+  @Prop info: ResourceStr = ''  // 使用@Prop装饰器，支持父组件数据更新
   // 直接从 AppStorage 监听主题变化
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
 

@@ -21,32 +21,32 @@ export struct AccountPage {
   
   // 用户信息状态
   @State userInfo: UserInfo = {
-    userName: '张三',
+    userName: '',
     userBirthday: '1990-01-15',
-    userGender: '男',
+    userGender: '',
     userAvatar: '',
     hasCustomAvatar: false
   }
   
   // 设置项状态
-  @State currentTheme: string = '跟随系统'
+  @State currentTheme: string = ''
   
   // 数据统计
   @State statisticsInfo: AccountDataStatistics = {
     usageDays: 0,
     dataVersion: 'v0.0.1',  // 初始值，会在loadAppInfo时更新为实际版本
     lastActiveTime: '',
-    storageSize: '计算中...'
+    storageSize: ''
   }
   
   // 应用信息
   @State appInfo: AppInfo = {
-    appName: '活着',
+    appName: '',
     appVersion: '0.0.1',
     buildNumber: '20260521',
     developer: 'rainforcetime',
     website: 'https://github.com/rainforcetime/RecordLife',
-    description: '记录生活，珍惜每一刻'
+    description: ''
   }
   
   // 业务逻辑
@@ -210,6 +210,15 @@ export struct AccountPage {
     }
   }
   
+  // 主题选项（国际化：读资源）
+  private getThemeOptions(): string[] {
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    if (!rm) {
+      return []
+    }
+    return [rm.getStringByNameSync('follow_system'), rm.getStringByNameSync('light_mode'), rm.getStringByNameSync('dark_mode')]
+  }
+
   // 主题切换处理
   private async onThemeChange(value: string) {
     this.currentTheme = value
@@ -358,7 +367,7 @@ export struct AccountPage {
       SettingItemWithSelector({
         label: $r('app.string.theme_settings'),
         currentValue: this.currentTheme,
-        options: ['跟随系统', '浅色模式', '深色模式'],
+        options: this.getThemeOptions(),
         onSelect: (value: string) => {
           this.onThemeChange(value)
         }
@@ -414,7 +423,7 @@ export struct AccountPage {
       // 关于应用（信息展示）
       SettingItemWithInfo({
         label: $r('app.string.about_app'),
-        info: `版本 ${this.appInfo.appVersion}`
+        info: $r('app.string.version_value', this.appInfo.appVersion)
       })
       .onClick(() => {
         this.onAboutApp()

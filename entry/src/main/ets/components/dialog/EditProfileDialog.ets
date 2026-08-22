@@ -6,11 +6,8 @@ export struct EditProfileDialog {
   // 编辑字段状态
   @State editName: string = ''
   @State editBirthday: string = ''
-  @State editGender: string = '男'
+  @State editGender: string = ''
   @State selectedGenderIndex: number = 0
-
-  // 性别选项
-  private genderOptions: string[] = ['男', '女', '其他']
 
   // 回调函数
   onSave: (name: string, birthday: string, gender: string) => void = () => {}
@@ -31,10 +28,19 @@ export struct EditProfileDialog {
     this.editName = this.userName
     this.editBirthday = this.userBirthday
     this.editGender = this.userGender
-    this.selectedGenderIndex = this.genderOptions.indexOf(this.userGender)
+    this.selectedGenderIndex = this.getGenderOptions().indexOf(this.userGender)
     if (this.selectedGenderIndex < 0) {
       this.selectedGenderIndex = 0
     }
+  }
+
+  // 性别选项（国际化：读资源）
+  private getGenderOptions(): string[] {
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    if (!rm) {
+      return []
+    }
+    return [rm.getStringByNameSync('male'), rm.getStringByNameSync('female'), rm.getStringByNameSync('gender_other')]
   }
 
   build() {
@@ -106,7 +112,7 @@ export struct EditProfileDialog {
           .margin({ bottom: 8 })
 
         Row() {
-          ForEach(this.genderOptions, (option: string, index: number) => {
+          ForEach(this.getGenderOptions(), (option: string, index: number) => {
             Row() {
               Radio({ value: option, group: 'genderGroup' })
                 .checked(this.selectedGenderIndex === index)

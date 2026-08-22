@@ -85,7 +85,7 @@ export struct TagFilterBar {
       this.selectedTagIds = [tagId]
       const tag = this.availableTags.find(t => t.id === tagId)
       const tagName = tag ? tag.name : tagId
-      promptAction.showToast({ message: `已选择「${tagName}」`, duration: 1500 })
+      promptAction.showToast({ message: $r('app.string.tag_selected', tagName), duration: 1500 })
     }
 
     // 触发回调
@@ -109,7 +109,7 @@ export struct TagFilterBar {
       Row({ space: 0 }) {
         // "全部" 按钮
         this.ChipItem(
-          '全部',
+          $r('app.string.all'),
           '#909399',
           this.selectedTagIds.length === 0,
           () => {
@@ -137,7 +137,7 @@ export struct TagFilterBar {
   }
 
   @Builder
-  ChipItem(label: string, color: string, isSelected: boolean, onClick: () => void) {
+  ChipItem(label: ResourceStr, color: string, isSelected: boolean, onClick: () => void) {
     Text(label)
       .fontSize(12)
       .fontColor(isSelected ? '#FFFFFF' : color)

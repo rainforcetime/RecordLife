@@ -17,9 +17,9 @@ export struct UserInfoSection {
   
   // 用户信息
   @Prop userInfo: UserInfo = {
-    userName: '张三',
+    userName: '',
     userBirthday: '1990-01-15',
-    userGender: '男',
+    userGender: '',
     userAvatar: '',
     hasCustomAvatar: false
   }

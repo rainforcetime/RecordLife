@@ -1,60 +1,71 @@
 // 账号页面工具类：common/utils/AccountUtils.ets
 import { promptAction, PromptAction } from '@kit.ArkUI'
+import { resourceManager } from '@kit.LocalizationKit'
 
 // 账号页面工具方法类
 export class AccountUtils {
-  // 主题格式转换：存储格式转显示格式
-  static themeToDisplay(theme: string): string {
+  // 主题格式转换：存储格式转显示格式（显示文本国际化，需传 resourceManager）
+  static themeToDisplay(theme: string, rm: resourceManager.ResourceManager | null): string {
+    if (!rm) {
+      return ''
+    }
     switch (theme) {
       case 'light':
-        return '浅色模式'
+        return rm.getStringByNameSync('light_mode')
       case 'dark':
-        return '深色模式'
+        return rm.getStringByNameSync('dark_mode')
       case 'auto':
       default:
-        return '跟随系统'
+        return rm.getStringByNameSync('follow_system')
     }
   }
 
-  // 主题格式转换：显示格式转存储格式
-  static displayToTheme(display: string): string {
-    switch (display) {
-      case '浅色模式':
-        return 'light'
-      case '深色模式':
-        return 'dark'
-      case '跟随系统':
-      default:
-        return 'auto'
+  // 主题格式转换：显示格式转存储格式（按当前语言资源值反向匹配）
+  static displayToTheme(display: string, rm: resourceManager.ResourceManager | null): string {
+    if (!rm) {
+      return 'auto'
     }
+    if (display === rm.getStringByNameSync('light_mode')) {
+      return 'light'
+    }
+    if (display === rm.getStringByNameSync('dark_mode')) {
+      return 'dark'
+    }
+    return 'auto'
   }
 
   // 性别转换：存储格式转显示格式
-  static convertGenderToDisplay(gender: string): string {
+  static convertGenderToDisplay(gender: string, rm: resourceManager.ResourceManager | null): string {
+    if (!rm) {
+      return ''
+    }
     switch (gender) {
       case 'male':
-        return '男'
+        return rm.getStringByNameSync('male')
       case 'female':
-        return '女'
+        return rm.getStringByNameSync('female')
       case 'other':
-        return '其他'
+        return rm.getStringByNameSync('gender_other')
       default:
-        return '男'
+        return rm.getStringByNameSync('male')
     }
   }
 
-  // 性别转换：显示格式转存储格式
-  static convertGenderToStorage(gender: string): string {
-    switch (gender) {
-      case '男':
-        return 'male'
-      case '女':
-        return 'female'
-      case '其他':
-        return 'other'
-      default:
-        return ''
+  // 性别转换：显示格式转存储格式（按当前语言资源值反向匹配）
+  static convertGenderToStorage(gender: string, rm: resourceManager.ResourceManager | null): string {
+    if (!rm) {
+      return ''
     }
+    if (gender === rm.getStringByNameSync('male')) {
+      return 'male'
+    }
+    if (gender === rm.getStringByNameSync('female')) {
+      return 'female'
+    }
+    if (gender === rm.getStringByNameSync('gender_other')) {
+      return 'other'
+    }
+    return ''
   }
 
   // 安全显示 Toast 提示

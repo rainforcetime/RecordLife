@@ -752,6 +752,35 @@ entry/src/main/ets/
 
 **下一轮计划**：P8 实机全量回归（含中英文文案检查）→ 收官
 
+### 轮次 15 — 2026-08-22（B2 残留清理：映射函数 + 默认值 + 选择器）
+
+> 前置：用户要求剩余 B2 残留一并清理。
+
+**本轮目标**：清理主题/性别「显示↔存储」映射、ViewModel 默认值、选择器 options 等最后一批 UI 硬编码中文。
+
+**涉及文件**（12 .ets + 2 string.json）：
+- 资源：新增 `username_default` / `tag_selected` / `version_value` / `calc_failed`（base/en）；复用 `light_mode`/`dark_mode`/`follow_system`/`male`/`female`/`gender_other`/`app_name`/`app_desc`/`calculation_hint`/`all`/`years`~`seconds`
+- `common/utils/AccountUtils.ets` — 4 个映射函数加 `rm: resourceManager.ResourceManager | null` 参数，显示文本读资源、反向匹配按资源值比较（`@kit.LocalizationKit`）
+- `viewmodel/AccountViewModel.ets` — 调用处传 `this.getRm()`；默认值全部资源化（username_default/gender_other/follow_system/app_name/app_desc/calculation_hint）
+- `config/ThemeConfig.ets` — 删除无调用方死代码 `getDisplayName`/`fromDisplayName`
+- `pages/AccountPage.ets` — 主题 options 动态化（`getThemeOptions`）+ 4 处 @State 默认值去中文；版本号 → `$r(version_value)`
+- `components/dialog/EditProfileDialog.ets` — 性别 options 动态化（`getGenderOptions`），`editGender` 默认 ''
+- `components/user/UserInfoSection.ets` / `components/dialog/AboutAppDialog.ets` — @Prop 默认值去中文
+- `config/AppInfoConfig.ets` — fallback 与默认 AppInfo 去中文
+- 漏网文本：`TagFilterBar`（'已选择「X」' toast、'全部' 选项，`ChipItem` 参数改 `ResourceStr`）、`ShareHomeCard`（时间单位 '年/月/日/小时/分钟/秒' → `$r`，`TimeItem` 参数改 `ResourceStr`）、`NowPage`（'X 条记录'）、`SettingItemWithInfo`（info 类型改 `ResourceStr`）、`StorageService.getAppStorageSize(context)`（'计算失败' → `calc_failed` 资源）
+
+**已完成**：
+- [x] UI 层中文硬编码清零（宽泛扫描验证：仅剩注释 / TagModel 预设标签数据 / MorePageHelper 异常消息）
+- [x] 资源双语言完整（base/en 各 307 key，无重复）
+- [x] 静态验证通过（资源引用一致、类型匹配、@kit import）
+
+**遗留问题**：
+- ⚠️ 需 DevEco 编译 + 实机回归：账号页（主题选择/性别选择/资料默认值/版本号）、标签筛选（toast/全部）、分享卡片（时间单位）、图片存储统计失败兜底——中英文各看一遍
+- `TagModel` 预设标签 name（'工作'/'生活' 等 10 个）为**数据层**（含 id/color，用户自定义标签同结构），未国际化——如需显示层映射可后续处理
+- `MorePageHelper` `throw new Error('读取/写入/复制/创建目录失败')` 为异常消息（拼接进失败 toast），保留中文（错误路径开发导向）
+
+**下一轮计划**：P8 实机全量回归 → 收官
+
 ### 10.3 数据兼容性验证记录
 
 | 验证时间 | 备份文件来源 | 导入结果 | 验证人 | 备注 |

@@ -1211,6 +1211,22 @@
     {
       "name": "website_label",
       "value": "Website"
+    },
+    {
+      "name": "username_default",
+      "value": "User"
+    },
+    {
+      "name": "tag_selected",
+      "value": "Selected \"%s\""
+    },
+    {
+      "name": "version_value",
+      "value": "Version %s"
+    },
+    {
+      "name": "calc_failed",
+      "value": "Calculation failed"
     }
   ]
 }

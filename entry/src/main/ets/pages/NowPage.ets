@@ -175,7 +175,7 @@ struct NowPage {
             
             // 统计信息
             if (this.timelineData.years.length > 0) {
-              Text(this.getTotalRecordCount() + ' 条记录')
+              Text($r('app.string.record_count', this.getTotalRecordCount()))
                 .fontSize(14)
                 .fontColor(this.themeColors.textSecondary)
             }

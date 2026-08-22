@@ -128,29 +128,4 @@ export class ThemeConfig {
     }
   }
   
-  // 获取主题显示名称
-  static getDisplayName(theme: ThemeMode): string {
-    switch (theme) {
-      case 'light':
-        return '浅色模式'
-      case 'dark':
-        return '深色模式'
-      case 'auto':
-      default:
-        return '跟随系统'
-    }
-  }
-  
-  // 显示名称转主题类型
-  static fromDisplayName(displayName: string): ThemeMode {
-    switch (displayName) {
-      case '浅色模式':
-        return 'light'
-      case '深色模式':
-        return 'dark'
-      case '跟随系统':
-      default:
-        return 'auto'
-    }
-  }
 }

@@ -9,12 +9,12 @@ import { BusinessError } from '@kit.BasicServicesKit'
 export struct AboutAppDialog {
   controller: CustomDialogController
   @Prop appInfo: AppInfo = {
-    appName: '活着',
+    appName: '',
     appVersion: '0.0.1',
     buildNumber: '20260521',
     developer: 'rainforcetime',
     website: 'https://github.com/rainforcetime/RecordLife',
-    description: '记录生活，珍惜每一刻'
+    description: ''
   }
   @Prop themeColors: ThemeColors = ThemeConfig.getColors(false)
   @Prop usageDays: number = 0
@@ -62,7 +62,7 @@ export struct AboutAppDialog {
           .fontColor(this.themeColors.textPrimary)
           .margin({ bottom: 5 })
 
-        Text(`版本 ${this.appInfo.appVersion}`)
+        Text($r('app.string.version_value', this.appInfo.appVersion))
           .fontSize(14)
           .fontColor(this.themeColors.textSecondary)
           .margin({ bottom: 5 })

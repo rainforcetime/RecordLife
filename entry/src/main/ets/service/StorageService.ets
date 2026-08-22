@@ -3,6 +3,7 @@
  * 应用存储空间统计与使用天数计算，拆自 AccountViewModel（P4 重构，A3 IO/统计职责下沉）
  */
 import { storageStatistics } from '@kit.CoreFileKit'
+import { common } from '@kit.AbilityKit'
 import { TimeUtils } from '../common/utils/TimeUtils'
 
 export class StorageService {
@@ -10,7 +11,7 @@ export class StorageService {
    * 获取应用存储空间大小（appSize + cacheSize + dataSize，已格式化）
    * @returns 格式化后的字符串（如 "123.4MB"）；失败返回「计算失败」
    */
-  static async getAppStorageSize(): Promise<string> {
+  static async getAppStorageSize(context: common.UIAbilityContext): Promise<string> {
     try {
       const bundleStats = await storageStatistics.getCurrentBundleStats()
       // 计算总大小：appSize + cacheSize + dataSize
@@ -18,7 +19,7 @@ export class StorageService {
       return StorageService.formatStorageSize(totalSize)
     } catch (error) {
       console.error('[StorageService] 获取应用存储空间失败: ' + JSON.stringify(error))
-      return '计算失败'
+      return context.resourceManager.getStringByNameSync('calc_failed')
     }
   }
 

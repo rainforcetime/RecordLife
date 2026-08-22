@@ -101,19 +101,19 @@ export struct ShareHomeCard {
           // 第一行：年月日（根据数值长度自适应宽度）
           Row() {
             Column() {
-              this.TimeItem(this.timeData.years, '年', this.isRemainingMode ? '#4CAF50' : '#F44336')
+              this.TimeItem(this.timeData.years, $r('app.string.years'), this.isRemainingMode ? '#4CAF50' : '#F44336')
             }
             .layoutWeight(this.getValueWeight(this.timeData.years))
             .margin({ right: 8 })
 
             Column() {
-              this.TimeItem(this.timeData.months, '月', '#FFA726')
+              this.TimeItem(this.timeData.months, $r('app.string.months'), '#FFA726')
             }
             .layoutWeight(this.getValueWeight(this.timeData.months))
             .margin({ right: 8 })
 
             Column() {
-              this.TimeItem(this.timeData.days, '日', '#66BB6A')
+              this.TimeItem(this.timeData.days, $r('app.string.days'), '#66BB6A')
             }
             .layoutWeight(this.getValueWeight(this.timeData.days))
           }
@@ -122,19 +122,19 @@ export struct ShareHomeCard {
           
           // 第二行：时
           Row({ space: 8 }) {
-            this.TimeItem(this.timeData.hours, '小时', '#42A5F5')
+            this.TimeItem(this.timeData.hours, $r('app.string.hours'), '#42A5F5')
           }
           .width('100%')
           .margin({ bottom: 8 })
           // 第三行：分
           Row({ space: 8 }) {
-            this.TimeItem(this.timeData.minutes, '分钟', '#AB47BC')
+            this.TimeItem(this.timeData.minutes, $r('app.string.minutes'), '#AB47BC')
           }
           .width('100%')
           .margin({ bottom: 8 })
           // 第四行：秒
           Row({ space: 8 }) {
-            this.TimeItem(this.timeData.seconds, '秒', '#FFEE58')
+            this.TimeItem(this.timeData.seconds, $r('app.string.seconds'), '#FFEE58')
           }
           .width('100%')
         }
@@ -175,7 +175,7 @@ export struct ShareHomeCard {
   
   // 时间项组件
   @Builder
-  TimeItem(value: number, label: string, color: string) {
+  TimeItem(value: number, label: ResourceStr, color: string) {
     Column() {
       Text(value.toString())
         .fontSize(24)
