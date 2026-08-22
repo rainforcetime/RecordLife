@@ -365,6 +365,42 @@ export struct HomePage {
                 .maxLines(2)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
             }
+
+            // 生命进度环形（更新计划五期：首页顶部焦点）
+            Row() {
+              Stack() {
+                Progress({ value: this.lifePercent, total: 100, type: ProgressType.Ring })
+                  .width(76)
+                  .height(76)
+                  .color(this.themeColors.primary)
+                  .backgroundColor(this.themeColors.divider)
+                  .style({ strokeWidth: 8 })
+
+                Text(this.lifePercent.toFixed(1) + '%')
+                  .fontSize(16)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor(this.themeColors.primary)
+              }
+              .width(76)
+              .height(76)
+
+              Column() {
+                Text($r('app.string.life_progress_label'))
+                  .fontSize(14)
+                  .fontColor(this.themeColors.textPrimary)
+                  .fontWeight(FontWeight.Medium)
+
+                Text($r('app.string.life_progress_detail', this.targetAge))
+                  .fontSize(12)
+                  .fontColor(this.themeColors.textSecondary)
+                  .margin({ top: 4 })
+              }
+              .alignItems(HorizontalAlign.Start)
+              .margin({ left: 14 })
+            }
+            .width('100%')
+            .justifyContent(FlexAlign.Center)
+            .margin({ top: 16 })
         }
         .width('100%')
         .alignItems(HorizontalAlign.Center)
@@ -480,33 +516,6 @@ export struct HomePage {
               this.calculateTime()
             }
           })
-
-          // 生命进度环形（更新计划五期）
-          Row() {
-            Stack() {
-              Progress({ value: this.lifePercent, total: 100, type: ProgressType.Ring })
-                .width(52)
-                .height(52)
-                .color(this.themeColors.primary)
-                .backgroundColor(this.themeColors.divider)
-                .style({ strokeWidth: 6 })
-
-              Text(this.lifePercent.toFixed(1) + '%')
-                .fontSize(12)
-                .fontWeight(FontWeight.Bold)
-                .fontColor(this.themeColors.primary)
-            }
-            .width(52)
-            .height(52)
-
-            Text($r('app.string.life_progress_label'))
-              .fontSize(13)
-              .fontColor(this.themeColors.textSecondary)
-              .margin({ left: 10 })
-          }
-          .width('100%')
-          .justifyContent(FlexAlign.Center)
-          .margin({ bottom: 12 })
 
           // 时间卡片布局
           Column() {
