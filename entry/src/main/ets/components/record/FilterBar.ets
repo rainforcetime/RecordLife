@@ -353,10 +353,10 @@ export struct FilterBar {
       }
       .scrollBar(BarState.Off)
       .width('100%')
-      .constraintSize({ maxHeight: 260 })
+      .height(200)
     }
     .width(280)
-    .constraintSize({ maxHeight: '45%' })
+    .constraintSize({ maxHeight: '40%' })
     .padding({ left: 16, right: 16, top: 8, bottom: 12 })
     .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(14)
