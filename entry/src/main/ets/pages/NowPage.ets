@@ -1,7 +1,8 @@
 // 现在页面：pages/NowPage.ets
 import { common } from '@kit.AbilityKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
-import { TimelineData, LifeRecord, getTagNameById, Tag } from '../common/types'
+import { TimelineData, LifeRecord, Tag } from '../common/types'
+import { getDisplayTagName } from '../common/utils/TagDisplayUtils'
 import { NowViewModel } from '../viewmodel/NowViewModel'
 import { TimelineSection } from '../components/record/TimelineSection'
 import { AddRecordSection } from '../components/record/AddRecordSection'
@@ -475,7 +476,7 @@ struct NowPage {
     // 2. 搜索标签名称
     if (record.tags && record.tags.length > 0) {
       for (const tagId of record.tags) {
-        const tagName = getTagNameById(tagId, this.customTags)
+        const tagName = getDisplayTagName(tagId, this.customTags, this.getUIContext().getHostContext()?.resourceManager ?? null)
         if (tagName && tagName.toLowerCase().includes(keyword)) {
           return true
         }

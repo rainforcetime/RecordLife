@@ -1,5 +1,6 @@
 // 时间线区域组件：components/TimelineSection.ets
-import { TimelineData, TimelineYear, TimelineMonth, TimelineDay, LifeRecord, getTagNameById, Tag } from '../../common/types'
+import { TimelineData, TimelineYear, TimelineMonth, TimelineDay, LifeRecord, Tag } from '../../common/types'
+import { getDisplayTagName } from '../../common/utils/TagDisplayUtils'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { RecordCard } from './RecordCard'
 import { ColorUtils } from '../../common/ColorUtils'
@@ -94,7 +95,7 @@ export struct TimelineSection {
     if (record.tags && record.tags.length > 0) {
       for (const tagId of record.tags) {
         // 根据标签ID获取标签名称（支持自定义标签）
-        const tagName = getTagNameById(tagId, this.customTags)
+        const tagName = getDisplayTagName(tagId, this.customTags, this.getUIContext().getHostContext()?.resourceManager ?? null)
         if (tagName && tagName.toLowerCase().includes(lowerKeyword)) {
           return true
         }

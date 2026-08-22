@@ -1,6 +1,7 @@
 // 分享记录卡片组件：components/share/ShareRecordCard.ets
 // 专门用于生成分享图片的组件，样式更简洁美观
-import { LifeRecord, DEFAULT_TAGS, getAllTags, Tag } from '../../common/types'
+import { LifeRecord, DEFAULT_TAGS, Tag } from '../../common/types'
+import { buildDisplayTags } from '../../common/utils/TagDisplayUtils'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { TagService } from '../../service/TagService'
@@ -22,7 +23,7 @@ export struct ShareRecordCard {
     this.viewModel = await NowViewModel.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
     try {
       const ts = await TagService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
-      this.allTags = getAllTags(ts.getCustomTags())
+      this.allTags = buildDisplayTags(ts.getCustomTags(), this.getUIContext().getHostContext()?.resourceManager ?? null)
     } catch (error) {
       Logger.error('[ShareRecordCard] 加载标签失败: ' + JSON.stringify(error))
     }

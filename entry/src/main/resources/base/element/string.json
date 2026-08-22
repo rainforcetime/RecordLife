@@ -1227,6 +1227,46 @@
     {
       "name": "calc_failed",
       "value": "计算失败"
+    },
+    {
+      "name": "tag_name_work",
+      "value": "工作"
+    },
+    {
+      "name": "tag_name_life",
+      "value": "生活"
+    },
+    {
+      "name": "tag_name_travel",
+      "value": "旅行"
+    },
+    {
+      "name": "tag_name_food",
+      "value": "美食"
+    },
+    {
+      "name": "tag_name_health",
+      "value": "健康"
+    },
+    {
+      "name": "tag_name_study",
+      "value": "学习"
+    },
+    {
+      "name": "tag_name_sport",
+      "value": "运动"
+    },
+    {
+      "name": "tag_name_hobby",
+      "value": "爱好"
+    },
+    {
+      "name": "tag_name_friend",
+      "value": "社交"
+    },
+    {
+      "name": "tag_name_other",
+      "value": "其他"
     }
   ]
 }

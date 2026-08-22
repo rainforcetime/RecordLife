@@ -1,6 +1,7 @@
 // 标签选择组件：components/TagSelector.ets
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
-import { Tag, DEFAULT_TAGS, getAllTags } from '../../common/types'
+import { Tag, DEFAULT_TAGS } from '../../common/types'
+import { buildDisplayTags } from '../../common/utils/TagDisplayUtils'
 import { TagService } from '../../service/TagService'
 import { common } from '@kit.AbilityKit'
 import { Logger } from '../../common/utils/Logger'
@@ -33,7 +34,7 @@ export struct TagSelector {
   private loadTags() {
     if (this.tagService) {
       const customTags = this.tagService.getCustomTags()
-      this.availableTags = getAllTags(customTags)
+      this.availableTags = buildDisplayTags(customTags, this.getUIContext().getHostContext()?.resourceManager ?? null)
     }
   }
   
@@ -174,7 +175,7 @@ export struct TagDisplay {
   private loadTags() {
     if (this.tagService) {
       const customTags = this.tagService.getCustomTags()
-      this.availableTags = getAllTags(customTags)
+      this.availableTags = buildDisplayTags(customTags, this.getUIContext().getHostContext()?.resourceManager ?? null)
     }
   }
   

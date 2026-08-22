@@ -1227,6 +1227,46 @@
     {
       "name": "calc_failed",
       "value": "Calculation failed"
+    },
+    {
+      "name": "tag_name_work",
+      "value": "Work"
+    },
+    {
+      "name": "tag_name_life",
+      "value": "Life"
+    },
+    {
+      "name": "tag_name_travel",
+      "value": "Travel"
+    },
+    {
+      "name": "tag_name_food",
+      "value": "Food"
+    },
+    {
+      "name": "tag_name_health",
+      "value": "Health"
+    },
+    {
+      "name": "tag_name_study",
+      "value": "Study"
+    },
+    {
+      "name": "tag_name_sport",
+      "value": "Sport"
+    },
+    {
+      "name": "tag_name_hobby",
+      "value": "Hobby"
+    },
+    {
+      "name": "tag_name_friend",
+      "value": "Friends"
+    },
+    {
+      "name": "tag_name_other",
+      "value": "Other"
     }
   ]
 }
