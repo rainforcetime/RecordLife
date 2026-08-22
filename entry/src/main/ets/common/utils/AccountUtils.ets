@@ -35,9 +35,38 @@ export class AccountUtils {
     return 'auto'
   }
 
-  // 性别转换：存储格式转显示格式
-  static convertGenderToDisplay(gender: string, rm: resourceManager.ResourceManager | null): string {
+  // 字体大小格式转换：存储格式转显示格式（国际化，需传 resourceManager；更新计划一期）
+  static fontSizeToDisplay(fontSize: string, rm: resourceManager.ResourceManager | null): string {
     if (!rm) {
+      return 'medium'
+    }
+    switch (fontSize) {
+      case 'small':
+        return rm.getStringByNameSync('font_size_small')
+      case 'large':
+        return rm.getStringByNameSync('font_size_large')
+      case 'medium':
+      default:
+        return rm.getStringByNameSync('font_size_medium')
+    }
+  }
+
+  // 字体大小格式转换：显示格式转存储格式（按当前语言资源值反向匹配；更新计划一期）
+  static displayToFontSize(display: string, rm: resourceManager.ResourceManager | null): string {
+    if (!rm) {
+      return 'medium'
+    }
+    if (display === rm.getStringByNameSync('font_size_small')) {
+      return 'small'
+    }
+    if (display === rm.getStringByNameSync('font_size_large')) {
+      return 'large'
+    }
+    return 'medium'
+  }
+
+  // 性别转换：存储格式转显示格式
+  static convertGenderToDisplay(gender: string, rm: resourceManager.ResourceManager | null): string {    if (!rm) {
       return ''
     }
     switch (gender) {

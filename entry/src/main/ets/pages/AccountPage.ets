@@ -115,8 +115,9 @@ export struct AccountPage {
       // 加载主题设置
       await this.loadThemeSettings()
       
-      // 加载字体大小设置（更新计划一期）
-      this.currentFontSize = this.viewModel.getFontSize()
+      // 加载字体大小设置（更新计划一期：内部值 → 显示文本）
+      const rm = this.getUIContext().getHostContext()?.resourceManager ?? null
+      this.currentFontSize = AccountUtils.fontSizeToDisplay(this.viewModel.getFontSize(), rm)
       
       // 加载应用信息
       await this.loadAppInfo()
@@ -249,10 +250,12 @@ export struct AccountPage {
     return [rm.getStringByNameSync('font_size_small'), rm.getStringByNameSync('font_size_medium'), rm.getStringByNameSync('font_size_large')]
   }
 
-  // 字体大小切换处理
+  // 字体大小切换处理（选择器回传的是显示文本，需转内部值后保存）
   private async onFontSizeChange(value: string) {
     this.currentFontSize = value
-    const success = await this.viewModel.setFontSize(value)
+    // 显示文本 → 内部值（'small' | 'medium' | 'large'）
+    const fontSize = AccountUtils.displayToFontSize(value, this.getUIContext().getHostContext()?.resourceManager ?? null)
+    const success = await this.viewModel.setFontSize(fontSize)
     if (success) {
       AccountUtils.showToastSafely(this.promptAction, $r('app.string.font_size_saved'))
       // 通知其他页面刷新（时间线字体缩放）
