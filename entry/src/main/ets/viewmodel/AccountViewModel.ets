@@ -129,7 +129,7 @@ export class AccountViewModel {
 
     try {
       // 从AppInfoManager获取应用信息（从bundleManager读取）
-      const appInfoManager = await AppInfoManager.getInstance(this.context);
+      const appInfoManager = await AppInfoManager.getInstance(this.context ?? undefined);
       const config = appInfoManager.getAppInfo();
       
       return {
@@ -160,7 +160,7 @@ export class AccountViewModel {
       // 优先从AppInfoManager获取最新版本信息
       let appVersion = '0.0.1';
       try {
-        const appInfoManager = await AppInfoManager.getInstance(this.context);
+        const appInfoManager = await AppInfoManager.getInstance(this.context ?? undefined);
         appVersion = appInfoManager.getAppVersion();
       } catch (error) {
         Logger.error('从AppInfoManager获取版本失败: ' + JSON.stringify(error));
