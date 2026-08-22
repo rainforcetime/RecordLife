@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 RecordLife 项目的**现状实现快照**，供不同窗口/会话的 AI 重构任务作为唯一参考，避免每次从头通读全部源码。
 > **配套文档**：`docs/refactoring-plan.md` 是重构方案与进度跟踪；本文档只描述**当前代码实际怎么实现**，两者配合使用。
-> **最后更新**：2026-08-22（P3 service 层抽取全部完成；基于当前工作区源码逐文件核对）
+> **最后更新**：2026-08-22（P4 viewmodel 瘦身第一部分完成；基于当前工作区源码逐文件核对）
 > **阅读方式**：全文关键结论均附 `file:line` 引用，可快速定位源码；改动任何涉及数据模型 / 持久化 / 备份导入导出的代码前，**必须先读 §5 与 §6**。
 
 ---
@@ -39,7 +39,7 @@
 ├── entryability/           EntryAbility.ets（启动入口，注入 uiContext + 初始化主题）
 ├── entrybackupability/     EntryBackupAbility.ets（系统备份扩展，空实现占位）
 ├── pages/                  Index / HomePage / NowPage / MorePage / AccountPage / StorageImagePage
-├── viewmodel/              NowViewModel.ets（15.7KB，记录数据管理）/ AccountViewModel.ets（19.1KB）
+├── viewmodel/              NowViewModel.ets（记录数据管理）/ AccountViewModel.ets（13.9KB，P4 瘦身后）
 ├── model/                  ★ 统一领域模型（P1 重构产物）：
 │   ├── CommonModel.ets         TimeData、DateDifference
 │   ├── TagModel.ets            Tag、DEFAULT_TAGS、getAllTags/getTagNameById/getTagById
@@ -53,7 +53,7 @@
 │   ├── handlers/               MorePageBackupHandler.ets（19.9KB）/ MorePageConfigHandler.ets
 │   ├── managers/               RefreshManager.ets
 │   └── utils/                  TimeUtils / AccountUtils / ImageBase64Utils / ImagePickerUtils / MorePageHelper / ImagePathUtils
-├── service/                ★ P3 新增：ImageFileService.ets（图片 IO）/ TagService.ets（标签 CRUD）/ ZipTransferService.ets（zip picker 传输）/ ConfigTransferService.ets（配置导入导出）/ BackupManager.ets（自 common/managers 迁入）
+├── service/                ★ P3/P4 新增：ImageFileService.ets（图片 IO）/ TagService.ets（标签 CRUD）/ ZipTransferService.ets（zip picker 传输）/ ConfigTransferService.ets（配置导入导出）/ StorageService.ets（存储统计，P4）/ BackupManager.ets（自 common/managers 迁入）
 ├── components/             calendar(5) / common(4) / dialog(4) / record(5) / setting(4) / share(2) / user(4)
 └── utils/                  ShareUtils.ets（组件截图分享）/ ImageGenerator.ets（生成纯色/渐变示例图）
 ```
@@ -383,7 +383,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | `loadUserProfile()` | 40 | 读 config.profile → `AccountProfile`（性别经 `AccountUtils.convertGenderToDisplay`，默认「男」） |
 | `loadThemeSettings()` | 81 | `themeToDisplay`（'light'→浅色模式 等） |
 | `loadAppInfo()` | 98 | AppInfoManager 读取（失败回退默认 0.0.1） |
-| `loadDataStatistics()` | 129 | 使用天数 = `formatDate(now)−formatDate(createdAt)` 日期边界差；dataVersion=`v${appVersion}`；`storageStatistics.getCurrentBundleStats()` 算总大小 |
+| `loadDataStatistics()` | 130 | 委托 `service/StorageService`（`calcUsageDays` + `getAppStorageSize`，P4 下沉）；dataVersion=`v${appVersion}`；原 `[StorageDebug]` 日志已清除 |
 | `loadSavedAvatar()` | 254 | `file://` 直接返回；旧沙箱路径转 URI |
 | `onThemeChange(value)` | 288 | 显示格式→存储格式→ThemeManager.updateTheme→applyTheme→`AppStorage('currentTheme')` |
 | `onChangeAvatar()` | 359 | PhotoViewPicker 选 1 张图 → copyImageToSandbox |
@@ -469,6 +469,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | service/ImageFileService.ets | ImageFileService | ★ P3 新增：`saveRecordImage` / `getImageUri` / `deleteImageFiles` / `copyAvatar`（记录图片与头像的沙箱 IO） |
 | service/ZipTransferService.ets | ZipTransferService | ★ P3 新增：`saveZipToDocument` / `pickZipToSandbox`（DocumentViewPicker zip 保存/选择 + 沙箱复制；取消返回 false，IO 异常冒泡） |
 | service/ConfigTransferService.ets | ConfigTransferService | ★ P3 新增：`exportConfig` / `importConfig`（用户配置导出/导入 + 头像 base64 转换，拆自 ConfigManager） |
+| service/StorageService.ets | StorageService | ★ P4 新增：`getAppStorageSize` / `formatStorageSize`（纯函数）/ `calcUsageDays`（拆自 AccountViewModel，P4 轮次 8） |
 | common/ColorUtils.ets | ColorUtils | `withAlpha(hex, alpha)` → rgba、`primaryLight`(α32)/`primaryExtraLight`(α20)/`primaryUltraLight`(α15) |
 | utils/ShareUtils.ets | ShareUtils | `shareComponent(uiContext, componentId, context, title?, desc?)`：getComponentSnapshot → packToData(jpeg 95) → 存 `cacheDir/share_<ts>.jpg` → `systemShare.ShareController.show`；`cleanupOldShareImages` |
 | utils/ImageGenerator.ets | ImageGenerator | `generateSolidColorImage`（存 `filesDir/records`）、`generateGradientImage`（存 `filesDir/sample_images`），BGRA_8888 逐像素生成 |
@@ -536,7 +537,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | 3 | 硬编码颜色残留（有意保留类）：标签调色板 10 色、`getDayColor` 选中 `'#FFFFFF'`（CalendarUtils.ets:193）、主题判定 `textPrimary === '#FFFFFF'`（ThemeManager.ets:147/149）、纯白文字 on 彩色背景 | 多处 | B1 残余说明 |
 | 4 | `createDefaultConfig` / `createDefaultConfigSync` 几乎重复 | UserConfigModel.ets:83/138 | B5 |
 | 5 | `JSON.parse(JSON.stringify(...))` 深拷贝 | NowPage.ets:412-431（refreshTimeline） | B6 |
-| 6 | 调试日志泛滥（`console.info` 100+，含 `>>>`/`[StorageDebug]`/`[ConfigManager]` 等） | 全工程 | B3 |
+| 6 | 调试日志泛滥（`console.info` 100+，含 `>>>`/`[StorageDebug]`/`[ConfigManager]` 等） | 全工程 | B3（`[StorageDebug]` 已清零，P4 轮次 8；其余待收敛） |
 | 7 | `uiContext` 获取失败时 `getPromptAction` 等生命周期初始化风险 | NowPage.ets:82 等 | B7 |
 | 8 | ~~`uriToSandboxPath` 三处重复实现~~ ✅ 已收敛 | 统一至 `common/utils/ImagePathUtils.ets`（P3 轮次 4）；MorePageHelper 保留委托兼容 | C1 已解决 |
 | 9 | 无业务单测；~~ViewModel 直接 import fileIo~~ ✅ 已部分解决 | NowViewModel 的 fileIo 已下沉至 `service/ImageFileService`（P3 轮次 4）；AccountViewModel 仍直接 import fileIo（loadSavedAvatar 用）；单测未补 | A3/C2/P4 |

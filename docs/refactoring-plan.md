@@ -305,7 +305,7 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | P1 | 类型层重构（`types.ets` 拆分、消除重复定义） | ✅ | 2026-08-22 | `model/` 目录已创建（5 文件）；`UserProfile`/`DataStatistics` 重复已消除；UI DTO 重命名为 `AccountProfile`/`AccountDataStatistics`；旧文件保留 re-export 兼容 |
 | P2 | Model / Repository 层抽取 | ✅ | 2026-08-22 | `repository/` 已创建（`ConfigRepository` / `RecordRepository`，见轮次 3）；Preferences 访问收敛至 repository 层，store/key 常量集中定义 |
 | P3 | Service 层抽取（备份 / 导入导出 / 图片） | ✅ | 2026-08-22 | `service/` 共 5 文件（ImageFileService 图片 IO / TagService 标签 CRUD / ZipTransferService zip 传输 / ConfigTransferService 配置导入导出 / BackupManager）；ConfigManager 18.3KB → 9.8KB，MorePageBackupHandler 19.9KB → 16.3KB（见轮次 4~7）；⚠️ 导出导入改动需实机旧备份导入验证（P8 回归，用户有实机可验证） |
-| P4 | ViewModel 瘦身（IO 职责下沉） | ⬜ | — | `NowViewModel` 15.7KB 直接 import `@ohos.data.preferences`；`AccountViewModel` 19.1KB 含重复类型 |
+| P4 | ViewModel 瘦身（IO 职责下沉） | 🟦 | 2026-08-22 | AccountViewModel 已瘦身（19.1KB → 13.9KB：存储统计下沉 `StorageService`、`[StorageDebug]` 日志清零，见轮次 8）；剩余：NowViewModel.buildTimeline 抽纯函数（可测试）、AccountViewModel 细节清理 |
 | P5 | Page 层清理（`@Entry` 标注、路由注册） | ⬜ | — | `NowPage.ets` 误标 `@Entry`（Tab 内容页不应标注）；`main_pages.json` 含 4 页 |
 | P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
 | P7 | `@kit.*` 统一 & 依赖整理 | ⬜ | — | 11 处旧式 `@ohos.*` import 分布在 7 个文件 |
@@ -574,12 +574,36 @@ entry/src/main/ets/
 
 **下一轮计划**：P4 — ViewModel 瘦身（AccountViewModel `[StorageDebug]` 日志清理 + 存储统计下沉 `service/StorageService`）
 
+### 轮次 8 — 2026-08-22（P4 ViewModel 瘦身 · 第一部分：存储统计下沉）
+
+> 前置：用户实机旧备份导入验证 ✅ 通过（已记入 §10.3），P3 数据兼容红线验收完成。
+
+**本轮目标**：AccountViewModel 瘦身——存储统计（`getAppStorageSize` / `formatStorageSize` / 使用天数计算）下沉 `service/StorageService`，清除 `[StorageDebug]` 调试日志（B3）。
+
+**涉及文件**：
+- `service/StorageService.ets`（新增）— `getAppStorageSize()` / `formatStorageSize(bytes)`（纯函数）/ `calcUsageDays(createdAt)`（日期边界计算）
+- `viewmodel/AccountViewModel.ets`（修改）— `loadDataStatistics` 改用 StorageService；删除私有 `getAppStorageSize` / `formatStorageSize`；清除 14+ 条 `[StorageDebug]` 日志；import 清理（storageStatistics / TimeUtils 移除）
+
+**已完成**：
+- [x] `StorageService` 创建（逻辑与 AccountViewModel 原实现逐行等价）
+- [x] AccountViewModel 19.1KB → 13.9KB（瘦身约 26%）
+- [x] 全工程 `[StorageDebug]` 日志清零
+- [x] 静态验证通过（无残留 / ArkTS 约束 / 结构完整）
+
+**遗留问题**：
+- ⚠️ 需用户 DevEco 编译 + 实机回归「账号页统计展示」（使用天数 / 存储空间 / 版本号）
+- NowViewModel.buildTimeline 仍为 ViewModel 方法（纯逻辑，P6 可测试性时抽独立函数）
+- `StorageService.formatStorageSize` / `calcUsageDays` 可单测（C2）
+
+**下一轮计划**：P4 续 — NowViewModel 时间线构建抽纯函数（`buildTimeline(records)` → `model/` 或 `common/` 纯函数，可单测）；或 P5 — Page 层清理（NowPage `@Entry` 修正）
+
 ### 10.3 数据兼容性验证记录
 
 | 验证时间 | 备份文件来源 | 导入结果 | 验证人 | 备注 |
 | --- | --- | --- | --- | --- |
 | — | — | — | — | 重构尚未开始 |
 | 2026-08-22 | —（未真机验证） | 未执行 | 轮次 4 | BackupManager 纯搬移（逻辑零改动），仅静态验证；需 DevEco 编译 + 旧备份导入冒烟后补记 |
+| 2026-08-22 | 用户旧备份 `RecordLife_all_*.zip` | ✅ 通过 | 用户（实机） | P3 轮次 4~7 全部导出导入改动（BackupManager 迁入 / ZipTransferService / ConfigTransferService）实机验证：导入成功、记录/图片/头像/标签正常、新导出 zip 结构一致 |
 
 ### 10.4 上下文恢复检查清单
 

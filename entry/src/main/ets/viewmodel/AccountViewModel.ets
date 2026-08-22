@@ -1,16 +1,16 @@
 // 账号页面业务逻辑类：viewmodel/AccountViewModel.ets
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
 import { BusinessError } from '@kit.BasicServicesKit'
-import { fileIo, fileUri, storageStatistics } from '@kit.CoreFileKit'
+import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { common, ConfigurationConstant } from '@kit.AbilityKit'
 import { ConfigManager } from '../config/ConfigManager'
 import { AppInfo } from '../config/UserConfig'
 import { AppInfoManager } from '../config/AppInfoConfig'
 import { ThemeManager } from '../config/ThemeManager'
 import { AccountUtils } from '../common/utils/AccountUtils'
-import { TimeUtils } from '../common/utils/TimeUtils'
 import { AccountProfile, ThemeSettings, AccountDataStatistics, AvatarInfo } from '../model/AccountModel'
 import { ImageFileService } from '../service/ImageFileService'
+import { StorageService } from '../service/StorageService'
 
 // 向后兼容：AccountPage.ets 通过 AccountViewModel 导入这些类型
 export { AccountProfile, AccountDataStatistics }
@@ -128,8 +128,6 @@ export class AccountViewModel {
 
   // 加载数据统计信息
   async loadDataStatistics(): Promise<AccountDataStatistics> {
-    console.info('[StorageDebug] loadDataStatistics 开始执行')
-    
     const defaultStatistics: AccountDataStatistics = {
       usageDays: 0,
       dataVersion: 'v0.0.1',
@@ -148,7 +146,6 @@ export class AccountViewModel {
       }
 
       if (!this.configManager) {
-        console.warn('[StorageDebug] configManager 未初始化')
         return {
           usageDays: 0,
           dataVersion: `v${appVersion}`,
@@ -158,37 +155,22 @@ export class AccountViewModel {
       }
 
       const config = this.configManager.getConfig();
-      
-      // 计算使用天数（使用日期边界计算，符合用户直觉）
-      // 例如：1月1日23:00创建，1月2日01:00查看，应显示1天
-      const createdAt = new Date(config.metadata.createdAt);
-      const now = TimeUtils.now();
-      const startDate = TimeUtils.formatDate(createdAt);  // "YYYY-MM-DD" UTC+8
-      const endDate = TimeUtils.formatDate(now);          // "YYYY-MM-DD" UTC+8
-      const startDateTime = TimeUtils.parseDate(startDate);
-      const endDateTime = TimeUtils.parseDate(endDate);
-      const daysDiff = Math.floor((endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60 * 24));
-      
-      // 格式化最后活跃时间
-      const lastActiveDate = new Date(config.statistics.lastActiveTime);
-      const lastActiveTime = this.formatDateTime(lastActiveDate);
-      
-      // 获取应用存储空间大小
-      console.info('[StorageDebug] 准备调用 getAppStorageSize()')
-      const storageSize = await this.getAppStorageSize();
-      console.info('[StorageDebug] getAppStorageSize() 返回: ' + storageSize)
-      
+
+      // 使用天数与存储大小统计已下沉至 service/StorageService（P4）
+      const usageDays = StorageService.calcUsageDays(config.metadata.createdAt);
+      const lastActiveTime = this.formatDateTime(new Date(config.statistics.lastActiveTime));
+      const storageSize = await StorageService.getAppStorageSize();
+
       const result: AccountDataStatistics = {
-        usageDays: daysDiff >= 0 ? daysDiff : 0,
+        usageDays: usageDays,
         dataVersion: `v${appVersion}`,
         lastActiveTime: lastActiveTime,
         storageSize: storageSize
       };
-      
-      console.info('[StorageDebug] loadDataStatistics 完成: ' + JSON.stringify(result))
+
       return result;
     } catch (error) {
-      console.error('[StorageDebug] 加载数据统计失败: ' + JSON.stringify(error));
+      console.error('[AccountViewModel] 加载数据统计失败: ' + JSON.stringify(error));
       return defaultStatistics;
     }
   }
@@ -201,54 +183,6 @@ export class AccountViewModel {
     const hours = date.getHours().toString().padStart(2, '0')
     const minutes = date.getMinutes().toString().padStart(2, '0')
     return `${year}-${month}-${day} ${hours}:${minutes}`
-  }
-
-  // 获取应用存储空间大小
-  private async getAppStorageSize(): Promise<string> {
-    console.info('[StorageDebug] 开始获取应用存储空间')
-    
-    try {
-      console.info('[StorageDebug] 调用 storageStatistics.getCurrentBundleStats()')
-      const bundleStats = await storageStatistics.getCurrentBundleStats()
-      
-      console.info('[StorageDebug] 获取成功，详细信息:')
-      console.info('[StorageDebug] - appSize: ' + bundleStats.appSize + ' bytes')
-      console.info('[StorageDebug] - cacheSize: ' + bundleStats.cacheSize + ' bytes')
-      console.info('[StorageDebug] - dataSize: ' + bundleStats.dataSize + ' bytes')
-      
-      // 计算总大小：appSize + cacheSize + dataSize
-      const totalSize = bundleStats.appSize + bundleStats.cacheSize + bundleStats.dataSize
-      console.info('[StorageDebug] - totalSize: ' + totalSize + ' bytes')
-      
-      const formattedSize = this.formatStorageSize(totalSize)
-      console.info('[StorageDebug] 格式化结果: ' + formattedSize)
-      
-      return formattedSize
-    } catch (error) {
-      console.error('[StorageDebug] 获取应用存储空间失败')
-      console.error('[StorageDebug] 错误类型: ' + typeof error)
-      console.error('[StorageDebug] 错误详情: ' + JSON.stringify(error))
-      
-      if (error instanceof Error) {
-        console.error('[StorageDebug] 错误消息: ' + error.message)
-        console.error('[StorageDebug] 错误堆栈: ' + error.stack)
-      }
-      
-      return '计算失败'
-    }
-  }
-
-  // 格式化存储大小
-  private formatStorageSize(bytes: number): string {
-    if (bytes < 1024) {
-      return `${bytes}B`
-    } else if (bytes < 1024 * 1024) {
-      return `${(bytes / 1024).toFixed(1)}KB`
-    } else if (bytes < 1024 * 1024 * 1024) {
-      return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
-    } else {
-      return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)}GB`
-    }
   }
 
   // 加载保存的头像（从ConfigManager统一读取）
