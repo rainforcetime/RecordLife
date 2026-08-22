@@ -353,7 +353,7 @@ struct NowPage {
         height: '80%',
         backgroundColor: this.themeColors.cardBackground,
         dragBar: true,
-        showClose: true
+        showClose: false  // 关闭系统 ×（与标题行模板按钮避免重叠；关闭靠 dragBar 下拉/保存后自动关）
       })
       
       // 撤销删除提示条（更新计划二期；全屏容器点击穿透，仅提示条区域可交互）
