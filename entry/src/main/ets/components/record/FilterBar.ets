@@ -18,7 +18,8 @@ export struct FilterChip {
   color: string = '#909399'
   @Prop isSelected: boolean = false
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
-  onClick?: () => void
+  // 注意：不能命名为 onClick（与组件基类事件属性冲突，ArkTS 编译错误）
+  onChipClick?: () => void
 
   // 判断是否深色模式
   private isDarkMode(): boolean {
@@ -64,8 +65,8 @@ export struct FilterChip {
       })
       .margin({ right: 8 })
       .onClick(() => {
-        if (this.onClick) {
-          this.onClick()
+        if (this.onChipClick) {
+          this.onChipClick()
         }
       })
   }
@@ -172,7 +173,7 @@ export struct FilterBar {
           label: $r('app.string.all'),
           color: '#909399',
           isSelected: this.isNoFilter(),
-          onClick: () => {
+          onChipClick: () => {
             this.clearAll()
           }
         })
@@ -183,7 +184,7 @@ export struct FilterBar {
             label: MoodUtils.getMoodEmoji(mood),
             color: this.themeColors.primary,
             isSelected: this.filterMood === mood,
-            onClick: () => {
+            onChipClick: () => {
               this.toggleMood(mood)
             }
           })
@@ -204,7 +205,7 @@ export struct FilterBar {
             label: (tag.icon ? tag.icon + ' ' : '') + tag.name,
             color: tag.color,
             isSelected: this.isTagSelected(tag.id),
-            onClick: () => {
+            onChipClick: () => {
               this.toggleTag(tag.id)
             }
           })
