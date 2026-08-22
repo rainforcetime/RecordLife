@@ -310,7 +310,7 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
 | — | 可测试性提升（阶段 6，hypium 单测） | ✅ | 2026-08-22 | 15 个单测覆盖 `buildTimelineData` / `formatStorageSize` / `calcUsageDays` / `validateConfig` / `TimeUtils`（见轮次 11）；⚠️ 构造器注入（A5，去除 AppStorage 硬依赖）为渐进项未全量改造 |
 | P7 | `@kit.*` 统一 & 依赖整理 | ✅ | 2026-08-22 | 8 处旧式 `@ohos.*` import（6 文件）全部统一为 `@kit.*`：`@ohos.data.preferences`→`@kit.ArkData`、`@ohos.file.fs`→`@kit.CoreFileKit`（fileIo 别名）、`@ohos.file.photoAccessHelper`→`@kit.MediaLibraryKit`、`@ohos.app.ability.common`→`@kit.AbilityKit`、`@ohos.promptAction`→`@kit.ArkUI`（见轮次 12）；`@ohos/hypium`/`@ohos/hamock` 为测试框架依赖保留 |
-| P8 | 全量回归 + 旧备份导入冒烟 | ⬜ | — | 最终验收 |
+| P8 | 全量回归 + 旧备份导入冒烟 | 🟦 | — | 最终验收：静态预检完成（@kit 清零 / [StorageDebug] 清零 / 15 单测通过 / 旧备份导入已验）；待实机逐项回归（见轮次 13 验证清单） |
 
 ### 10.2 逐轮工作日志
 
@@ -694,6 +694,34 @@ entry/src/main/ets/
 - `utils/` 顶层目录已于 P5 并入 `common/utils/`；`AppInfoConfig.ets` 中 `interface AppInfoConfig` 与 `class AppInfoManager` 同名近似（P1 遗留，§14 问题 14）未处理
 
 **下一轮计划**：P8 — 全量回归 + 旧备份导入冒烟（最终验收）：主题切换 / 标签 / 时间线 / 备份导入导出 / 图片存储 / 中英文文案 / 单测全绿
+
+### 轮次 13 — 2026-08-22（P8 全量回归 · 启动与静态预检）
+
+> 前置：用户确认 P7 `@kit.*` 统一验证通过 ✅。
+
+**本轮目标**：P8 最终验收——完成静态预检，输出实机回归清单（验证由用户在实机执行，结果回填 §10.4/§8）。
+
+**静态预检结论**（无需实机即可确认项）：
+- ✅ `@ohos.*` 旧式系统 API import 全工程清零（P7）
+- ✅ `[StorageDebug]` 调试日志清零（P4）
+- ✅ 本地单测 15 用例全绿（P6 + off-by-one 修复）
+- ✅ 旧备份导入已通过实机验证（§10.3，P3 后）
+- ℹ️ 硬编码中文残留均为 `console` 调试日志（B3 渐进）或含动态数字的 UI 拼接文本（B2 残留，文档已记录；国际化需 `%d` 占位改造，暂不处理）
+
+**待实机验证清单**（对应 §8）：
+1. `hvigorw assembleHap` 编译无 Error
+2. 首页存活时间展示（累计/剩余 × 已存活/剩余 模式切换、每秒刷新、分享）
+3. 时间线增删改查、标签筛选、收藏置顶、搜索、日历视图联动（当前月展开——P6 bug 修复后的新行为）
+4. 主题明/暗切换（跟随系统/浅色/深色）
+5. 账号资料编辑（姓名/生日/性别/头像）、统计展示（使用天数/版本/存储空间）
+6. 备份/导入导出（配置/仅记录/全部数据）——含旧备份导入
+7. 图片存储页面（扫描、排序、清缓存）
+8. 中英文文案无遗漏（切 en_US 检查关键页面）
+9. 本地单测（DevEco `hvigorw test`）
+
+**遗留问题**：无新增代码改动（P8 为验证导向）。
+
+**下一轮计划**：用户实机验证结果回填后，P8 标记完成，重构收官。
 
 ### 10.3 数据兼容性验证记录
 
