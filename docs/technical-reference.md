@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 RecordLife 项目的**现状实现快照**，供不同窗口/会话的 AI 重构任务作为唯一参考，避免每次从头通读全部源码。
 > **配套文档**：`docs/refactoring-plan.md` 是重构方案与进度跟踪；本文档只描述**当前代码实际怎么实现**，两者配合使用。
-> **最后更新**：2026-08-22（可测试性提升完成，业务单测接入；基于当前工作区源码逐文件核对）
+> **最后更新**：2026-08-22（P7 `@kit.*` 统一完成；基于当前工作区源码逐文件核对）
 > **阅读方式**：全文关键结论均附 `file:line` 引用，可快速定位源码；改动任何涉及数据模型 / 持久化 / 备份导入导出的代码前，**必须先读 §5 与 §6**。
 
 ---
@@ -535,7 +535,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | # | 问题 | 位置 | 对应重构项 |
 | --- | --- | --- | --- |
 | 1 | ~~`NowPage` 误标 `@Entry` 且被 Tab 引用~~ ✅ 已修正 | NowPage 去 `@Entry`，`main_pages.json` 3 页（P5 轮次 10） | A4 / P5 已解决 |
-| 2 | 旧式 `@ohos.*` import（**8 处 / 5 文件**，全量清单）：`@ohos.data.preferences`×2（repository/ConfigRepository.ets:11、repository/RecordRepository.ets:8）、`@ohos.file.photoAccessHelper`（ImageViewer.ets:3）、`@ohos.file.fs`×2（ImageViewer.ets:4、ShareUtils.ets:8）、`@ohos.app.ability.common`×2（ImageViewer.ets:5、ConfigManager.ets:8）、`@ohos.promptAction`（ImageViewer.ets:6） | 见左 | B4 / P7（P2 已将 preferences 收敛至 repository 层） |
+| 2 | ~~旧式 `@ohos.*` import~~ ✅ 已清零 | 8 处/6 文件全部统一为 `@kit.*`：`@kit.ArkData`(preferences)、`@kit.CoreFileKit`(fileIo)、`@kit.MediaLibraryKit`(photoAccessHelper)、`@kit.AbilityKit`(common)、`@kit.ArkUI`(promptAction)（P7 轮次 12） | B4 / P7 已解决 |
 | 3 | 硬编码颜色残留（有意保留类）：标签调色板 10 色、`getDayColor` 选中 `'#FFFFFF'`（CalendarUtils.ets:193）、主题判定 `textPrimary === '#FFFFFF'`（ThemeManager.ets:147/149）、纯白文字 on 彩色背景 | 多处 | B1 残余说明 |
 | 4 | `createDefaultConfig` / `createDefaultConfigSync` 几乎重复 | UserConfigModel.ets:83/138 | B5 |
 | 5 | ~~`JSON.parse(JSON.stringify(...))` 深拷贝~~ ✅ 已替换 | NowPage.refreshTimeline 直接赋值（buildTimelineData 每次返回全新对象图，P5 轮次 10） | B6 已解决 |

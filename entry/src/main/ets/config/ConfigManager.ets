@@ -4,7 +4,7 @@
  * 使用 HarmonyOS Preferences API 进行持久化存储
  */
 
-import common from '@ohos.app.ability.common';
+import { common } from '@kit.AbilityKit';
 import { UserConfig, createDefaultConfig, createDefaultConfigSync, validateConfig } from './UserConfig';
 import { ConfigRepository } from '../repository/ConfigRepository';
 import { TimeUtils } from '../common/utils/TimeUtils';

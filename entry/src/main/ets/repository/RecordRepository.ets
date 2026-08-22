@@ -2,10 +2,10 @@
  * 记录数据仓库层
  * 封装 LifeRecord 的 Preferences 持久化访问，消除 store/key 常量散落问题
  *
- * 依赖方向：viewmodel / handler / manager → repository → @ohos.data.preferences
+ * 依赖方向：viewmodel / handler / manager → repository → @kit.ArkData (preferences)
  */
 
-import preferences from '@ohos.data.preferences';
+import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { LifeRecord } from '../model/RecordModel';
 

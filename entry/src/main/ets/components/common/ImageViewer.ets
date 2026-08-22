@@ -1,9 +1,9 @@
 // 图片预览组件：components/ImageViewer.ets
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
-import photoAccessHelper from '@ohos.file.photoAccessHelper'
-import fs from '@ohos.file.fs'
-import common from '@ohos.app.ability.common'
-import promptAction from '@ohos.promptAction'
+import { photoAccessHelper } from '@kit.MediaLibraryKit'
+import { fileIo as fs } from '@kit.CoreFileKit'
+import { common } from '@kit.AbilityKit'
+import { promptAction } from '@kit.ArkUI'
 
 @Component
 export struct ImageViewer {

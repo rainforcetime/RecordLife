@@ -4,8 +4,7 @@ import { image } from '@kit.ImageKit'
 import { uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { systemShare } from '@kit.ShareKit'
 import { common } from '@kit.AbilityKit'
-import { fileUri } from '@kit.CoreFileKit'
-import fs from '@ohos.file.fs'
+import { fileUri, fileIo as fs } from '@kit.CoreFileKit'
 import { BusinessError } from '@kit.BasicServicesKit'
 
 export class ShareUtils {

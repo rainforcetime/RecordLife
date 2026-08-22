@@ -309,7 +309,7 @@ pages/components → viewmodel → repository/service → 存储/系统 API
 | P5 | Page 层清理（`@Entry` 标注、路由注册） | ✅ | 2026-08-22 | NowPage 去 `@Entry` + `main_pages.json` 3 页（A4）；顶层 `utils/` 并入 `common/utils/`（C1）；HomePage 累计模式切换抽 `AccumulatedModeToggle` 组件（C3）；NowPage 深拷贝替换（B6）；见轮次 10 |
 | P6 | 资源化（硬编码 → `$r()`） | ✅ | 2026-08-22 | `string.json`（zh_CN 1120 行 / en_US）+ `color.json`（base + dark）已创建；100+ 处 `$r('app.string.*')` 已接入；残余硬编码为标签调色板 / 主题判定逻辑等有意保留 |
 | — | 可测试性提升（阶段 6，hypium 单测） | ✅ | 2026-08-22 | 15 个单测覆盖 `buildTimelineData` / `formatStorageSize` / `calcUsageDays` / `validateConfig` / `TimeUtils`（见轮次 11）；⚠️ 构造器注入（A5，去除 AppStorage 硬依赖）为渐进项未全量改造 |
-| P7 | `@kit.*` 统一 & 依赖整理 | ⬜ | — | 11 处旧式 `@ohos.*` import 分布在 7 个文件 |
+| P7 | `@kit.*` 统一 & 依赖整理 | ✅ | 2026-08-22 | 8 处旧式 `@ohos.*` import（6 文件）全部统一为 `@kit.*`：`@ohos.data.preferences`→`@kit.ArkData`、`@ohos.file.fs`→`@kit.CoreFileKit`（fileIo 别名）、`@ohos.file.photoAccessHelper`→`@kit.MediaLibraryKit`、`@ohos.app.ability.common`→`@kit.AbilityKit`、`@ohos.promptAction`→`@kit.ArkUI`（见轮次 12）；`@ohos/hypium`/`@ohos/hamock` 为测试框架依赖保留 |
 | P8 | 全量回归 + 旧备份导入冒烟 | ⬜ | — | 最终验收 |
 
 ### 10.2 逐轮工作日志
@@ -671,6 +671,29 @@ entry/src/main/ets/
 - `StorageService.getAppStorageSize` / repository 层 / TagService 等依赖系统 API 或单例的模块未纳入单测（可后续用 hamock）
 
 **下一轮计划**：P7 — `@kit.*` 统一 & 依赖整理（11 处旧式 `@ohos.*` import 分布在 7 个文件）
+
+### 轮次 12 — 2026-08-22（P7 `@kit.*` 统一 · 完成）
+
+> 前置：用户确认上一轮单测修复后全部通过 ✅。
+
+**本轮目标**：将全工程旧式 `@ohos.*` 系统 API import 统一为官方推荐的 `@kit.*`（B4）。
+
+**涉及文件**（8 处 / 6 文件）：
+- `components/common/ImageViewer.ets` — 4 处：`@ohos.file.photoAccessHelper`→`@kit.MediaLibraryKit`、`@ohos.file.fs`→`@kit.CoreFileKit`（`fileIo as fs`）、`@ohos.app.ability.common`→`@kit.AbilityKit`、`@ohos.promptAction`→`@kit.ArkUI`
+- `common/utils/ShareUtils.ets` — `@ohos.file.fs`→`@kit.CoreFileKit`（`fileIo as fs`，与已有 fileUri 合并导入）
+- `config/ConfigManager.ets` — `@ohos.app.ability.common`→`@kit.AbilityKit`
+- `repository/ConfigRepository.ets`、`repository/RecordRepository.ets` — `@ohos.data.preferences`→`@kit.ArkData`（含依赖方向注释更新）
+
+**已完成**：
+- [x] 全工程 `entry/src` 下 `@ohos.*` 系统 API import 清零（grep 验证）
+- [x] 调用点零改动（命名导入 + 别名保持 `fs.` / `common.` / `photoAccessHelper.` 等调用不变）
+- [x] `@ohos/hypium` / `@ohos/hamock`（测试框架 npm 依赖）保留
+
+**遗留问题**：
+- ⚠️ 需 DevEco 编译 + 实机回归（图片预览保存、配置读写、分享截图、存储统计等用到被替换模块的功能）
+- `utils/` 顶层目录已于 P5 并入 `common/utils/`；`AppInfoConfig.ets` 中 `interface AppInfoConfig` 与 `class AppInfoManager` 同名近似（P1 遗留，§14 问题 14）未处理
+
+**下一轮计划**：P8 — 全量回归 + 旧备份导入冒烟（最终验收）：主题切换 / 标签 / 时间线 / 备份导入导出 / 图片存储 / 中英文文案 / 单测全绿
 
 ### 10.3 数据兼容性验证记录
 

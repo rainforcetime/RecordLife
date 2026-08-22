@@ -5,10 +5,10 @@
  * 仅负责原始字符串的读写；JSON 解析 / 校验 / metadata 更新等业务逻辑
  * 仍由 ConfigManager 负责。
  *
- * 依赖方向：config/ConfigManager → repository → @ohos.data.preferences
+ * 依赖方向：config/ConfigManager → repository → @kit.ArkData (preferences)
  */
 
-import preferences from '@ohos.data.preferences';
+import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 
 export class ConfigRepository {
