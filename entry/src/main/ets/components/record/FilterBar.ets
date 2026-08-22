@@ -231,7 +231,7 @@ export struct FilterBar {
     .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
     .borderRadius(16)
     .onClick(() => {
-      // 手动 toggle：不依赖 $$ 外部关闭回写（该 SDK 不支持自动复位）
+      // 手动 toggle 开关气泡
       this.showFilterPopup = !this.showFilterPopup
     })
     .bindPopup($$this.showFilterPopup, {
@@ -242,7 +242,15 @@ export struct FilterBar {
       offset: { x: 0, y: 6 },
       enableArrow: true,
       arrowPointPosition: ArrowPointPosition.START,
-      backgroundBlurStyle: BlurStyle.NONE
+      // 透明遮罩：点击空白处关闭气泡
+      mask: { color: '#00000000' },
+      backgroundBlurStyle: BlurStyle.NONE,
+      onStateChange: (e) => {
+        // 任何方式关闭气泡（点空白/遮罩）都复位状态，保证下次可正常弹出
+        if (e.isVisible === false) {
+          this.showFilterPopup = false
+        }
+      }
     })
   }
 
