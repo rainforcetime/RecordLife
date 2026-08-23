@@ -1349,20 +1349,20 @@
       "value": "可上下滑动"
     },
     {
-      "name": "settings_group_appearance",
-      "value": "外观"
-    },
-    {
       "name": "settings_group_data",
       "value": "数据"
     },
     {
-      "name": "settings_group_personal",
-      "value": "个性化"
+      "name": "settings_group_general",
+      "value": "通用"
     },
     {
-      "name": "settings_group_more",
-      "value": "更多"
+      "name": "settings_group_about",
+      "value": "关于"
+    },
+    {
+      "name": "settings_group_personal",
+      "value": "个性化"
     },
     {
       "name": "settings_group_danger",

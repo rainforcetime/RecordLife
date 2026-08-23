@@ -438,8 +438,8 @@ export struct AccountPage {
       .alignSelf(ItemAlign.Center)
       .padding({ left: 12, bottom: 12 })
 
-      // ===== 外观组（我的页 UI 重构：分组重排，隐私归入外观） =====
-      this.GroupTitle($r('app.string.settings_group_appearance'))
+      // ===== 通用组（我的页 UI 重构：外观 → 通用，含隐私） =====
+      this.GroupTitle($r('app.string.settings_group_general'))
       SettingsGroupCard() {
         // 主题设置（选择器）
         SettingItemWithSelector({
@@ -539,8 +539,8 @@ export struct AccountPage {
         })
       }
 
-      // ===== 更多组 =====
-      this.GroupTitle($r('app.string.settings_group_more'))
+      // ===== 关于组（更多 → 关于） =====
+      this.GroupTitle($r('app.string.settings_group_about'))
       SettingsGroupCard() {
         // 更多设置
         SettingItem({

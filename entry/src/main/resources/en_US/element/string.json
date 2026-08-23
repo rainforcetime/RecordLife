@@ -1349,20 +1349,20 @@
       "value": "Swipe up/down"
     },
     {
-      "name": "settings_group_appearance",
-      "value": "Appearance"
-    },
-    {
       "name": "settings_group_data",
       "value": "Data"
     },
     {
-      "name": "settings_group_personal",
-      "value": "Personalization"
+      "name": "settings_group_general",
+      "value": "General"
     },
     {
-      "name": "settings_group_more",
-      "value": "More"
+      "name": "settings_group_about",
+      "value": "About"
+    },
+    {
+      "name": "settings_group_personal",
+      "value": "Personalization"
     },
     {
       "name": "settings_group_danger",
