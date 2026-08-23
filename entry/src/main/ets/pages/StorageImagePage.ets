@@ -9,6 +9,7 @@ import { StorageService } from '../service/StorageService'
 import { RecordRepository } from '../repository/RecordRepository'
 import { AccountUtils } from '../common/utils/AccountUtils'
 import { ColorUtils } from '../common/ColorUtils'
+import { ImageViewer } from '../components/common/ImageViewer'
 
 // 图片信息接口
 interface ImageInfo {
@@ -39,6 +40,11 @@ struct StorageImagePage {
   
   // 应用上下文
   private context: common.UIAbilityContext | null = null
+
+  // 图片预览状态（点击查看大图）
+  @State private showImageViewer: boolean = false
+  @State private viewerUris: string[] = []
+  @State private viewerIndex: number = 0
   
   // 页面初始化
   async aboutToAppear() {
@@ -291,9 +297,9 @@ struct StorageImagePage {
         // 图片网格
         Scroll() {
           Grid() {
-            ForEach(this.imageList, (item: ImageInfo) => {
+            ForEach(this.imageList, (item: ImageInfo, index: number) => {
               GridItem() {
-                this.ImageCard(item)
+                this.ImageCard(item, index)
               }
             }, (item: ImageInfo) => item.path)
           }
@@ -325,11 +331,14 @@ struct StorageImagePage {
     .width('100%')
     .height('100%')
     .backgroundColor(this.themeColors.background)
+    .bindContentCover($$this.showImageViewer, this.ImageViewerBuilder(), {
+      modalTransition: ModalTransition.NONE
+    })
   }
   
-  // 图片卡片组件
+  // 图片卡片组件（点击查看大图）
   @Builder
-  ImageCard(item: ImageInfo) {
+  ImageCard(item: ImageInfo, index: number) {
     Column() {
       // 图片显示区域（正方形）
       Stack() {
@@ -380,6 +389,28 @@ struct StorageImagePage {
       color: this.themeColors.shadow,
       offsetX: 0,
       offsetY: 2
+    })
+    .onClick(() => {
+      this.openViewer(index)
+    })
+  }
+
+  // 打开图片全屏预览
+  private openViewer(index: number) {
+    this.viewerUris = this.imageList.map((item: ImageInfo) => item.uri)
+    this.viewerIndex = index
+    this.showImageViewer = true
+  }
+
+  // 图片预览构建器（全屏覆盖）
+  @Builder
+  ImageViewerBuilder() {
+    ImageViewer({
+      imageUris: this.viewerUris,
+      currentIndex: this.viewerIndex,
+      onClose: () => {
+        this.showImageViewer = false
+      }
     })
   }
 }
