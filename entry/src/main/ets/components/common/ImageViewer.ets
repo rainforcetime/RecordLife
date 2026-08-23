@@ -129,14 +129,16 @@ export struct ImageViewer {
                 .objectFit(ImageFit.Contain)
                 .draggable(false)
                 .scale({ x: this.scaleValue, y: this.scaleValue })
-                .pinchGesture({
-                  onActionStart: () => {
-                    this.baseScale = this.scaleValue
-                  },
-                  onActionUpdate: (event: GestureEvent) => {
-                    this.setScale(this.baseScale * event.scale)
-                  }
-                })
+                .gesture(
+                  PinchGesture({
+                    onActionStart: () => {
+                      this.baseScale = this.scaleValue
+                    },
+                    onActionUpdate: (event: GestureEvent) => {
+                      this.setScale(this.baseScale * event.scale)
+                    }
+                  })
+                )
                 .gesture(
                   TapGesture({ count: 2 })
                     .onAction(() => {
@@ -200,9 +202,8 @@ export struct ImageViewer {
           Row() {
             Blank()
 
-            // 使用SaveButton安全控件保存图片（下载图标 + 保存文字）
+            // 使用SaveButton安全控件保存图片（免权限；该 SDK 无 SaveIcon 枚举，纯文字）
             SaveButton({
-              icon: SaveIcon.ICON_DOWNLOAD,
               text: SaveDescription.SAVE_IMAGE,
               buttonType: ButtonType.Normal
             })
