@@ -3,6 +3,7 @@
  * 腾讯云 COS 参数填写 + 测试连接 + 保存；App 不内置任何密钥（用户自填防泄露）
  */
 import { promptAction, PromptAction } from '@kit.ArkUI'
+import { common } from '@kit.AbilityKit'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { CosConfig } from '../../model/UserConfigModel'
 import { CosService } from '../../service/CosService'
