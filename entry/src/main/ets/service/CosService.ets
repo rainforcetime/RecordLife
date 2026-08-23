@@ -5,10 +5,9 @@
  * 密钥：App 不内置，用户设置页自填（防反编译泄露）
  */
 import { http } from '@kit.NetworkKit'
-import { cryptoFramework } from '@kit.CryptoArchitectureKit'
-import { util } from '@kit.ArkTS'
 import { fileIo } from '@kit.CoreFileKit'
 import { CosConfig } from '../model/UserConfigModel'
+import { HmacSha1 } from '../common/utils/HmacSha1'
 import { Logger } from '../common/utils/Logger'
 
 export class CosService {
@@ -162,7 +161,7 @@ export class CosService {
     const signTime = `${now - 60};${now + 3600}`
     const keyTime = signTime
     // SignKey = HMAC-SHA1(SecretKey, KeyTime)
-    const signKey = await CosService.hmacSha1Hex(config.secretKey, keyTime)
+    const signKey = HmacSha1.hex(config.secretKey, keyTime)
     // HttpString = method\npath\n\n{headers}\n；headers 按字典序 & 连接，值需 URL 编码
     // 请求头含 content-type（白名单）时必须参与签名
     let headersStr: string
@@ -175,44 +174,10 @@ export class CosService {
       headersList = 'host'
     }
     const httpString = `${method}\n${path}\n\n${headersStr}\n`
-    const httpStringSha1 = await CosService.sha1Hex(httpString)
+    const httpStringSha1 = HmacSha1.sha1Hex(httpString)
     // StringToSign = sha1\nKeyTime\nSHA1(HttpString)\n
     const stringToSign = `sha1\n${keyTime}\n${httpStringSha1}\n`
-    const signature = await CosService.hmacSha1Hex(signKey, stringToSign)
+    const signature = HmacSha1.hex(signKey, stringToSign)
     return `q-sign-algorithm=sha1&q-ak=${config.secretId}&q-sign-time=${signTime}&q-key-time=${keyTime}&q-header-list=${headersList}&q-url-param-list=&q-signature=${signature}`
-  }
-
-  // HMAC-SHA1 十六进制
-  private static async hmacSha1Hex(key: string, data: string): Promise<string> {
-    const mac = cryptoFramework.createMac('HMAC|SHA1')
-    const encoder = util.TextEncoder.create()
-    const keyBlob: cryptoFramework.DataBlob = { data: encoder.encodeInto(key) }
-    // DataBlob → SymKey（createMac.init 需要 SymKey）
-    const keyGenerator = cryptoFramework.createSymKeyGenerator('HMAC')
-    const symKey = await keyGenerator.convertKey(keyBlob)
-    await mac.init(symKey)
-    const dataBlob: cryptoFramework.DataBlob = { data: encoder.encodeInto(data) }
-    await mac.update(dataBlob)
-    const out: cryptoFramework.DataBlob = await mac.doFinal()
-    return CosService.bytesToHex(out.data)
-  }
-
-  // SHA-1 十六进制
-  private static async sha1Hex(data: string): Promise<string> {
-    const md = cryptoFramework.createMd('SHA1')
-    const encoder = util.TextEncoder.create()
-    const dataBlob: cryptoFramework.DataBlob = { data: encoder.encodeInto(data) }
-    await md.update(dataBlob)
-    const out: cryptoFramework.DataBlob = await md.digest()
-    return CosService.bytesToHex(out.data)
-  }
-
-  // 字节转十六进制
-  private static bytesToHex(bytes: Uint8Array): string {
-    let hex = ''
-    for (let i = 0; i < bytes.length; i++) {
-      hex += bytes[i].toString(16).padStart(2, '0')
-    }
-    return hex
   }
 }
