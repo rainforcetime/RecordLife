@@ -149,13 +149,13 @@ struct DashboardPage {
 
           Row({ space: 10 }) {
             this.StatCard($r('app.string.stat_total_chars'), this.formatNumber(this.statistics.totalCharacters))
-            this.StatCard($r('app.string.stat_first_date'), this.statistics.firstRecordDate.length > 0 ? this.statistics.firstRecordDate : '-')
+            this.StatCard($r('app.string.stat_first_date'), this.statistics.firstRecordDate.length > 0 ? this.statistics.firstRecordDate : '-', 16)
           }
           .width('100%')
           .margin({ bottom: 10 })
 
           Row({ space: 10 }) {
-            this.StatCard($r('app.string.stat_last_date'), this.statistics.lastRecordDate.length > 0 ? this.statistics.lastRecordDate : '-')
+            this.StatCard($r('app.string.stat_last_date'), this.statistics.lastRecordDate.length > 0 ? this.statistics.lastRecordDate : '-', 16)
             this.StatCard($r('app.string.stat_target_age'), this.formatNumber(this.targetAge))
           }
           .width('100%')
@@ -299,7 +299,7 @@ struct DashboardPage {
 
   // 统计卡片
   @Builder
-  StatCard(label: ResourceStr, value: string) {
+  StatCard(label: ResourceStr, value: string, valueSize: number = 24) {
     Column() {
       Text(label)
         .fontSize(13)
@@ -307,7 +307,7 @@ struct DashboardPage {
         .width('100%')
 
       Text(value)
-        .fontSize(24)
+        .fontSize(valueSize)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.themeColors.textPrimary)
         .width('100%')
