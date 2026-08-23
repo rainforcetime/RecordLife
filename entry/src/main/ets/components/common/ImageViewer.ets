@@ -130,14 +130,13 @@ export struct ImageViewer {
                 .draggable(false)
                 .scale({ x: this.scaleValue, y: this.scaleValue })
                 .gesture(
-                  PinchGesture({
-                    onActionStart: () => {
+                  PinchGesture()
+                    .onActionStart(() => {
                       this.baseScale = this.scaleValue
-                    },
-                    onActionUpdate: (event: GestureEvent) => {
+                    })
+                    .onActionUpdate((event: GestureEvent) => {
                       this.setScale(this.baseScale * event.scale)
-                    }
-                  })
+                    })
                 )
                 .gesture(
                   TapGesture({ count: 2 })
