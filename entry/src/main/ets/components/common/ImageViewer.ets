@@ -23,6 +23,11 @@ export struct ImageViewer {
   @State private scaleValue: number = 1
   @State private baseScale: number = 1
   @State private isZoomed: boolean = false
+
+  // 平移状态（放大后单指拖动查看）
+  @State private offsetX: number = 0
+  @State private offsetY: number = 0
+  @State private panActive: boolean = false
   
   // 关闭回调
   onClose?: () => void
@@ -36,6 +41,29 @@ export struct ImageViewer {
     const clamped = scale < 1 ? 1 : (scale > 5 ? 5 : scale)
     this.scaleValue = clamped
     this.isZoomed = clamped > 1.01
+    if (!this.isZoomed) {
+      // 还原到 1x 时复位平移
+      this.offsetX = 0
+      this.offsetY = 0
+    }
+  }
+
+  // 平移边界限制（随缩放比例，近似容器尺寸）
+  private clampOffset() {
+    const maxX = (this.scaleValue - 1) * 100
+    const maxY = (this.scaleValue - 1) * 150
+    if (this.offsetX > maxX) {
+      this.offsetX = maxX
+    }
+    if (this.offsetX < -maxX) {
+      this.offsetX = -maxX
+    }
+    if (this.offsetY > maxY) {
+      this.offsetY = maxY
+    }
+    if (this.offsetY < -maxY) {
+      this.offsetY = -maxY
+    }
   }
 
   // 双击放大/还原（1x ↔ 2.5x）
@@ -125,12 +153,14 @@ export struct ImageViewer {
               .objectFit(ImageFit.Contain)
               .draggable(false)
               .scale({ x: this.scaleValue, y: this.scaleValue })
+              .translate({ x: this.offsetX, y: this.offsetY })
           }, (uri: string) => uri)
         }
         .index(this.currentIndex)
         .indicator(false)
         .loop(false)
-        // 不通过 enabled 禁用 Swiper（禁用后触摸穿透会导致误关闭预览）；双指捏合与单指滑动天然不冲突
+        // 放大时锁定 Swiper 滑动（背景已不响应点击，不会误关闭），由 PanGesture 平移接管
+        .enabled(!this.isZoomed)
         .gesture(
           PinchGesture({ fingers: 2 })
             .onActionStart(() => {
@@ -144,6 +174,20 @@ export struct ImageViewer {
           TapGesture({ count: 2 })
             .onAction(() => {
               this.toggleZoom()
+            })
+        )
+        .gesture(
+          PanGesture({ fingers: 1 })
+            .onActionStart(() => {
+              // 仅放大状态下启用平移
+              this.panActive = this.isZoomed
+            })
+            .onActionUpdate((event: GestureEvent) => {
+              if (this.panActive) {
+                this.offsetX += event.offsetX
+                this.offsetY += event.offsetY
+                this.clampOffset()
+              }
             })
         )
         .onChange((index: number) => {
