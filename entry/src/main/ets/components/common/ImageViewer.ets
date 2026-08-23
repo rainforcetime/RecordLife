@@ -118,41 +118,37 @@ export struct ImageViewer {
           this.closeViewer()
         })
       
-      // 2. 中层：图片展示区域（Swiper 滑动切换 + 捏合/双击缩放）
+      // 2. 中层：图片展示区域（Swiper 滑动切换 + 外层捏合/双击缩放）
       if (this.imageUris.length > 0) {
         Swiper() {
           ForEach(this.imageUris, (uri: string) => {
-            Stack() {
-              Image(uri)
-                .width('100%')
-                .height('100%')
-                .objectFit(ImageFit.Contain)
-                .draggable(false)
-                .scale({ x: this.scaleValue, y: this.scaleValue })
-                .gesture(
-                  PinchGesture()
-                    .onActionStart(() => {
-                      this.baseScale = this.scaleValue
-                    })
-                    .onActionUpdate((event: GestureEvent) => {
-                      this.setScale(this.baseScale * event.scale)
-                    })
-                )
-                .gesture(
-                  TapGesture({ count: 2 })
-                    .onAction(() => {
-                      this.toggleZoom()
-                    })
-                )
-            }
-            .width('100%')
-            .height('100%')
+            Image(uri)
+              .width('100%')
+              .height('100%')
+              .objectFit(ImageFit.Contain)
+              .draggable(false)
+              .scale({ x: this.scaleValue, y: this.scaleValue })
           }, (uri: string) => uri)
         }
         .index(this.currentIndex)
         .indicator(false)
         .loop(false)
         .enabled(!this.isZoomed)  // 放大时锁定滑动，避免与缩放手势冲突
+        .gesture(
+          PinchGesture()
+            .onActionStart(() => {
+              this.baseScale = this.scaleValue
+            })
+            .onActionUpdate((event: GestureEvent) => {
+              this.setScale(this.baseScale * event.scale)
+            })
+        )
+        .gesture(
+          TapGesture({ count: 2 })
+            .onAction(() => {
+              this.toggleZoom()
+            })
+        )
         .onChange((index: number) => {
           this.displayIndex = index
           this.setScale(1)  // 切换图片时复位缩放
