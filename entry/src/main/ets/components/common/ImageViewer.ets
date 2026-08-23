@@ -18,12 +18,33 @@ export struct ImageViewer {
 
   // 当前显示索引（Swiper 滑动同步）
   @State private displayIndex: number = 0
+
+  // 缩放状态（捏合/双击，1~5 倍）
+  @State private scaleValue: number = 1
+  @State private baseScale: number = 1
+  @State private isZoomed: boolean = false
   
   // 关闭回调
   onClose?: () => void
 
   aboutToAppear() {
     this.displayIndex = this.currentIndex
+  }
+
+  // 设置缩放（1~5 倍，>1 视为已放大并锁定 Swiper 滑动）
+  private setScale(scale: number) {
+    const clamped = scale < 1 ? 1 : (scale > 5 ? 5 : scale)
+    this.scaleValue = clamped
+    this.isZoomed = clamped > 1.01
+  }
+
+  // 双击放大/还原（1x ↔ 2.5x）
+  private toggleZoom() {
+    if (this.isZoomed) {
+      this.setScale(1)
+    } else {
+      this.setScale(2.5)
+    }
   }
   
   // 保存图片到图库（在SaveButton点击后调用）
@@ -97,22 +118,43 @@ export struct ImageViewer {
           this.closeViewer()
         })
       
-      // 2. 中层：图片展示区域（Swiper 滑动切换）
+      // 2. 中层：图片展示区域（Swiper 滑动切换 + 捏合/双击缩放）
       if (this.imageUris.length > 0) {
         Swiper() {
           ForEach(this.imageUris, (uri: string) => {
-            Image(uri)
-              .width('100%')
-              .height('100%')
-              .objectFit(ImageFit.Contain)
-              .draggable(false)  // 禁止图片拖动（避免与滑动冲突）
+            Stack() {
+              Image(uri)
+                .width('100%')
+                .height('100%')
+                .objectFit(ImageFit.Contain)
+                .draggable(false)
+                .scale({ x: this.scaleValue, y: this.scaleValue })
+                .pinchGesture({
+                  onActionStart: () => {
+                    this.baseScale = this.scaleValue
+                  },
+                  onActionUpdate: (event: GestureEvent) => {
+                    this.setScale(this.baseScale * event.scale)
+                  }
+                })
+                .gesture(
+                  TapGesture({ count: 2 })
+                    .onAction(() => {
+                      this.toggleZoom()
+                    })
+                )
+            }
+            .width('100%')
+            .height('100%')
           }, (uri: string) => uri)
         }
         .index(this.currentIndex)
         .indicator(false)
         .loop(false)
+        .enabled(!this.isZoomed)  // 放大时锁定滑动，避免与缩放手势冲突
         .onChange((index: number) => {
           this.displayIndex = index
+          this.setScale(1)  // 切换图片时复位缩放
         })
         .width('100%')
         .height('100%')
@@ -153,31 +195,40 @@ export struct ImageViewer {
         
         Blank()
         
-        // 底部工具栏（添加安全区域底部避让）
-        Row() {
-          Blank()
-          
-          // 使用SaveButton安全控件保存图片
-          SaveButton({ text: SaveDescription.SAVE_IMAGE, buttonType: ButtonType.Normal })
-            .width(120)
-            .height(44)
-            .borderRadius(22)
-            .backgroundColor('rgba(255, 255, 255, 0.3)')
-            .onClick(async (event: ClickEvent, result: SaveButtonOnClickResult) => {
-              if (result === SaveButtonOnClickResult.SUCCESS) {
-                await this.saveImageToGallery()
-              } else {
-                this.getUIContext().getPromptAction().showToast({
-                  message: $r('app.string.authorization_failed'),
-                  duration: 2000
-                })
-              }
+        // 底部工具栏（半透明深色圆角条 + 下载图标保存按钮）
+        Column() {
+          Row() {
+            Blank()
+
+            // 使用SaveButton安全控件保存图片（下载图标 + 保存文字）
+            SaveButton({
+              icon: SaveIcon.ICON_DOWNLOAD,
+              text: SaveDescription.SAVE_IMAGE,
+              buttonType: ButtonType.Normal
             })
+              .width(140)
+              .height(44)
+              .borderRadius(22)
+              .backgroundColor('rgba(255, 255, 255, 0.16)')
+              .fontSize(15)
+              .onClick(async (event: ClickEvent, result: SaveButtonOnClickResult) => {
+                if (result === SaveButtonOnClickResult.SUCCESS) {
+                  await this.saveImageToGallery()
+                } else {
+                  this.getUIContext().getPromptAction().showToast({
+                    message: $r('app.string.authorization_failed'),
+                    duration: 2000
+                  })
+                }
+              })
+
+            Blank()
+          }
+          .width('100%')
         }
         .width('100%')
-        .height(56)
-        .padding({ left: 16, right: 16 })
-        .margin({ bottom: 24 })  // 添加底部 margin 避让导航条
+        .padding({ top: 12, bottom: 24 })
+        .backgroundColor('rgba(0, 0, 0, 0.35)')
       }
       .width('100%')
       .height('100%')
