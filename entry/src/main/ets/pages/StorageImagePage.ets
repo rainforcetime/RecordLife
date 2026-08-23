@@ -249,10 +249,23 @@ struct StorageImagePage {
     Column() {
       // 页面标题区域
       Row() {
+        // 返回按钮（44×44 点击区，与其他子页一致）
+        Column() {
+          SymbolGlyph($r('sys.symbol.chevron_left'))
+            .fontSize(24)
+            .fontColor([this.themeColors.iconColor])
+        }
+        .width(44)
+        .height(44)
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          this.getUIContext().getRouter().back()
+        })
+
         SymbolGlyph($r('sys.symbol.folder_fill'))
           .fontSize(24)
           .fontColor([this.themeColors.primary])
-          .margin({ right: 12 })
+          .margin({ left: 4, right: 12 })
         
         Text($r('app.string.stored_images'))
           .fontSize(22)
