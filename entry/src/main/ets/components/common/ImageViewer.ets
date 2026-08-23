@@ -133,7 +133,7 @@ export struct ImageViewer {
         .index(this.currentIndex)
         .indicator(false)
         .loop(false)
-        .enabled(!this.isZoomed)  // 放大时锁定滑动，避免与缩放手势冲突
+        // 不通过 enabled 禁用 Swiper（禁用后触摸穿透会导致误关闭预览）；双指捏合与单指滑动天然不冲突
         .gesture(
           PinchGesture()
             .onActionStart(() => {
