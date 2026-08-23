@@ -1,9 +1,14 @@
 // 存储图片页面：pages/StorageImagePage.ets
 import { common } from '@kit.AbilityKit'
 import { fileIo as fs, fileUri, storageStatistics } from '@kit.CoreFileKit'
+import { promptAction, PromptAction } from '@kit.ArkUI'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { RefreshManager } from '../common/managers/RefreshManager'
 import { Logger } from '../common/utils/Logger'
+import { StorageService } from '../service/StorageService'
+import { RecordRepository } from '../repository/RecordRepository'
+import { AccountUtils } from '../common/utils/AccountUtils'
+import { ColorUtils } from '../common/ColorUtils'
 
 // 图片信息接口
 interface ImageInfo {
@@ -174,6 +179,27 @@ struct StorageImagePage {
     // 保留两位小数
     return size.toFixed(2) + ' ' + units[i]
   }
+
+  // 清理缓存（分享临时图片 + 孤儿记录图片；存储页内，业界主流位置）
+  private async onCleanCache() {
+    if (!this.context) {
+      return
+    }
+    try {
+      const records = await RecordRepository.getRecords(this.context)
+      const count = await StorageService.cleanupCache(this.context, records)
+      if (count > 0) {
+        AccountUtils.showToastSafely(this.getUIContext().getPromptAction(), $r('app.string.cache_cleaned', count))
+      } else {
+        AccountUtils.showToastSafely(this.getUIContext().getPromptAction(), $r('app.string.cache_nothing'))
+      }
+      // 刷新本页列表 + 全局刷新（我的页存储空间同步）
+      await this.loadSandboxImages()
+      RefreshManager.getInstance().refresh()
+    } catch (error) {
+      Logger.error('[StorageImagePage] 清理缓存异常: ' + JSON.stringify(error))
+    }
+  }
   
   build() {
     Column() {
@@ -191,6 +217,24 @@ struct StorageImagePage {
         
         Blank()
         
+        // 清理缓存按钮（存储页内，业界主流位置）
+        Row() {
+          Text('🧹')
+            .fontSize(13)
+          Text($r('app.string.clean_cache'))
+            .fontSize(13)
+            .fontColor(this.themeColors.primary)
+            .fontWeight(FontWeight.Medium)
+            .margin({ left: 4 })
+        }
+        .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+        .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
+        .borderRadius(14)
+        .margin({ left: 8 })
+        .onClick(() => {
+          this.onCleanCache()
+        })
+        
         // 图片数量标签
         if (!this.isLoading && this.imageList.length > 0) {
           Text($r('app.string.image_count', this.imageList.length))
@@ -199,6 +243,7 @@ struct StorageImagePage {
             .backgroundColor(this.themeColors.cardBackground)
             .padding({ left: 8, right: 8, top: 4, bottom: 4 })
             .borderRadius(12)
+            .margin({ left: 8 })
         }
       }
       .width('95%')

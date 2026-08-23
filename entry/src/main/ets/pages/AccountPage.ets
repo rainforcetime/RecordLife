@@ -276,18 +276,6 @@ export struct AccountPage {
     }
   }
 
-  // 清理缓存（更新计划三期）
-  private async onCleanCache() {
-    const count = await this.viewModel.cleanupCache()
-    if (count > 0) {
-      AccountUtils.showToastSafely(this.promptAction, $r('app.string.cache_cleaned', count))
-    } else {
-      AccountUtils.showToastSafely(this.promptAction, $r('app.string.cache_nothing'))
-    }
-    // 刷新存储空间显示
-    await this.loadDataStatistics()
-  }
-  
   // 编辑资料处理
   private onEditProfile() {
     Logger.info('编辑资料')
@@ -534,17 +522,6 @@ export struct AccountPage {
           .color(this.themeColors.divider)
           .margin({ left: 15 })
           .height(0.5)
-
-        // 清理缓存（更新计划三期）
-        SettingItem({
-          label: $r('app.string.clean_cache'),
-          summary: $r('app.string.clean_cache_summary'),
-          icon: '🧹',
-          iconBg: '#E0F7FA'
-        })
-        .onClick(() => {
-          this.onCleanCache()
-        })
       }
 
       // ===== 个性化组 =====
