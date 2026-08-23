@@ -21,6 +21,10 @@ export interface CosConfig {
   secretId: string;     // SecretId（用户自填）
   secretKey: string;    // SecretKey（用户自填；本地存储 + 首次配置风险提示）
   customDomain?: string; // 自定义访问域名（可选，如 'images.example.com'；中国大陆 bucket 建议配置，签名 host 与之对齐；缺省用 {bucket}.cos.{region}.myqcloud.com）
+  dedupeUpload?: boolean; // 上传前去重（可选，默认 true：云端已有对象则不重复上传，省流量）
+  deleteOriginalAfterUpload?: boolean; // 上传后删除本地原图副本（可选，默认 true：云端已存原图后清理 pending，省空间；关闭则本地保留双保险）
+  compressMode?: string;   // 压缩档位（可选，'high'|'balanced'|'compact'，默认 'balanced'：均衡）
+  enabled?: boolean;      // 云存储总开关（可选，默认 true：关闭时暂停全部上传/下载，配置保留）
   useHttps?: boolean;   // 是否 HTTPS，默认 true
 }
 

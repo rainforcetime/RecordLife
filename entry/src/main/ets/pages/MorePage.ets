@@ -2,6 +2,7 @@
 import { common } from '@kit.AbilityKit'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { SettingItemWithAction } from '../components/setting/SettingItemWithAction'
+import { SettingItemWithSwitch } from '../components/setting/SettingItemWithSwitch'
 import { SettingItem } from '../components/setting/SettingItem'
 import { SettingsGroupCard } from '../components/setting/SettingsGroupCard'
 import { ConfigManager } from '../config/ConfigManager'
@@ -9,7 +10,6 @@ import { promptAction, PromptAction } from '@kit.ArkUI'
 import { BackupManager } from '../service/BackupManager'
 import { MorePageBackupHandler } from '../common/handlers/MorePageBackupHandler'
 import { MorePageConfigHandler } from '../common/handlers/MorePageConfigHandler'
-import { CosConfigDialog } from '../components/setting/CosConfigDialog'
 import { CosConfig } from '../model/UserConfigModel'
 import { Logger } from '../common/utils/Logger'
 import { ResourceUtils } from '../common/utils/ResourceUtils'
@@ -265,17 +265,8 @@ struct MorePage {
   // 当前云存储配置（初始化时读取；声明在弹窗控制器之前，避免字段初始化顺序问题）
   @State cosConfig: CosConfig | null = null
 
-  // 云存储配置弹窗控制器（图片存储优化 M2）
-  private cloudDialogController: CustomDialogController = new CustomDialogController({
-    builder: CosConfigDialog({
-      config: this.cosConfig || { region: '', bucket: '', secretId: '', secretKey: '' },
-      onSaved: (config: CosConfig) => {
-        this.onCosSaved(config)
-      }
-    }),
-    autoCancel: true,
-    customStyle: true
-  })
+  // 云存储总开关状态（读取自 cosConfig.enabled，默认关闭展示）
+  @State cloudEnabled: boolean = false
 
   // 导出进度弹窗控制器（导出全部时展示打包进度）
   private exportProgressDialogController: CustomDialogController = new CustomDialogController({
@@ -301,7 +292,9 @@ struct MorePage {
 
       // 读取云存储配置（图片存储优化 M2）
       this.cosConfig = this.configManager.getCosConfig()
-      Logger.info('MorePage: cosConfig - ' + (this.cosConfig ? '已配置' : '未配置'))
+      this.cloudEnabled = this.cosConfig ? this.cosConfig.enabled !== false : false
+      Logger.info('MorePage: cosConfig - ' + (this.cosConfig ? '已配置' : '未配置') +
+        ' enabled=' + this.cloudEnabled)
     } catch (error) {
       Logger.error('MorePage 初始化失败: ' + JSON.stringify(error))
     }
@@ -387,15 +380,19 @@ struct MorePage {
           .color(this.themeColors.divider)
           .height(0.5)
 
-        // 云存储（图片存储优化 M2：本地压缩 + 云端原图）
-        SettingItemWithAction({
+        // 云存储（图片存储优化 M2：本地压缩 + 云端原图；行右侧总开关，点击行打开配置）
+        SettingItemWithSwitch({
           label: $r('app.string.cloud_storage'),
           summary: $r('app.string.cloud_storage_summary'),
           icon: '☁️',
           iconBg: '#E1F5FE',
-          onAction: () => {
-            this.showCloudDialog()
+          isOn: this.cloudEnabled,
+          onChange: (isOn: boolean) => {
+            this.onCloudSwitchChange(isOn)
           }
+        })
+        .onClick(() => {
+          this.showCloudDialog()
         })
       }
 
@@ -439,27 +436,30 @@ struct MorePage {
     this.importDialogController.open()
   }
 
-  // 显示云存储配置对话框（图片存储优化 M2）
+  // 打开云存储设置页面（图片存储优化：弹窗改为独立可滚动页面）
   private showCloudDialog() {
-    this.cloudDialogController.open()
+    try {
+      this.getUIContext().getRouter().pushUrl({
+        url: 'pages/CloudStoragePage'
+      })
+    } catch (error) {
+      Logger.error('页面跳转失败: ' + JSON.stringify(error))
+    }
   }
 
-  // 云存储配置保存（图片存储优化 M2）
-  private async onCosSaved(config: CosConfig) {
-    this.cosConfig = config
-    if (!this.configManager || !this.context) {
+  // 云存储总开关切换（配置保留，仅启停）
+  private async onCloudSwitchChange(isOn: boolean) {
+    this.cloudEnabled = isOn
+    if (!this.configManager) {
       return
     }
-    const ok = await this.configManager.setCosConfig(config)
-    try {
-      if (ok) {
-        this.promptAction.showToast({ message: $r('app.string.cloud_saved'), duration: 2000 })
-      }
-    } catch (error) {
-      Logger.error('MorePage: showToast 失败: ' + JSON.stringify(error))
-    }
+    const cur: CosConfig = this.cosConfig ? this.cosConfig :
+      { region: '', bucket: '', secretId: '', secretKey: '' }
+    cur.enabled = isOn
+    this.cosConfig = cur
+    await this.configManager.setCosConfig(cur)
   }
-  
+
   // 返回处理
   private goBack() {
     this.getUIContext().getRouter().back()

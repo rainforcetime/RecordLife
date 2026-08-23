@@ -1775,6 +1775,54 @@
     {
       "name": "cloud_upload_all_failed",
       "value": "Upload failed, check config"
+    },
+    {
+      "name": "cloud_upload_all_partial",
+      "value": "Uploaded %d, failed %d"
+    },
+    {
+      "name": "cloud_dedupe_upload",
+      "value": "Dedupe before upload"
+    },
+    {
+      "name": "cloud_dedupe_summary",
+      "value": "Skip if already on cloud to save traffic"
+    },
+    {
+      "name": "cloud_upload_all_skipped",
+      "value": "Skipped %d (already on cloud)"
+    },
+    {
+      "name": "cloud_uploading",
+      "value": "Uploading"
+    },
+    {
+      "name": "cloud_delete_original",
+      "value": "Delete original after upload"
+    },
+    {
+      "name": "cloud_delete_original_summary",
+      "value": "Remove local copies after upload to save space; off keeps them"
+    },
+    {
+      "name": "cloud_compress_quality",
+      "value": "Compression quality"
+    },
+    {
+      "name": "cloud_compress_quality_summary",
+      "value": "Local image compression (cloud keeps originals)"
+    },
+    {
+      "name": "cloud_compress_high",
+      "value": "High"
+    },
+    {
+      "name": "cloud_compress_balanced",
+      "value": "Balanced"
+    },
+    {
+      "name": "cloud_compress_compact",
+      "value": "Compact"
     }
   ]
 }

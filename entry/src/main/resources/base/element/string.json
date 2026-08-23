@@ -1775,6 +1775,54 @@
     {
       "name": "cloud_upload_all_failed",
       "value": "上传失败，请检查配置"
+    },
+    {
+      "name": "cloud_upload_all_partial",
+      "value": "已上传 %d 张，失败 %d 张"
+    },
+    {
+      "name": "cloud_dedupe_upload",
+      "value": "上传前去重"
+    },
+    {
+      "name": "cloud_dedupe_summary",
+      "value": "云端已有则跳过，节省流量"
+    },
+    {
+      "name": "cloud_upload_all_skipped",
+      "value": "已跳过 %d 张（云端已有）"
+    },
+    {
+      "name": "cloud_uploading",
+      "value": "正在上传"
+    },
+    {
+      "name": "cloud_delete_original",
+      "value": "上传后删除原图"
+    },
+    {
+      "name": "cloud_delete_original_summary",
+      "value": "云端已存原图后清理本地副本，节省空间；关闭则本地保留"
+    },
+    {
+      "name": "cloud_compress_quality",
+      "value": "压缩画质"
+    },
+    {
+      "name": "cloud_compress_quality_summary",
+      "value": "本地图片压缩比例（云端始终存原图）"
+    },
+    {
+      "name": "cloud_compress_high",
+      "value": "高清"
+    },
+    {
+      "name": "cloud_compress_balanced",
+      "value": "均衡"
+    },
+    {
+      "name": "cloud_compress_compact",
+      "value": "省空间"
     }
   ]
 }

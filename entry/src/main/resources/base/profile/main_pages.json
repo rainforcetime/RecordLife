@@ -5,6 +5,7 @@
     "pages/StorageImagePage",
     "pages/GuidePage",
     "pages/DashboardPage",
-    "pages/TagManagementPage"
+    "pages/TagManagementPage",
+    "pages/CloudStoragePage"
   ]
 }
