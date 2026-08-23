@@ -528,23 +528,6 @@ export struct AccountPage {
             this.onFontSizeChange(value)
           }
         })
-
-        Divider()
-          .color(this.themeColors.divider)
-          .margin({ left: 15 })
-          .height(0.5)
-
-        // 隐私模式（开关，更新计划三期；并入 SettingItem 体系）
-        SettingItemWithSwitch({
-          label: $r('app.string.privacy_mode'),
-          summary: $r('app.string.privacy_mode_summary'),
-          icon: '🔒',
-          iconBg: '#FFF3E0',
-          isOn: this.privacyMode,
-          onChange: (isOn: boolean) => {
-            this.onPrivacyModeChange(isOn)
-          }
-        })
       }
 
       // ===== 数据组 =====
@@ -657,6 +640,23 @@ export struct AccountPage {
         })
         .onClick(() => {
           this.onMoreSettings()
+        })
+
+        Divider()
+          .color(this.themeColors.divider)
+          .margin({ left: 15 })
+          .height(0.5)
+
+        // 隐私模式（开关；移入关于组）
+        SettingItemWithSwitch({
+          label: $r('app.string.privacy_mode'),
+          summary: $r('app.string.privacy_mode_summary'),
+          icon: '🔒',
+          iconBg: '#FFF3E0',
+          isOn: this.privacyMode,
+          onChange: (isOn: boolean) => {
+            this.onPrivacyModeChange(isOn)
+          }
         })
 
         Divider()
