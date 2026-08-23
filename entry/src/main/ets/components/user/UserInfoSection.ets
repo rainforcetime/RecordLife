@@ -1,6 +1,7 @@
 // 用户信息区域组件：components/UserInfoSection.ets
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { ColorUtils } from '../../common/ColorUtils'
+import { ResourceUtils } from '../../common/utils/ResourceUtils'
 
 // 用户信息数据模型
 export interface UserInfo {
@@ -27,8 +28,8 @@ export struct UserInfoSection {
     userSignature: ''
   }
   
-  // 隐私模式（更新计划三期：隐藏出生日期）
-  @Prop privacyMode: boolean = false
+  // 使用天数统计（我的页 UI 重构：填充右侧信息区）
+  @Prop usageDays: number = 0
   
   // 编辑资料回调
   onEditProfile?: () => void
@@ -36,216 +37,188 @@ export struct UserInfoSection {
   // 更换头像回调
   onChangeAvatar?: () => void
   
-  // 判断是否为深色模式
-  private isDarkMode(): boolean {
-    return this.themeColors.textPrimary === '#FFFFFF'
+  // 获取性别展示符号（♂/♀；其他性别不显示符号，我的页 UI 重构）
+  private getGenderSymbol(): string {
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    if (rm) {
+      if (this.userInfo.userGender === ResourceUtils.getString(rm, 'male')) {
+        return '♂'
+      }
+      if (this.userInfo.userGender === ResourceUtils.getString(rm, 'female')) {
+        return '♀'
+      }
+    }
+    return ''
   }
   
-  // 获取标签文字颜色（深色模式适配）
-  private getLabelTextColor(): string {
-    if (this.isDarkMode()) {
-      // 深色模式：使用白色文字，更清晰
-      return '#FFFFFF'
-    } else {
-      // 浅色模式：使用主题色
-      return this.themeColors.primary
+  // 获取性别符号颜色（业内通用：♂ 蓝 / ♀ 粉）
+  private getGenderColor(): string {
+    const rm = this.getUIContext().getHostContext()?.resourceManager
+    if (rm) {
+      if (this.userInfo.userGender === ResourceUtils.getString(rm, 'male')) {
+        return '#4A90D9'
+      }
+      if (this.userInfo.userGender === ResourceUtils.getString(rm, 'female')) {
+        return '#E8547E'
+      }
     }
-  }
-  
-  // 获取标签背景颜色（深色模式适配）
-  private getLabelBackgroundColor(): string {
-    if (this.isDarkMode()) {
-      // 深色模式：使用深色背景
-      return '#2A2A2A'
-    } else {
-      // 浅色模式：使用浅灰色背景
-      return '#F5F5F5'
-    }
-  }
-  
-  // 获取装饰元素颜色（深色模式使用蓝色）
-  private getAccentColor(): string {
-    if (this.isDarkMode()) {
-      // 深色模式：使用蓝色
-      return '#4A90E2'
-    } else {
-      // 浅色模式：使用主题色
-      return this.themeColors.primary
-    }
+    return ''
   }
 
   build() {
-    Row() {
-      // 头像展示（可点击更换）
-      Stack({ alignContent: Alignment.BottomEnd }) {
-        // 头像装饰外圈
-        Circle()
-          .width(100)
-          .height(100)
-          .fill('transparent')
-          .stroke(this.getAccentColor())
-          .strokeWidth(2)
-          .position({ x: -6, y: -6 })
-
-        // 头像
-        if (this.userInfo.hasCustomAvatar && this.userInfo.userAvatar) {
-          // 显示用户自定义头像
-          Image(this.userInfo.userAvatar)
-            .width(88)
-            .height(88)
-            .borderRadius(44)
+    Column() {
+      // 头像 + 信息行（左对齐式，业内通用个人信息卡结构）
+      Row() {
+        // 头像展示（可点击更换；去装饰圈，头像 76）
+        Stack({ alignContent: Alignment.BottomEnd }) {
+          // 头像本体
+          if (this.userInfo.hasCustomAvatar && this.userInfo.userAvatar) {
+            Image(this.userInfo.userAvatar)
+              .width(76)
+              .height(76)
+              .borderRadius(38)
+              .border({ width: 3, color: this.themeColors.primary })
+          } else {
+            Column() {
+              SymbolGlyph($r('sys.symbol.person_fill'))
+                .fontSize(40)
+                .fontColor([this.themeColors.textSecondary])
+            }
+            .width(76)
+            .height(76)
+            .borderRadius(38)
+            .backgroundColor(this.themeColors.divider)
+            .justifyContent(FlexAlign.Center)
             .border({ width: 3, color: this.themeColors.primary })
-        } else {
-          // 显示默认头像（使用系统图标）
-          Column() {
-            SymbolGlyph($r('sys.symbol.person_fill'))
-              .fontSize(46)
-              .fontColor([this.themeColors.textSecondary])
           }
-          .width(88)
-          .height(88)
-          .borderRadius(44)
-          .backgroundColor(this.themeColors.divider)
-          .justifyContent(FlexAlign.Center)
-          .border({ width: 3, color: this.themeColors.primary })
-        }
 
-        // 编辑图标（使用系统图标：相机圆形填充）
-        Column() {
-          SymbolGlyph($r('sys.symbol.camera_circle_fill'))
-            .fontSize(20)
-            .fontColor([Color.White])
+          // 相机角标（右下留 2px 边距，与头像分离）
+          Column() {
+            SymbolGlyph($r('sys.symbol.camera_circle_fill'))
+              .fontSize(18)
+              .fontColor([Color.White])
+          }
+          .width(26)
+          .height(26)
+          .borderRadius(13)
+          .backgroundColor(this.themeColors.primary)
+          .justifyContent(FlexAlign.Center)
+          .margin({ right: 2, bottom: 2 })
+          .shadow({
+            radius: 6,
+            color: this.themeColors.primary + '40',
+            offsetX: 0,
+            offsetY: 2
+          })
         }
-        .width(28)
-        .height(28)
-        .borderRadius(14)
-        .backgroundColor(this.themeColors.primary)
-        .justifyContent(FlexAlign.Center)
-        .margin({ right: 0, bottom: 0 })
-        .shadow({
-          radius: 6,
-          color: this.themeColors.primary + '40',
-          offsetX: 0,
-          offsetY: 2
+        .width(76)
+        .height(76)
+        .margin({ right: 14 })
+        .onClick(() => {
+          if (this.onChangeAvatar) {
+            this.onChangeAvatar()
+          }
         })
+
+        // 右侧信息
+        Column() {
+          // 昵称 + 性别符号（性别 14 Medium，紧跟昵称右侧）
+          Row() {
+            Text(this.userInfo.userName)
+              .fontSize(20)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(this.themeColors.textPrimary)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+            if (this.getGenderSymbol().length > 0) {
+              Text(this.getGenderSymbol())
+                .fontSize(14)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(this.getGenderColor())
+                .margin({ left: 5 })
+            }
+          }
+          .width('100%')
+
+          // 签名/座右铭（✎ 图标 + 文本，有值才展示）
+          if (this.userInfo.userSignature && this.userInfo.userSignature.length > 0) {
+            Row() {
+              SymbolGlyph($r('sys.symbol.square_and_pencil'))
+                .fontSize(12)
+                .fontColor([this.themeColors.textTertiary])
+                .margin({ right: 5, top: 2 })
+
+              Text(this.userInfo.userSignature)
+                .fontSize(14)
+                .fontColor(this.themeColors.textSecondary)
+                .maxLines(2)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .layoutWeight(1)
+            }
+            .width('100%')
+            .alignItems(VerticalAlign.Top)
+            .margin({ top: 5 })
+          }
+
+          // 统计行（使用天数，填充右侧信息区）
+          Row() {
+            SymbolGlyph($r('sys.symbol.calendar'))
+              .fontSize(12)
+              .fontColor([this.themeColors.textTertiary])
+              .margin({ right: 5, top: 1 })
+
+            Text($r('app.string.used_days', this.usageDays))
+              .fontSize(13)
+              .fontColor(this.themeColors.textSecondary)
+          }
+          .width('100%')
+          .margin({ top: 6 })
+        }
+        .alignItems(HorizontalAlign.Start)
+        .layoutWeight(1)
       }
-      .width(88)
-      .height(88)
-      .margin({ right: 16 })
+      .width('100%')
+
+      // 编辑资料按钮（横贯底部，业内通用）
+      Button() {
+        Row() {
+          SymbolGlyph($r('sys.symbol.square_and_pencil'))
+            .fontSize(15)
+            .fontColor([this.themeColors.primary])
+            .margin({ right: 6 })
+          Text($r('app.string.edit_profile'))
+            .fontSize(15)
+            .fontColor(this.themeColors.primary)
+            .fontWeight(FontWeight.Medium)
+        }
+      }
+      .width('100%')
+      .height(38)
+      .backgroundColor(ColorUtils.primaryExtraLight(this.themeColors.primary))
+      .borderRadius(19)
+      .margin({ top: 14 })
       .onClick(() => {
-        if (this.onChangeAvatar) {
-          this.onChangeAvatar()
+        if (this.onEditProfile) {
+          this.onEditProfile()
         }
       })
-
-      // 右侧信息（左对齐列表式，我的页 UI 重构轮次2）
-      Column() {
-        // 顶部行：用户名 + 编辑按钮（右上角）
-        Row() {
-          Text(this.userInfo.userName)
-            .fontSize(22)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(this.themeColors.textPrimary)
-            .layoutWeight(1)
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-
-          // 编辑资料按钮（右上角胶囊）
-          Text($r('app.string.edit'))
-            .fontSize(13)
-            .fontColor(this.getAccentColor())
-            .fontWeight(FontWeight.Medium)
-            .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-            .backgroundColor(this.themeColors.cardBackground)
-            .borderRadius(15)
-            .onClick(() => {
-              if (this.onEditProfile) {
-                this.onEditProfile()
-              }
-            })
-        }
-        .width('100%')
-
-        // 签名/座右铭（有值才展示，更新计划一期）
-        if (this.userInfo.userSignature && this.userInfo.userSignature.length > 0) {
-          Text(this.userInfo.userSignature)
-            .fontSize(14)
-            .fontColor(this.themeColors.textSecondary)
-            .textAlign(TextAlign.Start)
-            .maxLines(2)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .width('100%')
-            .margin({ top: 6 })
-        }
-
-        // 用户信息标签
-        Row() {
-          // 性别标签
-          Row() {
-            SymbolGlyph($r('sys.symbol.person'))
-              .fontSize(13)
-              .fontColor([this.getLabelTextColor()])
-              .margin({ right: 4 })
-            Text(this.userInfo.userGender)
-              .fontSize(13)
-              .fontColor(this.getLabelTextColor())
-              .fontWeight(FontWeight.Medium)
-          }
-          .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-          .backgroundColor(this.getLabelBackgroundColor())
-          .borderRadius(12)
-
-          // 出生日期标签（隐私模式隐藏，更新计划三期）
-          if (this.privacyMode) {
-            Row() {
-              Text('🔒')
-                .fontSize(13)
-              Text($r('app.string.privacy_mode_on'))
-                .fontSize(13)
-                .fontColor(this.getLabelTextColor())
-                .fontWeight(FontWeight.Medium)
-                .margin({ left: 4 })
-            }
-            .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-            .backgroundColor(this.getLabelBackgroundColor())
-            .borderRadius(12)
-            .margin({ left: 8 })
-          } else {
-            Row() {
-              SymbolGlyph($r('sys.symbol.calendar'))
-                .fontSize(13)
-                .fontColor([this.getLabelTextColor()])
-                .margin({ right: 4 })
-              Text(this.userInfo.userBirthday)
-                .fontSize(13)
-                .fontColor(this.getLabelTextColor())
-                .fontWeight(FontWeight.Medium)
-            }
-            .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-            .backgroundColor(this.getLabelBackgroundColor())
-            .borderRadius(12)
-            .margin({ left: 8 })
-          }
-        }
-        .margin({ top: 10 })
-      }
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
     }
     .width('90%')
-    // 主题色渐变背景（更新计划五期；上下渐变：顶部主题色淡出到底部卡片背景）
-    // 注意：linearGradient 终点 stop 必须为实色（不透明），半透明终点会导致整个渐变渲染异常
-    .linearGradient({
-      angle: 0,
-      colors: [
-        [ColorUtils.withAlpha(this.getAccentColor(), 0.45), 0],
-        [ColorUtils.withAlpha(this.getAccentColor(), 0.20), 0.55],
-        [this.themeColors.cardBackground, 1]
-      ]
-    })
+    // 纯色卡片 + 顶部主题色细条（border 顶部 3px，替代渐变，我的页 UI 重构）
+    .backgroundColor(this.themeColors.cardBackground)
     .borderRadius(16)
+    .border({
+      width: { top: 3, right: 0, bottom: 0, left: 0 },
+      color: {
+        top: this.themeColors.primary,
+        right: Color.Transparent,
+        bottom: Color.Transparent,
+        left: Color.Transparent
+      }
+    })
     .margin({ bottom: 16 })
-    .padding({ left: 20, right: 20, top: 20, bottom: 20 })
+    .padding({ left: 20, right: 20, top: 18, bottom: 18 })
     .shadow({
       radius: 12,
       color: this.themeColors.shadow,

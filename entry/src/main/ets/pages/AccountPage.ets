@@ -397,7 +397,7 @@ export struct AccountPage {
         UserInfoSection({
           themeColors: this.themeColors,
           userInfo: this.userInfo,
-          privacyMode: this.privacyMode,  // 隐私模式（更新计划三期：隐藏出生日期）
+          usageDays: this.statisticsInfo.usageDays,
           onEditProfile: () => {
             this.onEditProfile()
           },
@@ -431,7 +431,7 @@ export struct AccountPage {
   @Builder
   SettingsSection() {
     Column() {
-      // 区域标题
+      // 区域标题（与 90% 卡片左缘对齐，我的页 UI 重构）
       Row() {
         SymbolGlyph($r('sys.symbol.gearshape_fill'))
           .fontSize(18)
@@ -443,8 +443,9 @@ export struct AccountPage {
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
       }
-      .width('100%')
-      .padding({ left: 4, bottom: 12 })
+      .width('90%')
+      .alignSelf(ItemAlign.Center)
+      .padding({ left: 12, bottom: 12 })
 
       // ===== 外观组（我的页 UI 重构：分组重排，隐私归入外观） =====
       this.GroupTitle($r('app.string.settings_group_appearance'))

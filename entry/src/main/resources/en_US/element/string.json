@@ -1365,6 +1365,10 @@
       "value": "More"
     },
     {
+      "name": "used_days",
+      "value": "%d days in use"
+    },
+    {
       "name": "mood_selected",
       "value": "Mood selected: %s"
     },
