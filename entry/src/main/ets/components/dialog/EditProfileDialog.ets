@@ -57,116 +57,125 @@ export struct EditProfileDialog {
         .fontColor(this.themeColors.textPrimary)
         .margin({ top: 20, bottom: 20 })
 
-      // 用户名输入
-      Column() {
-        Text($r('app.string.username'))
-          .fontSize(14)
-          .fontColor(this.themeColors.textSecondary)
-          .width('100%')
-          .margin({ bottom: 8 })
-
-        TextInput({ text: this.editName, placeholder: $r('app.string.input_username') })
-          .fontSize(16)
-          .height(45)
-          .backgroundColor(this.themeColors.background)
-          .fontColor(this.themeColors.textPrimary)
-          .placeholderColor(this.themeColors.textTertiary)
-          .borderRadius(8)
-          .onChange((value: string) => {
-            this.editName = value
-          })
-      }
-      .width('100%')
-      .margin({ bottom: 20 })
-
-      // 出生日期选择
-      Column() {
-        Text($r('app.string.birth_date'))
-          .fontSize(14)
-          .fontColor(this.themeColors.textSecondary)
-          .width('100%')
-          .margin({ bottom: 8 })
-
+      // 可滚动内容区（签名输入框上移 + Scroll：输入法弹出时可滚动到输入框）
+      Scroll() {
         Column() {
-          DatePicker({
-            selected: this.parseDate(this.editBirthday)
-          })
-            .lunar(false)
-            .onDateChange((value: Date) => {
-              // 格式化日期为 YYYY-MM-DD
-              const year = value.getFullYear()
-              const month = (value.getMonth() + 1).toString().padStart(2, '0')
-              const day = value.getDate().toString().padStart(2, '0')
-              this.editBirthday = `${year}-${month}-${day}`
-            })
-        }
-        .width('100%')
-        .backgroundColor(this.themeColors.background)
-        .borderRadius(8)
-        .padding(8)
-      }
-      .width('100%')
-      .margin({ bottom: 20 })
+          // 用户名输入
+          Column() {
+            Text($r('app.string.username'))
+              .fontSize(14)
+              .fontColor(this.themeColors.textSecondary)
+              .width('100%')
+              .margin({ bottom: 8 })
 
-      // 性别选择
-      Column() {
-        Text($r('app.string.gender'))
-          .fontSize(14)
-          .fontColor(this.themeColors.textSecondary)
+            TextInput({ text: this.editName, placeholder: $r('app.string.input_username') })
+              .fontSize(16)
+              .height(45)
+              .backgroundColor(this.themeColors.background)
+              .fontColor(this.themeColors.textPrimary)
+              .placeholderColor(this.themeColors.textTertiary)
+              .borderRadius(8)
+              .onChange((value: string) => {
+                this.editName = value
+              })
+          }
           .width('100%')
-          .margin({ bottom: 8 })
+          .margin({ bottom: 20 })
 
-        Row() {
-          ForEach(this.getGenderOptions(), (option: string, index: number) => {
-            Row() {
-              Radio({ value: option, group: 'genderGroup' })
-                .checked(this.selectedGenderIndex === index)
-                .onChange((isChecked: boolean) => {
-                  if (isChecked) {
-                    this.selectedGenderIndex = index
-                    this.editGender = option
-                  }
+          // 签名/座右铭输入（更新计划一期；上移：键盘弹出时可见）
+          Column() {
+            Text($r('app.string.signature'))
+              .fontSize(14)
+              .fontColor(this.themeColors.textSecondary)
+              .width('100%')
+              .margin({ bottom: 8 })
+
+            TextInput({ text: this.editSignature, placeholder: $r('app.string.signature_hint') })
+              .fontSize(16)
+              .height(45)
+              .backgroundColor(this.themeColors.background)
+              .fontColor(this.themeColors.textPrimary)
+              .placeholderColor(this.themeColors.textTertiary)
+              .borderRadius(8)
+              .onChange((value: string) => {
+                this.editSignature = value
+              })
+          }
+          .width('100%')
+          .margin({ bottom: 20 })
+
+          // 出生日期选择
+          Column() {
+            Text($r('app.string.birth_date'))
+              .fontSize(14)
+              .fontColor(this.themeColors.textSecondary)
+              .width('100%')
+              .margin({ bottom: 8 })
+
+            Column() {
+              DatePicker({
+                selected: this.parseDate(this.editBirthday)
+              })
+                .lunar(false)
+                .onDateChange((value: Date) => {
+                  // 格式化日期为 YYYY-MM-DD
+                  const year = value.getFullYear()
+                  const month = (value.getMonth() + 1).toString().padStart(2, '0')
+                  const day = value.getDate().toString().padStart(2, '0')
+                  this.editBirthday = `${year}-${month}-${day}`
                 })
-                .width(20)
-                .height(20)
-
-              Text(option)
-                .fontSize(16)
-                .fontColor(this.themeColors.textPrimary)
-                .margin({ left: 8 })
             }
-            .margin({ right: 20 })
-          })
+            .width('100%')
+            .backgroundColor(this.themeColors.background)
+            .borderRadius(8)
+            .padding(8)
+          }
+          .width('100%')
+          .margin({ bottom: 20 })
+
+          // 性别选择
+          Column() {
+            Text($r('app.string.gender'))
+              .fontSize(14)
+              .fontColor(this.themeColors.textSecondary)
+              .width('100%')
+              .margin({ bottom: 8 })
+
+            Row() {
+              ForEach(this.getGenderOptions(), (option: string, index: number) => {
+                Row() {
+                  Radio({ value: option, group: 'genderGroup' })
+                    .checked(this.selectedGenderIndex === index)
+                    .onChange((isChecked: boolean) => {
+                      if (isChecked) {
+                        this.selectedGenderIndex = index
+                        this.editGender = option
+                      }
+                    })
+                    .width(20)
+                    .height(20)
+
+                  Text(option)
+                    .fontSize(16)
+                    .fontColor(this.themeColors.textPrimary)
+                    .margin({ left: 8 })
+                }
+                .margin({ right: 20 })
+              })
+            }
+            .width('100%')
+            .backgroundColor(this.themeColors.background)
+            .borderRadius(8)
+            .padding(12)
+          }
+          .width('100%')
+          .margin({ bottom: 20 })
         }
         .width('100%')
-        .backgroundColor(this.themeColors.background)
-        .borderRadius(8)
-        .padding(12)
       }
       .width('100%')
-      .margin({ bottom: 20 })
-
-      // 签名/座右铭输入（更新计划一期）
-      Column() {
-        Text($r('app.string.signature'))
-          .fontSize(14)
-          .fontColor(this.themeColors.textSecondary)
-          .width('100%')
-          .margin({ bottom: 8 })
-
-        TextInput({ text: this.editSignature, placeholder: $r('app.string.signature_hint') })
-          .fontSize(16)
-          .height(45)
-          .backgroundColor(this.themeColors.background)
-          .fontColor(this.themeColors.textPrimary)
-          .placeholderColor(this.themeColors.textTertiary)
-          .borderRadius(8)
-          .onChange((value: string) => {
-            this.editSignature = value
-          })
-      }
-      .width('100%')
-      .margin({ bottom: 30 })
+      .height('65%')
+      .scrollBar(BarState.Off)
 
       // 操作按钮
       Row() {
@@ -205,7 +214,7 @@ export struct EditProfileDialog {
       }
       .width('100%')
       .justifyContent(FlexAlign.Center)
-      .margin({ bottom: 20 })
+      .margin({ top: 10, bottom: 20 })
     }
     .width(320)
     .backgroundColor(this.themeColors.cardBackground)
