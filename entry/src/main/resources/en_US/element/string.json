@@ -1759,6 +1759,22 @@
     {
       "name": "cos_domain_hint",
       "value": "Leave empty for default; for mainland China buckets configure a custom domain in the COS console first"
+    },
+    {
+      "name": "cloud_upload_all",
+      "value": "Upload all images"
+    },
+    {
+      "name": "cloud_upload_all_done",
+      "value": "Uploaded %d images"
+    },
+    {
+      "name": "cloud_upload_all_none",
+      "value": "No images to upload"
+    },
+    {
+      "name": "cloud_upload_all_failed",
+      "value": "Upload failed, check config"
     }
   ]
 }

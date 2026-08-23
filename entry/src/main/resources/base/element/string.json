@@ -1759,6 +1759,22 @@
     {
       "name": "cos_domain_hint",
       "value": "留空使用默认域名；中国大陆 bucket 建议在 COS 控制台配置自定义域名后填写"
+    },
+    {
+      "name": "cloud_upload_all",
+      "value": "上传全部图片"
+    },
+    {
+      "name": "cloud_upload_all_done",
+      "value": "已上传 %d 张图片"
+    },
+    {
+      "name": "cloud_upload_all_none",
+      "value": "没有待上传的图片"
+    },
+    {
+      "name": "cloud_upload_all_failed",
+      "value": "上传失败，请检查配置"
     }
   ]
 }

@@ -6,6 +6,7 @@ import { promptAction, PromptAction } from '@kit.ArkUI'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { CosConfig } from '../../model/UserConfigModel'
 import { CosService } from '../../service/CosService'
+import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { Logger } from '../../common/utils/Logger'
 
 @CustomDialog
@@ -79,6 +80,37 @@ export struct CosConfigDialog {
       customDomain: this.customDomain.length > 0 ? this.customDomain : undefined
     })
     this.controller.close()
+  }
+
+  // 上传全部图片到云端（历史图片补传 + 失败重试）
+  private async onUploadAll() {
+    if (!this.promptAction) {
+      return
+    }
+    if (!this.isFormComplete()) {
+      this.promptAction.showToast({ message: $r('app.string.cloud_test_failed'), duration: 2000 })
+      return
+    }
+    // 先保存当前表单配置，确保上传使用最新配置
+    this.onSaved({
+      region: this.region,
+      bucket: this.bucket,
+      secretId: this.secretId,
+      secretKey: this.secretKey,
+      customDomain: this.customDomain.length > 0 ? this.customDomain : undefined
+    })
+    try {
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext
+      const count = await NowViewModel.uploadAllImages(context)
+      this.promptAction.showToast({
+        message: count > 0 ?
+          $r('app.string.cloud_upload_all_done', count) : $r('app.string.cloud_upload_all_none'),
+        duration: 2500
+      })
+    } catch (error) {
+      Logger.error('[CosConfigDialog] 上传全部图片失败: ' + JSON.stringify(error))
+      this.promptAction.showToast({ message: $r('app.string.cloud_upload_all_failed'), duration: 2000 })
+    }
   }
 
   // 表单字段
@@ -184,6 +216,20 @@ export struct CosConfigDialog {
         .borderRadius(20)
         .onClick(() => {
           this.controller.close()
+        })
+
+      // 上传全部图片（历史图片补传 + 失败重试）
+      Button($r('app.string.cloud_upload_all'))
+        .fontSize(14)
+        .height(40)
+        .width('100%')
+        .margin({ top: 8 })
+        .backgroundColor(this.themeColors.primary)
+        .fontColor(Color.White)
+        .borderRadius(20)
+        .enabled(this.isFormComplete())
+        .onClick(() => {
+          this.onUploadAll()
         })
     }
     .width('82%')

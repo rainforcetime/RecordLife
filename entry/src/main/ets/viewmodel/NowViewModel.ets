@@ -440,8 +440,9 @@ export class NowViewModel {
         }
         const key = `records/${record.id}/${idx}.jpg`
         const ok = await CosService.uploadFile(cos, key, item.pendingPath)
-        NowViewModel.deletePendingFile(item.pendingPath)
         if (ok) {
+          // 上传成功：删除 pending 并记录云端 key
+          NowViewModel.deletePendingFile(item.pendingPath)
           if (!record.imageCloudKeys) {
             record.imageCloudKeys = []
           }
@@ -451,12 +452,70 @@ export class NowViewModel {
           record.imageCloudKeys[idx] = key
           changed = true
         }
+        // 上传失败：保留 pending 文件，供「上传全部图片」重试
         break
       }
     }
     if (changed) {
       await this.saveRecords()
     }
+  }
+
+  /**
+   * 上传全部本地图片到云端（图片存储优化：历史图片补传 / 失败重试）
+   * 逻辑：遍历记录，无 imageCloudKeys 的图片，按文件名匹配 cacheDir/pending 下的原图上传
+   * @returns 本次上传成功的张数
+   */
+  static async uploadAllImages(context: common.UIAbilityContext): Promise<number> {
+    const configManager = await ConfigManager.getInstance(context)
+    const cos = configManager.getCosConfig()
+    if (!cos) {
+      return 0
+    }
+    const records = await RecordRepository.getRecords(context)
+    let uploaded = 0
+    for (const record of records) {
+      if (!record.imagePaths) {
+        continue
+      }
+      for (let i = 0; i < record.imagePaths.length; i++) {
+        // 已有云端原图则跳过
+        if (record.imageCloudKeys && record.imageCloudKeys[i]) {
+          continue
+        }
+        const name = record.imagePaths[i].split('/').pop()
+        if (!name) {
+          continue
+        }
+        // pending 原图文件名：record_{ts}_orig.jpg（压缩图为 record_{ts}.jpg，共享时间戳）
+        const origName = name.replace(/\.(jpg|jpeg|png)$/i, '_orig.jpg')
+        const origPath = `${context.cacheDir}/pending/${origName}`
+        if (!fileIo.accessSync(origPath)) {
+          continue  // 无原图（旧数据或已清理）
+        }
+        const key = `records/${record.id}/${i}.jpg`
+        const ok = await CosService.uploadFile(cos, key, origPath)
+        if (ok) {
+          if (!record.imageCloudKeys) {
+            record.imageCloudKeys = []
+          }
+          while (record.imageCloudKeys.length <= i) {
+            record.imageCloudKeys.push('')
+          }
+          record.imageCloudKeys[i] = key
+          uploaded++
+          try {
+            fileIo.unlinkSync(origPath)
+          } catch (e) {
+            Logger.error('[NowViewModel] 删除已上传原图失败: ' + JSON.stringify(e))
+          }
+        }
+      }
+    }
+    if (uploaded > 0) {
+      await RecordRepository.saveRecords(context, records)
+    }
+    return uploaded
   }
 
   // 删除 pending 文件
