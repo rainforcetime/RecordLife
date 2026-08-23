@@ -15,9 +15,16 @@ export struct ImageViewer {
   
   // 当前显示的图片索引
   @Prop currentIndex: number = 0
+
+  // 当前显示索引（Swiper 滑动同步）
+  @State private displayIndex: number = 0
   
   // 关闭回调
   onClose?: () => void
+
+  aboutToAppear() {
+    this.displayIndex = this.currentIndex
+  }
   
   // 保存图片到图库（在SaveButton点击后调用）
   private async saveImageToGallery(): Promise<void> {
@@ -90,18 +97,26 @@ export struct ImageViewer {
           this.closeViewer()
         })
       
-      // 2. 中层：图片展示区域（居中，点击不关闭）
-      if (this.imageUris.length > 0 && this.currentIndex < this.imageUris.length) {
-        // 使用 Column 包裹图片，阻止点击事件穿透到下层背景
-        Column() {
-          Image(this.imageUris[this.currentIndex])
-            .width('100%')
-            .height('100%')
-            .objectFit(ImageFit.Contain)
+      // 2. 中层：图片展示区域（Swiper 滑动切换）
+      if (this.imageUris.length > 0) {
+        Swiper() {
+          ForEach(this.imageUris, (uri: string) => {
+            Image(uri)
+              .width('100%')
+              .height('100%')
+              .objectFit(ImageFit.Contain)
+              .draggable(false)  // 禁止图片拖动（避免与滑动冲突）
+          }, (uri: string) => uri)
         }
+        .index(this.currentIndex)
+        .indicator(false)
+        .loop(false)
+        .onChange((index: number) => {
+          this.displayIndex = index
+        })
         .width('100%')
         .height('100%')
-        .hitTestBehavior(HitTestMode.Block)  // 阻止点击事件穿透
+        .hitTestBehavior(HitTestMode.Block)
       }
       
       // 3. 顶层：工具栏
@@ -124,9 +139,9 @@ export struct ImageViewer {
           
           Blank()
           
-          // 图片计数
+          // 图片计数（随滑动更新）
           if (this.imageUris.length > 1) {
-            Text(`${this.currentIndex + 1} / ${this.imageUris.length}`)
+            Text(`${this.displayIndex + 1} / ${this.imageUris.length}`)
               .fontSize(16)
               .fontColor('#FFFFFF')
           }
