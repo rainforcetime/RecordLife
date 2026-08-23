@@ -142,7 +142,8 @@ export class MorePageBackupHandler {
   static async exportAll(
     context: common.UIAbilityContext,
     configManager: ConfigManager,
-    promptAction: PromptAction
+    promptAction: PromptAction,
+    onProgress?: (percent: number, message: string) => void
   ): Promise<void> {
     Logger.info('[MorePageBackupHandler] 开始导出所有数据')
     
@@ -155,6 +156,9 @@ export class MorePageBackupHandler {
       fileIo.mkdirSync(tempDir)
       
       // 2. 导出用户配置
+      if (onProgress) {
+        onProgress(10, ResourceUtils.getString(context.resourceManager, 'export_progress_config'))
+      }
       const configStr = await ConfigTransferService.exportConfig(configManager)
       const configPath = `${tempDir}/config.json`
       const configFile = fileIo.openSync(configPath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE)
@@ -189,10 +193,26 @@ export class MorePageBackupHandler {
       fileIo.writeSync(metadataFile.fd, metadataStr)
       fileIo.closeSync(metadataFile)
       Logger.info('[MorePageBackupHandler] 记录元数据已导出')
+      if (onProgress) {
+        onProgress(25, ResourceUtils.getString(context.resourceManager, 'export_progress_records'))
+      }
       
-      // 4. 复制图片文件
+      // 4. 复制图片文件（先统计总数，按张数报告进度）
       const recordsDir = `${tempDir}/records`
       fileIo.mkdirSync(recordsDir)
+      
+      // 统计图片总数
+      let totalImages = 0
+      for (const record of records) {
+        if (record.imagePaths && record.imagePaths.length > 0) {
+          for (const imagePath of record.imagePaths) {
+            const sandboxPath = MorePageHelper.uriToSandboxPath(imagePath)
+            if (fileIo.accessSync(sandboxPath)) {
+              totalImages++
+            }
+          }
+        }
+      }
       
       let imageCount = 0
       for (const record of records) {
@@ -206,11 +226,19 @@ export class MorePageBackupHandler {
               const destPath = `${recordsDir}/${fileName}`
               fileIo.copyFileSync(sandboxPath, destPath)
               imageCount++
+              // 图片复制进度：25% → 85%（无图片时直接跳到 85%）
+              if (onProgress && totalImages > 0) {
+                const percent = 25 + Math.round(60 * imageCount / totalImages)
+                onProgress(percent, ResourceUtils.getString(context.resourceManager, 'export_progress_images', imageCount, totalImages))
+              }
             }
           }
         }
       }
       Logger.info(`[MorePageBackupHandler] 复制了 ${imageCount} 个图片文件`)
+      if (onProgress) {
+        onProgress(85, ResourceUtils.getString(context.resourceManager, 'export_progress_packaging'))
+      }
       
       // 5. 压缩为 zip 文件
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19)
@@ -227,6 +255,9 @@ export class MorePageBackupHandler {
       Logger.info(`[MorePageBackupHandler] 所有数据已打包: ${zipPath}`)
       
       // 7. 使用 DocumentViewPicker 保存文件（picker 流程已下沉至 ZipTransferService，P3）
+      if (onProgress) {
+        onProgress(95, ResourceUtils.getString(context.resourceManager, 'export_progress_share'))
+      }
       const saved = await ZipTransferService.saveZipToDocument(context, zipPath)
       
       if (saved) {

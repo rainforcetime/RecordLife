@@ -1365,6 +1365,42 @@
       "value": "更多"
     },
     {
+      "name": "settings_group_danger",
+      "value": "危险操作"
+    },
+    {
+      "name": "option_config_summary",
+      "value": "个人设置与偏好"
+    },
+    {
+      "name": "option_backup_summary",
+      "value": "当前全部记录与图片"
+    },
+    {
+      "name": "option_all_summary",
+      "value": "设置 + 记录全量"
+    },
+    {
+      "name": "export_progress_config",
+      "value": "正在导出设置…"
+    },
+    {
+      "name": "export_progress_records",
+      "value": "正在导出记录…"
+    },
+    {
+      "name": "export_progress_images",
+      "value": "正在导出图片 (%d/%d)"
+    },
+    {
+      "name": "export_progress_packaging",
+      "value": "正在打包…"
+    },
+    {
+      "name": "export_progress_share",
+      "value": "打包完成"
+    },
+    {
       "name": "used_days",
       "value": "已使用 %d 天"
     },

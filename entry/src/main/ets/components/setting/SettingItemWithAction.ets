@@ -1,17 +1,22 @@
-// 带操作的设置项组件
+// 带操作的设置项组件（emoji 彩色圆角图标，更多页 UI 统一）
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
+import { SettingIcon } from './SettingIcon'
 
 @Component
 export struct SettingItemWithAction {
   label: ResourceStr = ''
   summary: ResourceStr = ''
   isDestructive: boolean = false
+  icon: string = ''  // emoji 图标（可选）
+  iconBg: string = ''  // 图标容器底色
   // 直接从 AppStorage 监听主题变化
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
   onAction: () => void = () => {}
 
   build() {
     Row() {
+      SettingIcon({ icon: this.icon, iconBg: this.iconBg })
+
       Column() {
         Text(this.label)
           .fontSize(16)

@@ -1365,6 +1365,42 @@
       "value": "More"
     },
     {
+      "name": "settings_group_danger",
+      "value": "Danger Zone"
+    },
+    {
+      "name": "option_config_summary",
+      "value": "Settings & preferences"
+    },
+    {
+      "name": "option_backup_summary",
+      "value": "All records & images"
+    },
+    {
+      "name": "option_all_summary",
+      "value": "Settings + records"
+    },
+    {
+      "name": "export_progress_config",
+      "value": "Exporting settings…"
+    },
+    {
+      "name": "export_progress_records",
+      "value": "Exporting records…"
+    },
+    {
+      "name": "export_progress_images",
+      "value": "Exporting images (%d/%d)"
+    },
+    {
+      "name": "export_progress_packaging",
+      "value": "Packaging…"
+    },
+    {
+      "name": "export_progress_share",
+      "value": "Packaging complete"
+    },
+    {
       "name": "used_days",
       "value": "%d days in use"
     },
