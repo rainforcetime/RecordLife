@@ -157,6 +157,22 @@ export struct ImageViewer {
                 .draggable(false)
                 .scale({ x: this.scaleValue, y: this.scaleValue })
                 .translate({ x: this.offsetX, y: this.offsetY })
+                // 平移手势挂 Image：未放大时被 Swiper 内置滑动抢占（滑动正常）；放大后 Swiper 禁用，此手势接管平移
+                .gesture(
+                  PanGesture({ fingers: 1 })
+                    .onActionStart(() => {
+                      this.panActive = this.isZoomed
+                      this.panStartX = this.offsetX
+                      this.panStartY = this.offsetY
+                    })
+                    .onActionUpdate((event: GestureEvent) => {
+                      if (this.panActive) {
+                        this.offsetX = this.panStartX + event.offsetX
+                        this.offsetY = this.panStartY + event.offsetY
+                        this.clampOffset()
+                      }
+                    })
+                )
             }, (uri: string) => uri)
           }
           .index(this.currentIndex)
@@ -187,22 +203,6 @@ export struct ImageViewer {
           TapGesture({ count: 2 })
             .onAction(() => {
               this.toggleZoom()
-            })
-        )
-        .parallelGesture(
-          PanGesture({ fingers: 1 })
-            .onActionStart(() => {
-              // 仅放大状态下启用平移；记录起点基准（event.offset 为相对起点累计值，不能 +=）
-              this.panActive = this.isZoomed
-              this.panStartX = this.offsetX
-              this.panStartY = this.offsetY
-            })
-            .onActionUpdate((event: GestureEvent) => {
-              if (this.panActive) {
-                this.offsetX = this.panStartX + event.offsetX
-                this.offsetY = this.panStartY + event.offsetY
-                this.clampOffset()
-              }
             })
         )
         .hitTestBehavior(HitTestMode.Block)
