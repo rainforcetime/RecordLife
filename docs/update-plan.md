@@ -501,6 +501,16 @@
 - [ ] 老图迁移后记录显示压缩图（reloadRecords 修复后）
 - [ ] 压缩档位体积对比（高清/均衡/省空间）
 
+### 轮次 14 — 2026-08-23（3.0.48~3.0.49：文档 + 修复收尾）
+
+- 3.0.48：docs 云存储落地记录（轮次 13 + 方案 §10 迭代补充）
+- 3.0.49（`ab5e325`，**已推送 gitee+github**）：
+  - 修复**签名/座右铭不参与配置导入导出**（ConfigTransferService 两处 UserProfile 构造漏 signature）
+  - 修复**主题配色名称不实时更新**（根因：SettingItem 的 summary 为普通参数，父 @State 变化不刷新子组件；改为 AccountPage 内联 Row 直接绑定 @State）
+  - 个性化管理（标签/心情/模板）删除加**二次确认**弹窗
+  - AppScope/app.json5 版本号 **3.0.1 → 3.0.49**（versionCode 30049，首次 bump）
+- 3.0.50：docs 更新（CHANGELOG 3.0.x 章节 + 轮次 14 记录）
+
 ---
 
 ## 8. 验证记录
