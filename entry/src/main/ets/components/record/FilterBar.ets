@@ -241,7 +241,7 @@ export struct FilterBar {
         this.FilterSheetBuilder()
       },
       placement: Placement.Bottom,
-      offset: { x: 0, y: 6 },
+      offset: { x: 0, y: 0 },
       enableArrow: true,
       arrowPointPosition: ArrowPointPosition.START,
       // 透明遮罩：点击空白处关闭气泡
@@ -298,6 +298,12 @@ export struct FilterBar {
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
+
+        // 滚动提示（灰色小字，更新计划五期）
+        Text($r('app.string.filter_scroll_hint'))
+          .fontSize(11)
+          .fontColor(this.themeColors.textTertiary)
+          .margin({ left: 8, top: 3 })
 
         Blank()
 

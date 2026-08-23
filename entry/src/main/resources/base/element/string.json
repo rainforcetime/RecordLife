@@ -1345,6 +1345,10 @@
       "value": "清除全部"
     },
     {
+      "name": "filter_scroll_hint",
+      "value": "可上下滑动"
+    },
+    {
       "name": "settings_group_general",
       "value": "常规"
     },
