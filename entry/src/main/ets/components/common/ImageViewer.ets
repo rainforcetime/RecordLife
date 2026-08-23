@@ -176,7 +176,8 @@ export struct ImageViewer {
               this.toggleZoom()
             })
         )
-        .gesture(
+        // PanGesture 用 parallelGesture：不覆盖 Pinch/Tap，也不抢占 Swiper 滑动
+        .parallelGesture(
           PanGesture({ fingers: 1 })
             .onActionStart(() => {
               // 仅放大状态下启用平移
