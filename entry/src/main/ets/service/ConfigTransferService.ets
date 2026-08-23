@@ -64,7 +64,8 @@ export class ConfigTransferService {
       name: config.profile.name,
       birthDate: config.profile.birthDate,
       gender: config.profile.gender,
-      avatar: profileAvatar
+      avatar: profileAvatar,
+      signature: config.profile.signature  // 修复：签名/座右铭参与导入导出
     };
 
     const exportData: ExportData = {
@@ -133,7 +134,8 @@ export class ConfigTransferService {
         name: importedConfig.profile.name,
         birthDate: importedConfig.profile.birthDate,
         gender: importedConfig.profile.gender,
-        avatar: profileAvatar
+        avatar: profileAvatar,
+        signature: importedConfig.profile.signature  // 修复：签名/座右铭参与导入导出
       };
 
       config.profile = profileWithImageAvatar;

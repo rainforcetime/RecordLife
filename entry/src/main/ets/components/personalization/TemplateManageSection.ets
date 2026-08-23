@@ -97,6 +97,26 @@ export struct TemplateManageSection {
     RefreshManager.getInstance().refresh()
   }
 
+  // 删除模板（二次确认）
+  private confirmDeleteTemplate(template: RecordTemplate) {
+    this.getUIContext().showAlertDialog({
+      title: $r('app.string.confirm_delete'),
+      message: $r('app.string.confirm_delete_message'),
+      primaryButton: {
+        value: $r('app.string.cancel'),
+        action: () => {
+        }
+      },
+      secondaryButton: {
+        value: $r('app.string.delete'),
+        fontColor: Color.Red,
+        action: () => {
+          this.deleteTemplate(template)
+        }
+      }
+    })
+  }
+
   // 删除模板
   private async deleteTemplate(template: RecordTemplate) {
     if (!this.templateService) {
@@ -226,7 +246,7 @@ export struct TemplateManageSection {
                   .fontSize(18)
                   .fontColor([this.themeColors.error])
                   .onClick(() => {
-                    this.deleteTemplate(template)
+                    this.confirmDeleteTemplate(template)
                   })
               }
               .width('100%')

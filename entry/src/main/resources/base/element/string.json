@@ -1823,6 +1823,14 @@
     {
       "name": "cloud_compress_compact",
       "value": "省空间"
+    },
+    {
+      "name": "confirm_delete",
+      "value": "确认删除"
+    },
+    {
+      "name": "confirm_delete_message",
+      "value": "删除后不可恢复，确定删除？"
     }
   ]
 }

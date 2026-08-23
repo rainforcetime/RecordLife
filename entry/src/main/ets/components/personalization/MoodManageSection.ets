@@ -45,6 +45,26 @@ export struct MoodManageSection {
     RefreshManager.getInstance().refresh()
   }
 
+  // 删除自定义心情（二次确认）
+  private confirmDeleteMood(mood: Mood) {
+    this.getUIContext().showAlertDialog({
+      title: $r('app.string.confirm_delete'),
+      message: $r('app.string.confirm_delete_message'),
+      primaryButton: {
+        value: $r('app.string.cancel'),
+        action: () => {
+        }
+      },
+      secondaryButton: {
+        value: $r('app.string.delete'),
+        fontColor: Color.Red,
+        action: () => {
+          this.deleteMood(mood)
+        }
+      }
+    })
+  }
+
   // 删除自定义心情
   private async deleteMood(mood: Mood) {
     if (!this.moodService) {
@@ -106,7 +126,7 @@ export struct MoodManageSection {
               .justifyContent(FlexAlign.Center)
               .alignItems(HorizontalAlign.Center)
               .onClick(() => {
-                this.deleteMood(mood)
+                this.confirmDeleteMood(mood)
               })
             }
           }

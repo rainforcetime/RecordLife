@@ -1823,6 +1823,14 @@
     {
       "name": "cloud_compress_compact",
       "value": "Compact"
+    },
+    {
+      "name": "confirm_delete",
+      "value": "Confirm delete"
+    },
+    {
+      "name": "confirm_delete_message",
+      "value": "This cannot be undone. Delete?"
     }
   ]
 }

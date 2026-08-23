@@ -134,6 +134,26 @@ export struct TagListSection {
     RefreshManager.getInstance().refresh()
   }
 
+  // 删除标签（二次确认）
+  private confirmDeleteTag(tag: Tag) {
+    this.getUIContext().showAlertDialog({
+      title: $r('app.string.confirm_delete'),
+      message: $r('app.string.confirm_delete_message'),
+      primaryButton: {
+        value: $r('app.string.cancel'),
+        action: () => {
+        }
+      },
+      secondaryButton: {
+        value: $r('app.string.delete'),
+        fontColor: Color.Red,
+        action: () => {
+          this.deleteTag(tag)
+        }
+      }
+    })
+  }
+
   // 删除标签
   private async deleteTag(tag: Tag) {
     if (!this.tagService) {
@@ -206,12 +226,12 @@ export struct TagListSection {
                     this.startEditTag(tag)
                   })
 
-                // 删除按钮
+                // 删除按钮（二次确认）
                 SymbolGlyph($r('sys.symbol.trash'))
                   .fontSize(18)
                   .fontColor([this.themeColors.error])
                   .onClick(() => {
-                    this.deleteTag(tag)
+                    this.confirmDeleteTag(tag)
                   })
               }
               .width('100%')

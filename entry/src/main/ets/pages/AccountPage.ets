@@ -4,6 +4,7 @@ import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { promptAction, PromptAction } from '@kit.ArkUI'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { SettingItem } from '../components/setting/SettingItem'
+import { SettingIcon } from '../components/setting/SettingIcon'
 import { SettingItemWithSelector } from '../components/setting/SettingItemWithSelector'
 import { ThemeManager } from '../config/ThemeManager'
 import { DEFAULT_THEME_COLOR } from '../config/ThemeConfig'
@@ -56,6 +57,7 @@ export struct AccountPage {
   @State currentFontSize: string = 'medium'  // 字体大小（更新计划一期）
   @State privacyMode: boolean = false  // 隐私模式（更新计划三期）
   @State themeColor: string = DEFAULT_THEME_COLOR  // 主题主色（主题配色功能）
+  @State themeColorName: string = ''  // 主题主色名称（@State 缓存，选色实时更新）
   @State showThemeColorPicker: boolean = false  // 主题配色色板展开
   
   // 数据统计
@@ -129,6 +131,7 @@ export struct AccountPage {
       // 初始化主题管理器（主题配色）
       this.themeManager = await ThemeManager.getInstance(this.context)
       this.themeColor = this.themeManager ? this.themeManager.getThemeColor() : DEFAULT_THEME_COLOR
+      this.themeColorName = this.resolveThemeColorName(this.themeColor)
       
       // 加载用户资料
       await this.loadUserProfile()
@@ -310,6 +313,7 @@ export struct AccountPage {
       return
     }
     this.themeColor = color
+    this.themeColorName = this.resolveThemeColorName(color)  // 同步刷新名称（@State 驱动实时更新）
     if (this.themeManager) {
       await this.themeManager.updateThemeColor(color)
       AccountUtils.showToastSafely(this.promptAction, $r('app.string.theme_settings_saved'))
@@ -325,6 +329,14 @@ export struct AccountPage {
       }
     }
     return 'theme_color_default'
+  }
+
+  // 获取主色名称文本（运行时解析资源；渲染期不依赖 getUIContext）
+  private resolveThemeColorName(color: string): string {
+    if (!this.context) {
+      return ''
+    }
+    return ResourceUtils.getString(this.context.resourceManager, this.getThemeColorNameKey(color))
   }
 
   // 将十六进制颜色转换为 rgba 格式
@@ -569,13 +581,36 @@ export struct AccountPage {
       // ===== 个性化组 =====
       this.GroupTitle($r('app.string.settings_group_personal'))
       SettingsGroupCard() {
-        // 主题配色（主题配色功能：全局主色）
-        SettingItem({
-          label: $r('app.string.theme_color'),
-          summary: $r('app.string.' + this.getThemeColorNameKey(this.themeColor)),
-          icon: '🎨',
-          iconBg: '#F3E5F5'
-        })
+        // 主题配色（内联实现：SettingItem 的 summary 为普通参数不随 @State 刷新，改由本页状态直接驱动）
+        Row() {
+          SettingIcon({ icon: '🎨', iconBg: '#F3E5F5' })
+
+          Column() {
+            Text($r('app.string.theme_color'))
+              .fontSize(16)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(this.themeColors.textPrimary)
+            if (this.themeColorName) {
+              Text(this.themeColorName)
+                .fontSize(12)
+                .fontColor(this.themeColors.textSecondary)
+                .margin({ top: 3 })
+            }
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+
+          // 当前主色色块
+          Circle({ width: 16, height: 16 })
+            .fill(this.themeColor)
+            .margin({ right: 8 })
+
+          SymbolGlyph($r('sys.symbol.chevron_right'))
+            .fontSize(20)
+            .fontColor([this.themeColors.iconColor])
+        }
+        .padding({ top: 16, bottom: 16, left: 16, right: 16 })
+        .width('100%')
         .onClick(() => {
           this.showThemeColorPicker = !this.showThemeColorPicker
         })
