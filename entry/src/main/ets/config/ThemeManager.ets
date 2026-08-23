@@ -7,7 +7,7 @@
 
 import { ConfigurationConstant, common } from '@kit.AbilityKit'
 import { window } from '@kit.ArkUI'
-import { ThemeColors, ThemeMode, ThemeConfig, LightTheme, DarkTheme } from './ThemeConfig'
+import { ThemeColors, ThemeMode, ThemeConfig, LightTheme, DarkTheme, DEFAULT_THEME_COLOR } from './ThemeConfig'
 import { ConfigManager } from './ConfigManager'
 import { Logger } from '../common/utils/Logger'
 
@@ -45,16 +45,17 @@ export class ThemeManager {
     }
   }
   
-  // 初始化AppStorage中的主题状态
+  // 初始化AppStorage中的主题状态（携带主题主色）
   private initAppStorage(theme: ThemeMode): void {
     AppStorage.setOrCreate('appTheme', theme)
     AppStorage.setOrCreate('isDarkMode', theme === 'dark')
     
-    // 初始化主题颜色
-    const colors = ThemeConfig.getColors(theme === 'dark')
+    // 初始化主题颜色（含自定义主色）
+    const themeColor = this.configManager ? this.configManager.getThemeColor() : DEFAULT_THEME_COLOR
+    const colors = ThemeConfig.getColors(theme === 'dark', themeColor)
     AppStorage.setOrCreate('themeColors', colors)
     
-    Logger.info('ThemeManager: 主题系统初始化完成, theme=' + theme)
+    Logger.info('ThemeManager: 主题系统初始化完成, theme=' + theme + ', color=' + themeColor)
   }
   
   // 更新主题（先保存到ConfigManager，再更新AppStorage）
@@ -76,8 +77,9 @@ export class ThemeManager {
       AppStorage.setOrCreate('appTheme', theme)
       AppStorage.setOrCreate('isDarkMode', isDark)
       
-      // 4. 更新主题颜色
-      const colors = ThemeConfig.getColors(isDark)
+      // 4. 更新主题颜色（携带主题主色）
+      const themeColor = this.configManager ? this.configManager.getThemeColor() : DEFAULT_THEME_COLOR
+      const colors = ThemeConfig.getColors(isDark, themeColor)
       AppStorage.setOrCreate('themeColors', colors)
       
       // 5. 更新窗口系统栏颜色
@@ -87,6 +89,34 @@ export class ThemeManager {
       return true
     } catch (error) {
       Logger.error('ThemeManager.updateTheme 异常: ' + JSON.stringify(error))
+      return false
+    }
+  }
+  
+  // 更新主题主色（先保存到ConfigManager，再更新AppStorage广播；主题配色功能）
+  async updateThemeColor(color: string): Promise<boolean> {
+    try {
+      // 1. 先保存到ConfigManager（持久化）
+      if (this.configManager) {
+        const saved = await this.configManager.setThemeColor(color)
+        if (!saved) {
+          Logger.error('ThemeManager.updateThemeColor: 保存主题主色到ConfigManager失败')
+          return false
+        }
+      }
+      
+      // 2. 更新AppStorage（运行时状态，全局组件响应）
+      const isDark = this.isDarkMode()
+      const colors = ThemeConfig.getColors(isDark, color)
+      AppStorage.setOrCreate('themeColors', colors)
+      
+      // 3. 更新窗口系统栏颜色
+      this.updateWindowSystemBarColor(colors)
+      
+      Logger.info('ThemeManager: 主题主色已更新, color=' + color + ', isDark=' + isDark)
+      return true
+    } catch (error) {
+      Logger.error('ThemeManager.updateThemeColor 异常: ' + JSON.stringify(error))
       return false
     }
   }
@@ -120,7 +150,8 @@ export class ThemeManager {
       
       // 更新AppStorage（不保存到ConfigManager，因为主题设置未变）
       AppStorage.setOrCreate('isDarkMode', isDark)
-      const colors = ThemeConfig.getColors(isDark)
+      const themeColor = this.configManager ? this.configManager.getThemeColor() : DEFAULT_THEME_COLOR
+      const colors = ThemeConfig.getColors(isDark, themeColor)
       AppStorage.setOrCreate('themeColors', colors)
       
       // 更新窗口系统栏颜色
