@@ -6,6 +6,8 @@ import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { SettingItem } from '../components/setting/SettingItem'
 import { SettingItemWithSelector } from '../components/setting/SettingItemWithSelector'
 import { SettingItemWithInfo } from '../components/setting/SettingItemWithInfo'
+import { SettingItemWithSwitch } from '../components/setting/SettingItemWithSwitch'
+import { SettingsGroupCard } from '../components/setting/SettingsGroupCard'
 import { EditProfileDialog } from '../components/dialog/EditProfileDialog'
 import { AboutAppDialog } from '../components/dialog/AboutAppDialog'
 import { TagManagementDialog } from '../components/dialog/TagManagementDialog'
@@ -408,9 +410,11 @@ export struct AccountPage {
         // 设置项列表
         this.SettingsSection()
 
-        // 底部留白
-        Column()
-          .height(24)
+        // 版本信息 footer（我的页 UI 重构：页面底部版本号）
+        Text($r('app.string.version_value', this.appInfo.appVersion))
+          .fontSize(12)
+          .fontColor(this.themeColors.textTertiary)
+          .margin({ top: 16, bottom: 24 })
       }
       .width('100%')
       .alignItems(HorizontalAlign.Center)
@@ -433,7 +437,7 @@ export struct AccountPage {
           .fontSize(18)
           .fontColor([this.themeColors.primary])
           .margin({ right: 8 })
-        
+
         Text($r('app.string.settings'))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
@@ -441,202 +445,149 @@ export struct AccountPage {
       }
       .width('100%')
       .padding({ left: 4, bottom: 12 })
-      
-      // ===== 常规组 =====
-      this.GroupTitle($r('app.string.settings_group_general'))
-      Column() {
+
+      // ===== 外观组（我的页 UI 重构：分组重排，隐私归入外观） =====
+      this.GroupTitle($r('app.string.settings_group_appearance'))
+      SettingsGroupCard() {
         // 主题设置（选择器）
         SettingItemWithSelector({
           label: $r('app.string.theme_settings'),
           currentValue: this.currentTheme,
           options: this.getThemeOptions(),
+          icon: '🎭',
+          iconBg: '#EDE7F6',
           onSelect: (value: string) => {
             this.onThemeChange(value)
           }
         })
-        
+
         Divider()
           .color(this.themeColors.divider)
           .margin({ left: 15 })
           .height(0.5)
-        
+
         // 字体大小设置（选择器，更新计划一期）
         SettingItemWithSelector({
           label: $r('app.string.font_size_settings'),
           currentValue: this.currentFontSize,
           options: this.getFontSizeOptions(),
+          icon: '🔠',
+          iconBg: '#E3F2FD',
           onSelect: (value: string) => {
             this.onFontSizeChange(value)
           }
         })
-        
+
         Divider()
           .color(this.themeColors.divider)
           .margin({ left: 15 })
           .height(0.5)
-        
-        // 隐私模式（开关，更新计划三期）
-        Row() {
-          Text('🔒')
-            .fontSize(20)
-            .margin({ right: 12 })
 
-          Column() {
-            Text($r('app.string.privacy_mode'))
-              .fontSize(16)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(this.themeColors.textPrimary)
-              .width('100%')
-
-            Text($r('app.string.privacy_mode_summary'))
-              .fontSize(12)
-              .fontColor(this.themeColors.textSecondary)
-              .width('100%')
-              .margin({ top: 2 })
+        // 隐私模式（开关，更新计划三期；并入 SettingItem 体系）
+        SettingItemWithSwitch({
+          label: $r('app.string.privacy_mode'),
+          summary: $r('app.string.privacy_mode_summary'),
+          icon: '🔒',
+          iconBg: '#FFF3E0',
+          isOn: this.privacyMode,
+          onChange: (isOn: boolean) => {
+            this.onPrivacyModeChange(isOn)
           }
-          .layoutWeight(1)
-
-          Toggle({ type: ToggleType.Switch, isOn: this.privacyMode })
-            .selectedColor(this.themeColors.primary)
-            .onChange((isOn: boolean) => {
-              this.onPrivacyModeChange(isOn)
-            })
-        }
-        .padding({ top: 12, bottom: 12, left: 16, right: 16 })
-        .width('100%')
-        .alignItems(VerticalAlign.Center)
+        })
       }
-      .width('90%')
-      .backgroundColor(this.themeColors.cardBackground)
-      .borderRadius(16)
-      .margin({ bottom: 6 })
-      .padding(12)
-      .shadow({
-        radius: 12,
-        color: this.themeColors.shadow,
-        offsetX: 0,
-        offsetY: 4
-      })
-      
+
       // ===== 数据组 =====
       this.GroupTitle($r('app.string.settings_group_data'))
-      Column() {
+      SettingsGroupCard() {
         // 数据看板（更新计划五期）
         SettingItem({
           label: $r('app.string.dashboard_title'),
           summary: $r('app.string.dashboard_summary'),
-          icon: '📊'
+          icon: '📊',
+          iconBg: '#E3F2FD'
         })
         .onClick(() => {
           this.onDashboardClick()
         })
-        
+
         Divider()
           .color(this.themeColors.divider)
           .margin({ left: 15 })
           .height(0.5)
-        
+
         // 存储空间（信息展示）
         SettingItemWithInfo({
           label: $r('app.string.storage_space'),
           info: this.statisticsInfo.storageSize,
-          icon: '💾'
+          icon: '💾',
+          iconBg: '#E8F5E9'
         })
         .onClick(() => {
           this.onStorageClick()
         })
-        
+
         Divider()
           .color(this.themeColors.divider)
           .margin({ left: 15 })
           .height(0.5)
-        
+
         // 清理缓存（更新计划三期）
         SettingItem({
           label: $r('app.string.clean_cache'),
           summary: $r('app.string.clean_cache_summary'),
-          icon: '🧹'
+          icon: '🧹',
+          iconBg: '#E0F7FA'
         })
         .onClick(() => {
           this.onCleanCache()
         })
       }
-      .width('90%')
-      .backgroundColor(this.themeColors.cardBackground)
-      .borderRadius(16)
-      .margin({ bottom: 6 })
-      .padding(12)
-      .shadow({
-        radius: 12,
-        color: this.themeColors.shadow,
-        offsetX: 0,
-        offsetY: 4
-      })
-      
+
       // ===== 个性化组 =====
       this.GroupTitle($r('app.string.settings_group_personal'))
-      Column() {
+      SettingsGroupCard() {
         // 个性化管理（标签/心情/模板）
         SettingItem({
           label: $r('app.string.personalization_management'),
           summary: $r('app.string.personalization_summary'),
-          icon: '🎨'
+          icon: '🎨',
+          iconBg: '#FCE4EC'
         })
         .onClick(() => {
           this.tagManagementDialogController.open()
         })
       }
-      .width('90%')
-      .backgroundColor(this.themeColors.cardBackground)
-      .borderRadius(16)
-      .margin({ bottom: 6 })
-      .padding(12)
-      .shadow({
-        radius: 12,
-        color: this.themeColors.shadow,
-        offsetX: 0,
-        offsetY: 4
-      })
-      
+
       // ===== 更多组 =====
       this.GroupTitle($r('app.string.settings_group_more'))
-      Column() {
+      SettingsGroupCard() {
         // 更多设置
         SettingItem({
           label: $r('app.string.more'),
           summary: $r('app.string.import_export_config'),
-          icon: '⚙️'
+          icon: '⚙️',
+          iconBg: '#F5F5F5'
         })
         .onClick(() => {
           this.onMoreSettings()
         })
-        
+
         Divider()
           .color(this.themeColors.divider)
           .margin({ left: 15 })
           .height(0.5)
-        
+
         // 关于应用（信息展示）
         SettingItemWithInfo({
           label: $r('app.string.about_app'),
           info: $r('app.string.version_value', this.appInfo.appVersion),
-          icon: 'ℹ️'
+          icon: 'ℹ️',
+          iconBg: '#E0F7FA'
         })
         .onClick(() => {
           this.onAboutApp()
         })
       }
-      .width('90%')
-      .backgroundColor(this.themeColors.cardBackground)
-      .borderRadius(16)
-      .margin({ bottom: 6 })
-      .padding(12)
-      .shadow({
-        radius: 12,
-        color: this.themeColors.shadow,
-        offsetX: 0,
-        offsetY: 4
-      })
     }
     .width('100%')
   }

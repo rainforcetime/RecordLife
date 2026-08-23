@@ -1349,8 +1349,8 @@
       "value": "Swipe up/down"
     },
     {
-      "name": "settings_group_general",
-      "value": "General"
+      "name": "settings_group_appearance",
+      "value": "Appearance"
     },
     {
       "name": "settings_group_data",

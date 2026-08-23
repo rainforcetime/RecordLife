@@ -1,17 +1,22 @@
-// 带选择器的设置项组件
+// 带选择器的设置项组件（emoji 彩色圆角图标）
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
+import { SettingIcon } from './SettingIcon'
 
 @Component
 export struct SettingItemWithSelector {
   label: ResourceStr = ''
   @Prop currentValue: string = ''
   options: string[] = []
+  icon: string = ''  // emoji 图标（可选，我的页 UI 重构轮次1）
+  iconBg: string = ''  // 图标容器底色
   // 直接从 AppStorage 监听主题变化
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
   onSelect: (value: string) => void = () => {}
 
   build() {
     Row() {
+      SettingIcon({ icon: this.icon, iconBg: this.iconBg })
+
       Text(this.label)
         .fontSize(16)
         .fontWeight(FontWeight.Medium)

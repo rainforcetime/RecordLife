@@ -75,7 +75,7 @@ export struct UserInfoSection {
   }
 
   build() {
-    Column() {
+    Row() {
       // 头像展示（可点击更换）
       Stack({ alignContent: Alignment.BottomEnd }) {
         // 头像装饰外圈
@@ -86,7 +86,7 @@ export struct UserInfoSection {
           .stroke(this.getAccentColor())
           .strokeWidth(2)
           .position({ x: -6, y: -6 })
-        
+
         // 头像
         if (this.userInfo.hasCustomAvatar && this.userInfo.userAvatar) {
           // 显示用户自定义头像
@@ -131,70 +131,62 @@ export struct UserInfoSection {
       }
       .width(88)
       .height(88)
-      .margin({ bottom: 16 })
+      .margin({ right: 16 })
       .onClick(() => {
         if (this.onChangeAvatar) {
           this.onChangeAvatar()
         }
       })
 
-      // 用户名
-      Text(this.userInfo.userName)
-        .fontSize(22)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(this.themeColors.textPrimary)
-        .margin({ bottom: 16 })
-
-      // 签名/座右铭（有值才展示，更新计划一期）
-      if (this.userInfo.userSignature && this.userInfo.userSignature.length > 0) {
-        Text(this.userInfo.userSignature)
-          .fontSize(14)
-          .fontColor(this.themeColors.textSecondary)
-          .textAlign(TextAlign.Center)
-          .maxLines(2)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .margin({ bottom: 16 })
-      }
-
-      // 用户信息标签
-      Row() {
-        // 性别标签
+      // 右侧信息（左对齐列表式，我的页 UI 重构轮次2）
+      Column() {
+        // 顶部行：用户名 + 编辑按钮（右上角）
         Row() {
-          SymbolGlyph($r('sys.symbol.person'))
-            .fontSize(13)
-            .fontColor([this.getLabelTextColor()])
-            .margin({ right: 4 })
-          Text(this.userInfo.userGender)
-            .fontSize(13)
-            .fontColor(this.getLabelTextColor())
-            .fontWeight(FontWeight.Medium)
-        }
-        .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-        .backgroundColor(this.getLabelBackgroundColor())
-        .borderRadius(12)
+          Text(this.userInfo.userName)
+            .fontSize(22)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(this.themeColors.textPrimary)
+            .layoutWeight(1)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-        // 出生日期标签（隐私模式隐藏，更新计划三期）
-        if (this.privacyMode) {
+          // 编辑资料按钮（右上角胶囊）
+          Text($r('app.string.edit'))
+            .fontSize(13)
+            .fontColor(this.getAccentColor())
+            .fontWeight(FontWeight.Medium)
+            .padding({ left: 14, right: 14, top: 6, bottom: 6 })
+            .backgroundColor(this.themeColors.cardBackground)
+            .borderRadius(15)
+            .onClick(() => {
+              if (this.onEditProfile) {
+                this.onEditProfile()
+              }
+            })
+        }
+        .width('100%')
+
+        // 签名/座右铭（有值才展示，更新计划一期）
+        if (this.userInfo.userSignature && this.userInfo.userSignature.length > 0) {
+          Text(this.userInfo.userSignature)
+            .fontSize(14)
+            .fontColor(this.themeColors.textSecondary)
+            .textAlign(TextAlign.Start)
+            .maxLines(2)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .width('100%')
+            .margin({ top: 6 })
+        }
+
+        // 用户信息标签
+        Row() {
+          // 性别标签
           Row() {
-            Text('🔒')
-              .fontSize(13)
-            Text($r('app.string.privacy_mode_on'))
-              .fontSize(13)
-              .fontColor(this.getLabelTextColor())
-              .fontWeight(FontWeight.Medium)
-              .margin({ left: 4 })
-          }
-          .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-          .backgroundColor(this.getLabelBackgroundColor())
-          .borderRadius(12)
-          .margin({ left: 8 })
-        } else {
-          Row() {
-            SymbolGlyph($r('sys.symbol.calendar'))
+            SymbolGlyph($r('sys.symbol.person'))
               .fontSize(13)
               .fontColor([this.getLabelTextColor()])
               .margin({ right: 4 })
-            Text(this.userInfo.userBirthday)
+            Text(this.userInfo.userGender)
               .fontSize(13)
               .fontColor(this.getLabelTextColor())
               .fontWeight(FontWeight.Medium)
@@ -202,36 +194,46 @@ export struct UserInfoSection {
           .padding({ left: 10, right: 10, top: 5, bottom: 5 })
           .backgroundColor(this.getLabelBackgroundColor())
           .borderRadius(12)
-          .margin({ left: 8 })
-        }
-      }
-      .margin({ bottom: 16 })
 
-      // 编辑资料按钮
-      Button() {
-        Row() {
-          SymbolGlyph($r('sys.symbol.square_and_pencil'))
-            .fontSize(16)
-            .fontColor([this.getAccentColor()])
-            .margin({ right: 6 })
-          Text($r('app.string.edit_profile'))
-            .fontSize(15)
-            .fontColor(this.getAccentColor())
-            .fontWeight(FontWeight.Medium)
+          // 出生日期标签（隐私模式隐藏，更新计划三期）
+          if (this.privacyMode) {
+            Row() {
+              Text('🔒')
+                .fontSize(13)
+              Text($r('app.string.privacy_mode_on'))
+                .fontSize(13)
+                .fontColor(this.getLabelTextColor())
+                .fontWeight(FontWeight.Medium)
+                .margin({ left: 4 })
+            }
+            .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+            .backgroundColor(this.getLabelBackgroundColor())
+            .borderRadius(12)
+            .margin({ left: 8 })
+          } else {
+            Row() {
+              SymbolGlyph($r('sys.symbol.calendar'))
+                .fontSize(13)
+                .fontColor([this.getLabelTextColor()])
+                .margin({ right: 4 })
+              Text(this.userInfo.userBirthday)
+                .fontSize(13)
+                .fontColor(this.getLabelTextColor())
+                .fontWeight(FontWeight.Medium)
+            }
+            .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+            .backgroundColor(this.getLabelBackgroundColor())
+            .borderRadius(12)
+            .margin({ left: 8 })
+          }
         }
+        .margin({ top: 10 })
       }
-      .backgroundColor(this.themeColors.cardBackground)
-      .borderRadius(22)
-      .width(130)
-      .height(42)
-      .onClick(() => {
-        if (this.onEditProfile) {
-          this.onEditProfile()
-        }
-      })
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
     }
     .width('90%')
-    // 主题色渐变背景（顶部用户区，更新计划五期；上下渐变：顶部主题色淡出到底部卡片背景）
+    // 主题色渐变背景（更新计划五期；上下渐变：顶部主题色淡出到底部卡片背景）
     // 注意：linearGradient 终点 stop 必须为实色（不透明），半透明终点会导致整个渐变渲染异常
     .linearGradient({
       angle: 0,

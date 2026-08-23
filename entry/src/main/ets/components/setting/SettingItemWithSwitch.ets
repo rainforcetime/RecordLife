@@ -1,15 +1,16 @@
-// 基础设置项组件（带箭头 + emoji 彩色圆角图标）
+// 带开关的设置项组件（隐私模式等，我的页 UI 重构轮次1）
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { SettingIcon } from './SettingIcon'
 
 @Component
-export struct SettingItem {
+export struct SettingItemWithSwitch {
   label: ResourceStr = ''
   summary: ResourceStr = ''
-  icon: string = ''  // emoji 图标（可选，更新计划五期：设置分组图标化）
-  iconBg: string = ''  // 图标容器底色（我的页 UI 重构轮次1）
-  // 直接从 AppStorage 监听主题变化
+  icon: string = ''  // emoji
+  iconBg: string = ''  // 图标容器底色
+  @Prop isOn: boolean = false
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
+  onChange: (isOn: boolean) => void = () => {}
 
   build() {
     Row() {
@@ -30,9 +31,11 @@ export struct SettingItem {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
-      SymbolGlyph($r('sys.symbol.chevron_right'))
-        .fontSize(20)
-        .fontColor([this.themeColors.iconColor])
+      Toggle({ type: ToggleType.Switch, isOn: this.isOn })
+        .selectedColor(this.themeColors.primary)
+        .onChange((isOn: boolean) => {
+          this.onChange(isOn)
+        })
     }
     .padding({ top: 16, bottom: 16, left: 16, right: 16 })
     .width('100%')
