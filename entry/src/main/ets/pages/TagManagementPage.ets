@@ -24,12 +24,18 @@ struct TagManagementPage {
     Column() {
       // 标题栏
       Row() {
-        SymbolGlyph($r('sys.symbol.chevron_left'))
-          .fontSize(20)
-          .fontColor([this.themeColors.textPrimary])
-          .onClick(() => {
-            this.getUIContext().getRouter().back()
-          })
+        // 返回按钮（44×44 点击区 + 图标 24，与其他子页一致）
+        Column() {
+          SymbolGlyph($r('sys.symbol.chevron_left'))
+            .fontSize(24)
+            .fontColor([this.themeColors.textPrimary])
+        }
+        .width(44)
+        .height(44)
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          this.getUIContext().getRouter().back()
+        })
 
         Text($r('app.string.personalization_management'))
           .fontSize(18)

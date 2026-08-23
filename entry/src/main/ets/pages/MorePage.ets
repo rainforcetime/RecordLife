@@ -305,12 +305,18 @@ struct MorePage {
       // 页面标题
       Row() {
         // 返回按钮
-        SymbolGlyph($r('sys.symbol.chevron_left'))
-          .fontSize(24)
-          .fontColor([this.themeColors.iconColor])
-          .onClick(() => {
-            this.goBack()
-          })
+        // 返回按钮（44×44 点击区，避免太小难点）
+        Column() {
+          SymbolGlyph($r('sys.symbol.chevron_left'))
+            .fontSize(24)
+            .fontColor([this.themeColors.iconColor])
+        }
+        .width(44)
+        .height(44)
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          this.goBack()
+        })
         
         Text($r('app.string.more'))
           .fontSize(20)

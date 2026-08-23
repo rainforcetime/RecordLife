@@ -59,12 +59,18 @@ struct DashboardPage {
     Column() {
       // 标题栏
       Row() {
-        SymbolGlyph($r('sys.symbol.chevron_left'))
-          .fontSize(22)
-          .fontColor([this.themeColors.iconColor])
-          .onClick(() => {
-            this.getUIContext().getRouter().back()
-          })
+        // 返回按钮（44×44 点击区 + 图标 24，与其他子页一致）
+        Column() {
+          SymbolGlyph($r('sys.symbol.chevron_left'))
+            .fontSize(24)
+            .fontColor([this.themeColors.iconColor])
+        }
+        .width(44)
+        .height(44)
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          this.getUIContext().getRouter().back()
+        })
 
         Text($r('app.string.dashboard_title'))
           .fontSize(20)

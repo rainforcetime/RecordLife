@@ -397,9 +397,9 @@ struct NowPage {
         }
         .width('100%')
         .height('100%')
-        .justifyContent(FlexAlign.End)
+        .justifyContent(FlexAlign.Start)
         .alignItems(HorizontalAlign.Center)
-        .padding({ bottom: 104 })  // 避开右下角浮动按钮
+        .padding({ top: 90 })  // 顶部避让状态栏+标题栏，紧贴标题下方
         .hitTestBehavior(HitTestMode.Transparent)
       }
     }
