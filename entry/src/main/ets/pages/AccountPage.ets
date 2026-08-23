@@ -500,13 +500,13 @@ export struct AccountPage {
       // ===== 通用组（我的页 UI 重构：外观 → 通用，含隐私） =====
       this.GroupTitle($r('app.string.settings_group_general'))
       SettingsGroupCard() {
-        // 主题设置（选择器）
+        // 深色模式（选择器；🌙 月亮图标更贴切）
         SettingItemWithSelector({
           label: $r('app.string.dark_mode'),
           currentValue: this.currentTheme,
           options: this.getThemeOptions(),
-          icon: '🎭',
-          iconBg: '#EDE7F6',
+          icon: '🌙',
+          iconBg: '#E3E8F7',
           onSelect: (value: string) => {
             this.onThemeChange(value)
           }
