@@ -10,7 +10,6 @@ import { SettingItemWithSwitch } from '../components/setting/SettingItemWithSwit
 import { SettingsGroupCard } from '../components/setting/SettingsGroupCard'
 import { EditProfileDialog } from '../components/dialog/EditProfileDialog'
 import { AboutAppDialog } from '../components/dialog/AboutAppDialog'
-import { TagManagementDialog } from '../components/dialog/TagManagementDialog'
 import { UserInfoSection, UserInfo } from '../components/user/UserInfoSection'
 import { AccountViewModel, AccountDataStatistics } from '../viewmodel/AccountViewModel'
 import { AccountUtils } from '../common/utils/AccountUtils'
@@ -96,14 +95,6 @@ export struct AccountPage {
     customStyle: true
   })
 
-  // 标签管理弹窗控制器
-  private tagManagementDialogController: CustomDialogController = new CustomDialogController({
-    builder: TagManagementDialog({}),
-    autoCancel: true,
-    customStyle: true,
-    maskColor: 'rgba(0, 0, 0, 0.5)'
-  })
-  
   // 页面初始化
   async aboutToAppear() {
     try {
@@ -354,6 +345,18 @@ export struct AccountPage {
     this.aboutAppDialog.open()
   }
   
+  // 个性化管理处理（页面化替代弹窗，个性化管理 UI 优化）
+  private onPersonalizationClick() {
+    Logger.info('个性化管理')
+    try {
+      this.getUIContext().getRouter().pushUrl({
+        url: 'pages/TagManagementPage'
+      })
+    } catch (error) {
+      Logger.error('页面跳转失败: ' + JSON.stringify(error))
+    }
+  }
+
   // 更多设置处理
   private onMoreSettings() {
     Logger.info('更多设置')
@@ -555,7 +558,7 @@ export struct AccountPage {
           iconBg: '#FCE4EC'
         })
         .onClick(() => {
-          this.tagManagementDialogController.open()
+          this.onPersonalizationClick()
         })
       }
 

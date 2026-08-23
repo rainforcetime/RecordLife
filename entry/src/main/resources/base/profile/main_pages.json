@@ -4,6 +4,7 @@
     "pages/MorePage",
     "pages/StorageImagePage",
     "pages/GuidePage",
-    "pages/DashboardPage"
+    "pages/DashboardPage",
+    "pages/TagManagementPage"
   ]
 }

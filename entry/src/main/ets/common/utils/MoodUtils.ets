@@ -17,7 +17,7 @@ export class MoodUtils {
   // 预置心情 id 列表（兼容旧调用）
   static readonly MOODS: string[] = MoodUtils.PRESET_MOODS.map(m => m.id)
 
-  // 自定义心情候选 emoji 池（TagManagementDialog 心情管理选择）
+  // 自定义心情候选 emoji 池（个性化管理页心情管理选择）
   static readonly PRESET_MOOD_EMOJIS: string[] = [
     '😀', '😄', '😁', '😆', '🥰', '😍', '🤗', '🤔',
     '😎', '🥳', '😇', '🙂', '😉', '🤪', '😜', '😅',
