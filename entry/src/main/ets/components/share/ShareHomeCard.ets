@@ -18,7 +18,6 @@ export struct ShareHomeCard {
   }
   @Prop isRemainingMode: boolean = false
   @Prop isAccumulatedMode: boolean = true
-  @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
   
   // 计算数值的显示权重（基于数值位数）
   private getValueWeight(value: number): number {
