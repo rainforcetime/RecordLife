@@ -14,10 +14,19 @@ export interface RecordTemplate {
   content: string;          // 模板内容
 }
 
+// 云存储配置（图片存储优化 M2：腾讯云 COS；App 不内置任何密钥，用户设置页自填防泄露）
+export interface CosConfig {
+  region: string;       // 地域，如 'ap-guangzhou'
+  bucket: string;       // Bucket 名称，如 'xxx-1250000000'
+  secretId: string;     // SecretId（用户自填）
+  secretKey: string;    // SecretKey（用户自填；本地存储 + 首次配置风险提示）
+  useHttps?: boolean;   // 是否 HTTPS，默认 true
+}
+
 // 云备份配置
 export interface CloudBackupConfig {
   enabled: boolean;
-  provider: string; // 'huawei' | 'custom'
+  provider: string; // 'huawei' | 'custom' | 'cos' | 'obs'
   syncInterval: number;
 }
 
@@ -48,6 +57,7 @@ export interface AppSettings {
   customMoods?: Mood[]; // 用户自定义的心情列表（可选，更新计划二期）
   privacyMode?: boolean; // 隐私模式（可选，默认 false，更新计划三期：隐藏首页出生日期等敏感信息）
   recordTemplates?: RecordTemplate[]; // 记录模板列表（可选，更新计划三期）
+  cosConfig?: CosConfig; // 云存储配置（可选，图片存储优化 M2：本地压缩 + 云端原图）
 }
 
 // 备份配置

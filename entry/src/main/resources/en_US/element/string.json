@@ -1703,6 +1703,50 @@
     {
       "name": "milestone_three_quarters_target",
       "value": "Three quarters of target"
+    },
+    {
+      "name": "cloud_storage",
+      "value": "Cloud storage"
+    },
+    {
+      "name": "cloud_storage_summary",
+      "value": "Originals in cloud, compressed locally"
+    },
+    {
+      "name": "cos_region",
+      "value": "Region"
+    },
+    {
+      "name": "cos_bucket",
+      "value": "Bucket"
+    },
+    {
+      "name": "cos_secret_id",
+      "value": "SecretId"
+    },
+    {
+      "name": "cos_secret_key",
+      "value": "SecretKey"
+    },
+    {
+      "name": "cloud_test",
+      "value": "Test connection"
+    },
+    {
+      "name": "cloud_test_success",
+      "value": "Connected"
+    },
+    {
+      "name": "cloud_test_failed",
+      "value": "Connection failed, check config"
+    },
+    {
+      "name": "cloud_saved",
+      "value": "Cloud storage saved"
+    },
+    {
+      "name": "cloud_secret_warning",
+      "value": "Keys are stored locally only, keep them safe"
     }
   ]
 }

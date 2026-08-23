@@ -1703,6 +1703,50 @@
     {
       "name": "milestone_three_quarters_target",
       "value": "目标年龄 3/4"
+    },
+    {
+      "name": "cloud_storage",
+      "value": "云存储"
+    },
+    {
+      "name": "cloud_storage_summary",
+      "value": "原图存云端，本地只存压缩图"
+    },
+    {
+      "name": "cos_region",
+      "value": "地域"
+    },
+    {
+      "name": "cos_bucket",
+      "value": "Bucket"
+    },
+    {
+      "name": "cos_secret_id",
+      "value": "SecretId"
+    },
+    {
+      "name": "cos_secret_key",
+      "value": "SecretKey"
+    },
+    {
+      "name": "cloud_test",
+      "value": "测试连接"
+    },
+    {
+      "name": "cloud_test_success",
+      "value": "连接成功"
+    },
+    {
+      "name": "cloud_test_failed",
+      "value": "连接失败，请检查配置"
+    },
+    {
+      "name": "cloud_saved",
+      "value": "云存储配置已保存"
+    },
+    {
+      "name": "cloud_secret_warning",
+      "value": "密钥仅保存在本机，请妥善保管"
     }
   ]
 }

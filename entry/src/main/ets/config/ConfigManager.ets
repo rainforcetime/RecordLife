@@ -5,7 +5,7 @@
  */
 
 import { common } from '@kit.AbilityKit';
-import { UserConfig, createDefaultConfig, createDefaultConfigSync, validateConfig } from './UserConfig';
+import { UserConfig, CosConfig, createDefaultConfig, createDefaultConfigSync, validateConfig } from './UserConfig';
 import { DEFAULT_THEME_COLOR } from './ThemeConfig';
 import { ConfigRepository } from '../repository/ConfigRepository';
 import { TimeUtils } from '../common/utils/TimeUtils';
@@ -190,6 +190,21 @@ export class ConfigManager {
   getThemeColor(): string {
     const config = this.getConfig();
     return config.settings.themeColor || DEFAULT_THEME_COLOR;
+  }
+
+  // 获取云存储配置（图片存储优化 M2；未配置返回 null）
+  getCosConfig(): CosConfig | null {
+    const config = this.getConfig();
+    return config.settings.cosConfig || null;
+  }
+
+  // 设置云存储配置并保存（图片存储优化 M2）
+  async setCosConfig(cosConfig: CosConfig): Promise<boolean> {
+    if (!this.config) {
+      return false;
+    }
+    this.config.settings.cosConfig = cosConfig;
+    return await this.saveConfig();
   }
 
   // 设置主题主色并保存（主题配色）

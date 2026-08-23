@@ -9,6 +9,8 @@ import { promptAction, PromptAction } from '@kit.ArkUI'
 import { BackupManager } from '../service/BackupManager'
 import { MorePageBackupHandler } from '../common/handlers/MorePageBackupHandler'
 import { MorePageConfigHandler } from '../common/handlers/MorePageConfigHandler'
+import { CosConfigDialog } from '../components/setting/CosConfigDialog'
+import { CosConfig } from '../model/UserConfigModel'
 import { Logger } from '../common/utils/Logger'
 import { ResourceUtils } from '../common/utils/ResourceUtils'
 
@@ -260,6 +262,21 @@ struct MorePage {
     customStyle: true
   })
 
+  // 云存储配置弹窗控制器（图片存储优化 M2）
+  private cloudDialogController: CustomDialogController = new CustomDialogController({
+    builder: CosConfigDialog({
+      config: this.cosConfig || { region: '', bucket: '', secretId: '', secretKey: '' },
+      onSaved: (config: CosConfig) => {
+        this.onCosSaved(config)
+      }
+    }),
+    autoCancel: true,
+    customStyle: true
+  })
+
+  // 当前云存储配置（初始化时读取）
+  @State cosConfig: CosConfig | null = null
+
   // 导出进度弹窗控制器（导出全部时展示打包进度）
   private exportProgressDialogController: CustomDialogController = new CustomDialogController({
     builder: ExportProgressDialog({}),
@@ -281,6 +298,10 @@ struct MorePage {
       // 初始化备份管理器
       this.backupManager = await BackupManager.getInstance(this.context)
       Logger.info('MorePage: backupManager 已初始化 - ' + (this.backupManager ? '成功' : '失败'))
+
+      // 读取云存储配置（图片存储优化 M2）
+      this.cosConfig = this.configManager.getCosConfig()
+      Logger.info('MorePage: cosConfig - ' + (this.cosConfig ? '已配置' : '未配置'))
     } catch (error) {
       Logger.error('MorePage 初始化失败: ' + JSON.stringify(error))
     }
@@ -361,6 +382,21 @@ struct MorePage {
             this.showImportDialog()
           }
         })
+
+        Divider()
+          .color(this.themeColors.divider)
+          .height(0.5)
+
+        // 云存储（图片存储优化 M2：本地压缩 + 云端原图）
+        SettingItemWithAction({
+          label: $r('app.string.cloud_storage'),
+          summary: $r('app.string.cloud_storage_summary'),
+          icon: '☁️',
+          iconBg: '#E1F5FE',
+          onAction: () => {
+            this.showCloudDialog()
+          }
+        })
       }
 
       // 分组：危险操作
@@ -401,6 +437,27 @@ struct MorePage {
   // 显示导入选择对话框
   private showImportDialog() {
     this.importDialogController.open()
+  }
+
+  // 显示云存储配置对话框（图片存储优化 M2）
+  private showCloudDialog() {
+    this.cloudDialogController.open()
+  }
+
+  // 云存储配置保存（图片存储优化 M2）
+  private async onCosSaved(config: CosConfig) {
+    this.cosConfig = config
+    if (!this.configManager || !this.context) {
+      return
+    }
+    const ok = await this.configManager.setCosConfig(config)
+    try {
+      if (ok) {
+        this.promptAction.showToast({ message: $r('app.string.cloud_saved'), duration: 2000 })
+      }
+    } catch (error) {
+      Logger.error('MorePage: showToast 失败: ' + JSON.stringify(error))
+    }
   }
   
   // 返回处理
