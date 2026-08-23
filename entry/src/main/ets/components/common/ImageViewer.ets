@@ -61,8 +61,11 @@ export struct ImageViewer {
     }
   }
 
-  // 当前页是否有云端原图
+  // 当前页是否有云端原图（云存储未配置或总开关关闭时不显示查看原图）
   private hasCloudOriginal(): boolean {
+    if (!this.cosConfig || this.cosConfig.enabled === false) {
+      return false
+    }
     if (this.displayIndex < 0 || this.displayIndex >= this.imageCloudKeys.length) {
       return false
     }
