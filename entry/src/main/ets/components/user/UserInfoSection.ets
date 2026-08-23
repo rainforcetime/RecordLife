@@ -231,12 +231,13 @@ export struct UserInfoSection {
       })
     }
     .width('90%')
-    // 主题色渐变背景（顶部用户区，更新计划五期）
+    // 主题色渐变背景（顶部用户区，更新计划五期；上下渐变：顶部主题色淡出到底部卡片背景）
+    // 注意：linearGradient 终点 stop 必须为实色（不透明），半透明终点会导致整个渐变渲染异常
     .linearGradient({
-      angle: 135,
+      angle: 0,
       colors: [
-        [ColorUtils.withAlpha(this.getAccentColor(), 0.24), 0],
-        [ColorUtils.withAlpha(this.getAccentColor(), 0.10), 0.55],
+        [ColorUtils.withAlpha(this.getAccentColor(), 0.45), 0],
+        [ColorUtils.withAlpha(this.getAccentColor(), 0.20), 0.55],
         [this.themeColors.cardBackground, 1]
       ]
     })
