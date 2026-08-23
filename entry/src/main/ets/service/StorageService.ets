@@ -62,12 +62,14 @@ export class StorageService {
 
   /**
    * 清理缓存：分享临时图片（cacheDir/share_*.jpg 全删）+ 孤儿记录图片（filesDir/records 下未被任何记录引用的 jpg/png）
+   * + 原图缓存（cacheDir/original_*）与待上传原图（cacheDir/pending/，图片存储优化 M3）
    * @returns 删除的文件数
    */
   static async cleanupCache(context: common.Context, records: LifeRecord[]): Promise<number> {
     let deletedCount = 0
     deletedCount += await StorageService.clearShareCache(context)
     deletedCount += await StorageService.clearOrphanRecordImages(context, records)
+    deletedCount += await StorageService.clearOriginalCache(context)
     return deletedCount
   }
 
@@ -88,6 +90,36 @@ export class StorageService {
       return count
     } catch (error) {
       Logger.error('[StorageService] 清理分享缓存失败: ' + JSON.stringify(error))
+      return 0
+    }
+  }
+
+  // 清理原图缓存（cacheDir/original_*.jpg）与待上传原图（cacheDir/pending/，图片存储优化 M3）
+  static async clearOriginalCache(context: common.Context): Promise<number> {
+    try {
+      let count = 0
+      const files: string[] = fileIo.listFileSync(context.cacheDir)
+      for (const fileName of files) {
+        if (fileName.startsWith('original_') && fileName.endsWith('.jpg')) {
+          fileIo.unlinkSync(context.cacheDir + '/' + fileName)
+          count++
+        }
+      }
+      // 待上传原图目录
+      const pendingDir = context.cacheDir + '/pending'
+      if (fileIo.accessSync(pendingDir)) {
+        const pendingFiles: string[] = fileIo.listFileSync(pendingDir)
+        for (const fileName of pendingFiles) {
+          fileIo.unlinkSync(pendingDir + '/' + fileName)
+          count++
+        }
+      }
+      if (count > 0) {
+        Logger.info('[StorageService] 已清理原图缓存 ' + count + ' 个文件')
+      }
+      return count
+    } catch (error) {
+      Logger.error('[StorageService] 清理原图缓存失败: ' + JSON.stringify(error))
       return 0
     }
   }

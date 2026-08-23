@@ -467,6 +467,20 @@
 - 手势分层经历多轮调试（3.0.18~3.0.29），最终方案为 Stack 层 gesture(Pinch/Tap) + parallel(Pan) + Swiper enabled 联动；后续改动手势需回归三端（滑动/缩放/平移）
 - 六期功能未开工
 
+### 轮次 12 — 2026-08-23（图片存储优化 M1~M4：本地压缩 + 云端原图 + 查看原图）
+
+> 方案见 `docs/image-storage-redesign.md`（已确认：COS / App 内配置密钥 / q0.92 保留画质 / 查看原图一体化）。git 3.0.33~3.0.36。
+
+**M1（3.0.33）**：`ImageFileService.saveRecordImage` 优先 `ImagePacker` 压缩（保留原分辨率 JPEG q0.92，失败兜底原样复制）；`module.json5` 新增 `ohos.permission.INTERNET`。
+**M2（3.0.34）**：`CosService`（COS V5 签名 HMAC-SHA1 自实现 + PUT/GET/DELETE/HEAD 测试连接，零第三方依赖）；`CosConfig` + `AppSettings.cosConfig?`；`ConfigManager` get/set；MorePage「数据管理 → 云存储」`CosConfigDialog`（表单 + 测试连接 + 保存）；资源 11 key。
+**M3（3.0.35）**：`LifeRecord.imageCloudKeys?`；`saveOriginalPending` 原图入 `cacheDir/pending`；NowViewModel 上传队列（addRecord 后上传，key=`records/{id}/{idx}.jpg`，未配置 COS 自动清理）；ImageViewer「查看原图」→ 下载替换显示 + 原图态保存原图 + 切图复位 + 保存改用 displayIndex（修复滑动后错存）；RecordCard/StorageImagePage 传 key。
+**M4（3.0.36）**：备份恢复透传 `imageCloudKeys` + 修复 mood 丢失；`StorageService.clearOriginalCache`（original_*/pending 清理）；方案文档验证清单更新。
+
+**遗留问题**：
+- 上传队列为内存态（重启丢 pending）——后续迭代可持久化 pending 清单
+- COS 签名/上传链路需真机回归（测试连接按钮）；签名单测黄金向量待 DevEco 环境
+- 密钥后续可升级 STS 临时密钥（服务端签发）
+
 ---
 
 ## 8. 验证记录

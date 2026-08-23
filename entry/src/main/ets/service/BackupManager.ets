@@ -222,8 +222,10 @@ export class BackupManager {
           timestamp: record.timestamp,
           content: record.content,
           imagePaths: undefined,
+          imageCloudKeys: record.imageCloudKeys,  // 透传云端原图 key（图片存储优化 M3，与本地路径无关）
           tags: record.tags,
-          isPinned: record.isPinned
+          isPinned: record.isPinned,
+          mood: record.mood  // 修复：透传心情（此前恢复会丢 mood）
         }
         
         if (record.imagePaths && record.imagePaths.length > 0) {
