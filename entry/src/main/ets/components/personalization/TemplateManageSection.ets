@@ -23,6 +23,14 @@ export struct TemplateManageSection {
     this.initService()
   }
 
+  // 将十六进制颜色转换为 rgba 格式
+  private hexToRgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  }
+
   private async initService() {
     try {
       this.templateService = await TemplateService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
@@ -101,6 +109,25 @@ export struct TemplateManageSection {
 
   build() {
     Column() {
+      // 标题行：记录模板 + 添加按钮（拆分时丢失，已补回）
+      Row() {
+        Text($r('app.string.template_tab'))
+          .fontSize(18)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(this.themeColors.textPrimary)
+          .layoutWeight(1)
+
+        // 添加模板按钮
+        SymbolGlyph($r('sys.symbol.plus'))
+          .fontSize(20)
+          .fontColor([this.themeColors.primary])
+          .onClick(() => {
+            this.startAddTemplate()
+          })
+      }
+      .width('100%')
+      .margin({ bottom: 12 })
+
       Text($r('app.string.template_hint'))
         .fontSize(12)
         .fontColor(this.themeColors.textSecondary)
@@ -219,6 +246,16 @@ export struct TemplateManageSection {
           Text($r('app.string.template_empty'))
             .fontSize(13)
             .fontColor(this.themeColors.textSecondary)
+
+          Button($r('app.string.add_first_tag'))
+            .fontSize(14)
+            .fontColor(this.themeColors.primary)
+            .backgroundColor(this.hexToRgba(this.themeColors.primary, 0.1))
+            .borderRadius(8)
+            .margin({ top: 12 })
+            .onClick(() => {
+              this.startAddTemplate()
+            })
         }
         .width('100%')
         .padding({ top: 12, bottom: 12 })
