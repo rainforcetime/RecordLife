@@ -1747,6 +1747,10 @@
     {
       "name": "cloud_secret_warning",
       "value": "密钥仅保存在本机，请妥善保管"
+    },
+    {
+      "name": "view_original",
+      "value": "查看原图"
     }
   ]
 }

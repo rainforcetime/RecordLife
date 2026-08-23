@@ -100,6 +100,38 @@ export class ImageFileService {
   }
 
   /**
+   * 复制原图到待上传缓存目录（图片存储优化 M3：本地压缩 + 云端原图）
+   * @param context 应用上下文
+   * @param sourceUri 源图片 URI
+   * @returns pending 文件路径；失败返回 null
+   */
+  static async saveOriginalPending(context: common.UIAbilityContext, sourceUri: string): Promise<string | null> {
+    let sourceFile: fileIo.File | null = null
+    try {
+      sourceFile = fileIo.openSync(sourceUri, fileIo.OpenMode.READ_ONLY)
+      const timestamp = Date.now()
+      const pendingDir = `${context.cacheDir}/pending`
+      if (!fileIo.accessSync(pendingDir)) {
+        fileIo.mkdirSync(pendingDir)
+      }
+      const pendingPath = `${pendingDir}/record_${timestamp}_orig.jpg`
+      fileIo.copyFileSync(sourceFile.fd, pendingPath)
+      return pendingPath
+    } catch (error) {
+      Logger.error('[ImageFileService] 保存原图待上传失败: ' + JSON.stringify(error))
+      return null
+    } finally {
+      if (sourceFile) {
+        try {
+          fileIo.closeSync(sourceFile)
+        } catch (error) {
+          Logger.error('[ImageFileService] 关闭文件失败: ' + JSON.stringify(error))
+        }
+      }
+    }
+  }
+
+  /**
    * 获取图片 URI（用于显示）
    * 注：新记录已统一为 URI 格式，此方法保留用于兼容旧数据
    * @param path 图片路径（URI 或旧沙箱路径）

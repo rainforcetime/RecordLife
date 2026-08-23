@@ -18,6 +18,7 @@ interface ImageInfo {
   size: string           // 文件大小（格式化后）
   sizeBytes: number      // 文件大小（字节）
   path: string           // 文件路径
+  cloudKey: string       // 云端原图 key（图片存储优化 M3；无则空串）
 }
 
 @Entry
@@ -44,6 +45,7 @@ struct StorageImagePage {
   // 图片预览状态（点击查看大图）
   @State private showImageViewer: boolean = false
   @State private viewerUris: string[] = []
+  @State private viewerCloudKeys: string[] = []
   @State private viewerIndex: number = 0
   
   // 页面初始化
@@ -96,6 +98,25 @@ struct StorageImagePage {
       // 获取记录图片目录路径（与 NowViewModel 保存路径一致）
       const recordsPath = `${this.context.filesDir}/records`
       Logger.info('[StorageImagePage] 记录图片目录路径: ' + recordsPath)
+
+      // 图片存储优化 M3：构建 文件名 → 云端原图 key 映射（供查看原图）
+      const cloudKeyMap = new Map<string, string>()
+      try {
+        const records = await RecordRepository.getRecords(this.context)
+        for (const record of records) {
+          if (!record.imagePaths || !record.imageCloudKeys) {
+            continue
+          }
+          for (let i = 0; i < record.imagePaths.length && i < record.imageCloudKeys.length; i++) {
+            const name = record.imagePaths[i].split('/').pop()
+            if (name && name.length > 0 && record.imageCloudKeys[i]) {
+              cloudKeyMap.set(name, record.imageCloudKeys[i])
+            }
+          }
+        }
+      } catch (error) {
+        Logger.error('[StorageImagePage] 构建云端key映射失败: ' + JSON.stringify(error))
+      }
       
       // 检查目录是否存在
       if (!fs.accessSync(recordsPath)) {
@@ -139,7 +160,8 @@ struct StorageImagePage {
             uri: uri,
             size: sizeStr,
             sizeBytes: stat.size,
-            path: fullPath
+            path: fullPath,
+            cloudKey: cloudKeyMap.get(filename) ? cloudKeyMap.get(filename)! : ''
           })
           
           // 累加图片总大小
@@ -398,6 +420,8 @@ struct StorageImagePage {
   // 打开图片全屏预览
   private openViewer(index: number) {
     this.viewerUris = this.imageList.map((item: ImageInfo) => item.uri)
+    // 图片存储优化 M3：云端原图 key 对齐图片列表
+    this.viewerCloudKeys = this.imageList.map((item: ImageInfo) => item.cloudKey ? item.cloudKey : '')
     this.viewerIndex = index
     this.showImageViewer = true
   }
@@ -407,6 +431,7 @@ struct StorageImagePage {
   ImageViewerBuilder() {
     ImageViewer({
       imageUris: this.viewerUris,
+      imageCloudKeys: this.viewerCloudKeys,
       currentIndex: this.viewerIndex,
       onClose: () => {
         this.showImageViewer = false

@@ -7,6 +7,7 @@ export interface LifeRecord {
   timestamp: number;        // 记录时间戳
   content: string;          // 记录内容
   imagePaths?: string[];    // 图片路径数组（可选）
+  imageCloudKeys?: string[]; // 云端原图 key 数组（可选，与 imagePaths 一一对应；图片存储优化 M3）
   tags?: string[];          // 标签ID数组（可选）
   isPinned?: boolean;       // 是否置顶（可选）
   mood?: string;            // 心情（可选，更新计划二期：心情 id，预置或自定义）

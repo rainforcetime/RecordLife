@@ -1,9 +1,12 @@
 // 图片预览组件：components/ImageViewer.ets
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
-import { fileIo as fs } from '@kit.CoreFileKit'
+import { fileIo as fs, fileUri } from '@kit.CoreFileKit'
 import { common } from '@kit.AbilityKit'
 import { promptAction } from '@kit.ArkUI'
+import { CosConfig } from '../../model/UserConfigModel'
+import { CosService } from '../../service/CosService'
+import { ConfigManager } from '../../config/ConfigManager'
 import { Logger } from '../../common/utils/Logger'
 
 @Component
@@ -13,11 +16,20 @@ export struct ImageViewer {
   // 图片列表
   @Prop imageUris: string[] = []
   
+  // 云端原图 key 列表（可选，与 imageUris 一一对应；图片存储优化 M3）
+  @Prop imageCloudKeys: string[] = []
+  
   // 当前显示的图片索引
   @Prop currentIndex: number = 0
 
   // 当前显示索引（Swiper 滑动同步）
   @State private displayIndex: number = 0
+
+  // 原图态（图片存储优化 M3：查看原图后当前页替换为原图显示）
+  @State private showingOriginal: boolean = false
+  @State private originalUri: string = ''
+  @State private downloadingOriginal: boolean = false
+  private cosConfig: CosConfig | null = null
 
   // 缩放状态（捏合/双击，1~5 倍）
   @State private scaleValue: number = 1
@@ -36,6 +48,76 @@ export struct ImageViewer {
 
   aboutToAppear() {
     this.displayIndex = this.currentIndex
+    // 图片存储优化 M3：读取云存储配置（用于查看原图）
+    try {
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext
+      ConfigManager.getInstance(context).then((cm: ConfigManager) => {
+        this.cosConfig = cm.getCosConfig()
+      }).catch((e: Error) => {
+        Logger.error('[ImageViewer] 获取云存储配置失败: ' + JSON.stringify(e))
+      })
+    } catch (error) {
+      Logger.error('[ImageViewer] 获取上下文失败: ' + JSON.stringify(error))
+    }
+  }
+
+  // 当前页是否有云端原图
+  private hasCloudOriginal(): boolean {
+    if (this.displayIndex < 0 || this.displayIndex >= this.imageCloudKeys.length) {
+      return false
+    }
+    const key = this.imageCloudKeys[this.displayIndex]
+    return key !== undefined && key !== null && key.length > 0
+  }
+
+  // 获取当前页显示 URI（原图态下替换为下载的原图）
+  private getDisplayUri(uri: string): string {
+    if (this.showingOriginal && this.originalUri.length > 0 &&
+      this.displayIndex >= 0 && this.displayIndex < this.imageUris.length &&
+      uri === this.imageUris[this.displayIndex]) {
+      return this.originalUri
+    }
+    return uri
+  }
+
+  // 查看原图：下载云端原图到缓存并替换当前页显示
+  private async downloadOriginal(): Promise<void> {
+    if (!this.cosConfig || !this.hasCloudOriginal() || this.downloadingOriginal) {
+      return
+    }
+    const key = this.imageCloudKeys[this.displayIndex]
+    if (!key) {
+      return
+    }
+    this.downloadingOriginal = true
+    try {
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext
+      const destPath = `${context.cacheDir}/original_${this.displayIndex}_${Date.now()}.jpg`
+      const ok = await CosService.downloadFile(this.cosConfig, key, destPath)
+      if (ok) {
+        this.originalUri = fileUri.getUriFromPath(destPath)
+        this.showingOriginal = true
+      } else {
+        this.getUIContext().getPromptAction().showToast({
+          message: $r('app.string.cloud_test_failed'),
+          duration: 2000
+        })
+      }
+    } catch (error) {
+      Logger.error('[ImageViewer] 下载原图失败: ' + JSON.stringify(error))
+      this.getUIContext().getPromptAction().showToast({
+        message: $r('app.string.cloud_test_failed'),
+        duration: 2000
+      })
+    } finally {
+      this.downloadingOriginal = false
+    }
+  }
+
+  // 复位原图态
+  private resetOriginalState() {
+    this.showingOriginal = false
+    this.originalUri = ''
   }
 
   // 设置缩放（1~5 倍，>1 视为已放大并锁定 Swiper 滑动）
@@ -77,9 +159,9 @@ export struct ImageViewer {
     }
   }
   
-  // 保存图片到图库（在SaveButton点击后调用）
+  // 保存图片到图库（在SaveButton点击后调用；原图态保存原图，普通态保存压缩图）
   private async saveImageToGallery(): Promise<void> {
-    if (this.imageUris.length === 0 || this.currentIndex >= this.imageUris.length) {
+    if (this.imageUris.length === 0 || this.displayIndex >= this.imageUris.length) {
       return
     }
     
@@ -87,8 +169,9 @@ export struct ImageViewer {
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext
       const helper = photoAccessHelper.getPhotoAccessHelper(context)
       
-      // 获取当前图片URI
-      const imageUri = this.imageUris[this.currentIndex]
+      // 获取当前图片URI（原图态优先原图）
+      const imageUri = this.showingOriginal && this.originalUri.length > 0 ?
+        this.originalUri : this.imageUris[this.displayIndex]
       Logger.info('[ImageViewer] 保存图片: ' + imageUri)
       
       // 1. 通过 createAsset 创建图片文件（SaveButton 授权后 10 秒内有效）
@@ -150,7 +233,7 @@ export struct ImageViewer {
         Stack() {
           Swiper() {
             ForEach(this.imageUris, (uri: string) => {
-              Image(uri)
+              Image(this.getDisplayUri(uri))
                 .width('100%')
                 .height('100%')
                 .objectFit(ImageFit.Contain)
@@ -167,6 +250,7 @@ export struct ImageViewer {
           .onChange((index: number) => {
             this.displayIndex = index
             this.setScale(1)  // 切换图片时复位缩放
+            this.resetOriginalState()  // 切换图片时复位原图态
           })
           .width('100%')
           .height('100%')
@@ -244,31 +328,46 @@ export struct ImageViewer {
         
         Blank()
         
-        // 底部工具栏（半透明深色圆角条 + 下载图标保存按钮）
+        // 底部工具栏（半透明深色圆角条；查看原图 / 保存图片）
         Column() {
           Row() {
             Blank()
 
-            // 使用SaveButton安全控件保存图片（免权限；该 SDK 无 SaveIcon 枚举，纯文字）
-            SaveButton({
-              text: SaveDescription.SAVE_IMAGE,
-              buttonType: ButtonType.Normal
-            })
-              .width(140)
-              .height(44)
-              .borderRadius(22)
-              .backgroundColor('rgba(255, 255, 255, 0.16)')
-              .fontSize(15)
-              .onClick(async (event: ClickEvent, result: SaveButtonOnClickResult) => {
-                if (result === SaveButtonOnClickResult.SUCCESS) {
-                  await this.saveImageToGallery()
-                } else {
-                  this.getUIContext().getPromptAction().showToast({
-                    message: $r('app.string.authorization_failed'),
-                    duration: 2000
-                  })
-                }
+            // 有云端原图且未显示原图：显示「查看原图」（图片存储优化 M3）
+            if (this.hasCloudOriginal() && !this.showingOriginal) {
+              Button($r('app.string.view_original'))
+                .width(140)
+                .height(44)
+                .borderRadius(22)
+                .backgroundColor('rgba(255, 255, 255, 0.16)')
+                .fontSize(15)
+                .fontColor('#FFFFFF')
+                .enabled(!this.downloadingOriginal)
+                .onClick(() => {
+                  this.downloadOriginal()
+                })
+            } else {
+              // 使用SaveButton安全控件保存图片（免权限；该 SDK 无 SaveIcon 枚举，纯文字）
+              SaveButton({
+                text: SaveDescription.SAVE_IMAGE,
+                buttonType: ButtonType.Normal
               })
+                .width(140)
+                .height(44)
+                .borderRadius(22)
+                .backgroundColor('rgba(255, 255, 255, 0.16)')
+                .fontSize(15)
+                .onClick(async (event: ClickEvent, result: SaveButtonOnClickResult) => {
+                  if (result === SaveButtonOnClickResult.SUCCESS) {
+                    await this.saveImageToGallery()
+                  } else {
+                    this.getUIContext().getPromptAction().showToast({
+                      message: $r('app.string.authorization_failed'),
+                      duration: 2000
+                    })
+                  }
+                })
+            }
 
             Blank()
           }

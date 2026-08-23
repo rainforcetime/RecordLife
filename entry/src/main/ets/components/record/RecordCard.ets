@@ -52,6 +52,7 @@ export struct RecordCard {
   // 图片预览状态
   @State private showImageViewer: boolean = false
   @State private viewerImageUris: string[] = []
+  @State private viewerImageCloudKeys: string[] = []
   @State private viewerCurrentIndex: number = 0
   
   // 分享弹窗控制器（更新计划五期：统一 CustomDialog，居中缩放淡入动画）
@@ -254,15 +255,23 @@ export struct RecordCard {
     Logger.info('[RecordCard] 不为空')
     
     const imageUris: string[] = []
+    const cloudKeys: string[] = []
     for (let i = 0; i < this.record.imagePaths.length; i++) {
       if (!this.viewModel || !this.record.imagePaths[i]) {
         Logger.info('[RecordCard] 没有viewModel 或 imagePaths[i]')
         continue
       }
       imageUris.push(this.viewModel.getImageUri(this.record.imagePaths[i]))
+      // 图片存储优化 M3：云端原图 key 对齐 imagePaths
+      if (this.record.imageCloudKeys && this.record.imageCloudKeys[i]) {
+        cloudKeys.push(this.record.imageCloudKeys[i])
+      } else {
+        cloudKeys.push('')
+      }
     }
     
     this.viewerImageUris = imageUris
+    this.viewerImageCloudKeys = cloudKeys
     this.viewerCurrentIndex = index
     this.showImageViewer = true
   }
@@ -280,6 +289,7 @@ export struct RecordCard {
   ImageViewerBuilder() {
     ImageViewer({
       imageUris: this.viewerImageUris,
+      imageCloudKeys: this.viewerImageCloudKeys,
       currentIndex: this.viewerCurrentIndex,
       onClose: () => {
         this.showImageViewer = false

@@ -1747,6 +1747,10 @@
     {
       "name": "cloud_secret_warning",
       "value": "Keys are stored locally only, keep them safe"
+    },
+    {
+      "name": "view_original",
+      "value": "View original"
     }
   ]
 }

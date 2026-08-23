@@ -1,11 +1,14 @@
 // NowPage 业务逻辑类：viewmodel/NowViewModel.ets
 import { common } from '@kit.AbilityKit'
+import { fileIo } from '@kit.CoreFileKit'
 import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { LifeRecord, TimelineData, buildTimelineData } from '../common/types'
 import { TimeUtils } from '../common/utils/TimeUtils'
 import { ImageGenerator } from '../common/utils/ImageGenerator'
 import { RecordRepository } from '../repository/RecordRepository'
 import { ImageFileService } from '../service/ImageFileService'
+import { CosService } from '../service/CosService'
+import { ConfigManager } from '../config/ConfigManager'
 import { Logger } from '../common/utils/Logger'
 
 // 生活记录数据管理类
@@ -15,6 +18,9 @@ export class NowViewModel {
   
   // 记录数据
   private records: LifeRecord[] = []
+
+  // 待上传原图队列（图片存储优化 M3：本地压缩 + 云端原图）
+  private pendingUploads: Array<{ uri: string; pendingPath: string }> = []
   
   private constructor() {}
   
@@ -223,8 +229,10 @@ export class NowViewModel {
     
     this.records.unshift(record) // 添加到开头
     const success = await this.saveRecords()
-    
+
     if (success) {
+      // 图片存储优化 M3：记录保存成功后上传原图到云端（未配置 COS 自动跳过）
+      await this.uploadPendingImages()
       return record
     } else {
       // 保存失败，移除添加的记录
@@ -381,13 +389,79 @@ export class NowViewModel {
   }
   
   // 保存图片到沙箱目录（返回 URI 格式）
-  // 图片 IO 已下沉至 service/ImageFileService（P3）
+  // 图片 IO 已下沉至 service/ImageFileService（P3）；图片存储优化 M3：压缩图入本地 + 原图入待上传队列
   async saveImageToSandbox(sourceUri: string): Promise<string | null> {
     if (!this.context) {
       Logger.error('[NowViewModel] context 未初始化')
       return null
     }
-    return await ImageFileService.saveRecordImage(this.context, sourceUri)
+    const uri = await ImageFileService.saveRecordImage(this.context, sourceUri)
+    if (uri) {
+      const pendingPath = await ImageFileService.saveOriginalPending(this.context, sourceUri)
+      if (pendingPath) {
+        this.pendingUploads.push({ uri: uri, pendingPath: pendingPath })
+      }
+    }
+    return uri
+  }
+
+  // 上传待传原图（图片存储优化 M3；未配置 COS 时清理 pending，本地仅压缩图）
+  private async uploadPendingImages(): Promise<void> {
+    if (!this.context || this.pendingUploads.length === 0) {
+      this.pendingUploads = []
+      return
+    }
+    const configManager = await ConfigManager.getInstance(this.context)
+    const cos = configManager.getCosConfig()
+    const items = this.pendingUploads
+    this.pendingUploads = []
+    if (!cos) {
+      // 未配置云存储：清理 pending 原图
+      for (const item of items) {
+        NowViewModel.deletePendingFile(item.pendingPath)
+      }
+      return
+    }
+    let changed = false
+    for (const item of items) {
+      for (const record of this.records) {
+        if (!record.imagePaths) {
+          continue
+        }
+        const idx = record.imagePaths.indexOf(item.uri)
+        if (idx < 0) {
+          continue
+        }
+        const key = `records/${record.id}/${idx}.jpg`
+        const ok = await CosService.uploadFile(cos, key, item.pendingPath)
+        NowViewModel.deletePendingFile(item.pendingPath)
+        if (ok) {
+          if (!record.imageCloudKeys) {
+            record.imageCloudKeys = []
+          }
+          while (record.imageCloudKeys.length <= idx) {
+            record.imageCloudKeys.push('')
+          }
+          record.imageCloudKeys[idx] = key
+          changed = true
+        }
+        break
+      }
+    }
+    if (changed) {
+      await this.saveRecords()
+    }
+  }
+
+  // 删除 pending 文件
+  private static deletePendingFile(path: string): void {
+    try {
+      if (fileIo.accessSync(path)) {
+        fileIo.unlinkSync(path)
+      }
+    } catch (error) {
+      Logger.error('[NowViewModel] 删除 pending 文件失败: ' + JSON.stringify(error))
+    }
   }
   
   // 获取图片 URI（用于显示）
