@@ -143,24 +143,35 @@ export struct ImageViewer {
         .height('100%')
         .backgroundColor('#CC000000')
       
-      // 2. 中层：图片展示区域（Swiper 滑动切换 + 外层捏合/双击缩放）
+      // 2. 中层：图片展示区域（Swiper 滑动切换；缩放/平移手势在外部 Stack，免受 Swiper 禁用影响）
       if (this.imageUris.length > 0) {
-        Swiper() {
-          ForEach(this.imageUris, (uri: string) => {
-            Image(uri)
-              .width('100%')
-              .height('100%')
-              .objectFit(ImageFit.Contain)
-              .draggable(false)
-              .scale({ x: this.scaleValue, y: this.scaleValue })
-              .translate({ x: this.offsetX, y: this.offsetY })
-          }, (uri: string) => uri)
+        Stack() {
+          Swiper() {
+            ForEach(this.imageUris, (uri: string) => {
+              Image(uri)
+                .width('100%')
+                .height('100%')
+                .objectFit(ImageFit.Contain)
+                .draggable(false)
+                .scale({ x: this.scaleValue, y: this.scaleValue })
+                .translate({ x: this.offsetX, y: this.offsetY })
+            }, (uri: string) => uri)
+          }
+          .index(this.currentIndex)
+          .indicator(false)
+          .loop(false)
+          // 放大时锁定 Swiper 滑动（背景已不响应点击，不会误关闭）
+          .enabled(!this.isZoomed)
+          .onChange((index: number) => {
+            this.displayIndex = index
+            this.setScale(1)  // 切换图片时复位缩放
+          })
+          .width('100%')
+          .height('100%')
         }
-        .index(this.currentIndex)
-        .indicator(false)
-        .loop(false)
-        // 放大时锁定 Swiper 滑动（背景已不响应点击，不会误关闭），由 PanGesture 平移接管
-        .enabled(!this.isZoomed)
+        .width('100%')
+        .height('100%')
+        // 手势在 Swiper 外层：Swiper 禁用不影响；双指捏合/双击/parallel 平移不抢单指滑动
         .gesture(
           PinchGesture({ fingers: 2 })
             .onActionStart(() => {
@@ -176,7 +187,6 @@ export struct ImageViewer {
               this.toggleZoom()
             })
         )
-        // PanGesture 用 parallelGesture：不覆盖 Pinch/Tap，也不抢占 Swiper 滑动
         .parallelGesture(
           PanGesture({ fingers: 1 })
             .onActionStart(() => {
@@ -191,12 +201,6 @@ export struct ImageViewer {
               }
             })
         )
-        .onChange((index: number) => {
-          this.displayIndex = index
-          this.setScale(1)  // 切换图片时复位缩放
-        })
-        .width('100%')
-        .height('100%')
         .hitTestBehavior(HitTestMode.Block)
       }
       
