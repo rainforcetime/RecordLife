@@ -33,6 +33,7 @@ export interface UserProfile {
 // 应用设置
 export interface AppSettings {
   theme: string; // 'light' | 'dark' | 'auto'
+  themeColor?: string; // 主题主色（可选，hex；缺省走默认蓝，主题配色功能）
   language: string; // 'zh-CN' | 'en-US'
   showTimeDetails: boolean;
   enableNotifications: boolean;

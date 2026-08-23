@@ -5,6 +5,10 @@
  */
 
 import { ConfigurationConstant } from '@kit.AbilityKit'
+import { ColorUtils } from '../common/ColorUtils'
+
+// 默认主题主色（用户未自定义时，主题配色功能）
+export const DEFAULT_THEME_COLOR: string = '#007DFF'
 
 // 主题颜色接口
 export interface ThemeColors {
@@ -110,9 +114,20 @@ export type ThemeMode = 'light' | 'dark' | 'auto'
 
 // 主题配置类（提供便捷访问方法）
 export class ThemeConfig {
-  // 获取当前主题颜色
-  static getColors(isDark: boolean): ThemeColors {
-    return isDark ? DarkTheme : LightTheme
+  // 获取当前主题颜色（支持自定义主色，主题配色功能）
+  // 深色模式下主色自动调亮 20% 保证对比度
+  static getColors(isDark: boolean, primaryColor?: string): ThemeColors {
+    const base = isDark ? DarkTheme : LightTheme
+    if (!primaryColor || primaryColor.length !== 7) {
+      return base
+    }
+    const effectivePrimary = isDark ? ColorUtils.lighten(primaryColor, 0.2) : primaryColor
+    return {
+      ...base,
+      primary: effectivePrimary,
+      primaryLight: ColorUtils.lighten(effectivePrimary, 0.25),
+      primaryDark: ColorUtils.darken(effectivePrimary, 0.25)
+    }
   }
   
   // 判断是否为深色模式

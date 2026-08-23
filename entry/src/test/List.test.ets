@@ -5,6 +5,7 @@ import configModelTest from './ConfigModel.test';
 import timeUtilsLifeTest from './TimeUtilsLife.test';
 import moodUtilsTest from './MoodUtils.test';
 import statisticsTest from './StatisticsModel.test';
+import themeConfigTest from './ThemeConfig.test';
 
 export default function testsuite() {
   localUnitTest();
@@ -14,4 +15,5 @@ export default function testsuite() {
   timeUtilsLifeTest();
   moodUtilsTest();
   statisticsTest();
+  themeConfigTest();
 }

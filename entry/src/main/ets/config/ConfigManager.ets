@@ -6,6 +6,7 @@
 
 import { common } from '@kit.AbilityKit';
 import { UserConfig, createDefaultConfig, createDefaultConfigSync, validateConfig } from './UserConfig';
+import { DEFAULT_THEME_COLOR } from './ThemeConfig';
 import { ConfigRepository } from '../repository/ConfigRepository';
 import { TimeUtils } from '../common/utils/TimeUtils';
 import { Logger } from '../common/utils/Logger'
@@ -183,6 +184,21 @@ export class ConfigManager {
   getTheme(): string {
     const config = this.getConfig();
     return config.settings.theme;
+  }
+
+  // 获取主题主色（主题配色；缺省默认蓝）
+  getThemeColor(): string {
+    const config = this.getConfig();
+    return config.settings.themeColor || DEFAULT_THEME_COLOR;
+  }
+
+  // 设置主题主色并保存（主题配色）
+  async setThemeColor(color: string): Promise<boolean> {
+    if (!this.config) {
+      return false;
+    }
+    this.config.settings.themeColor = color;
+    return await this.saveConfig();
   }
 
   // 设置主题并保存
