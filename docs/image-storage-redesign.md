@@ -79,7 +79,17 @@ cosConfig?: {
 - 上传：`PUT /{bucket}.cos.{region}.myqcloud.com/records/{id}/{idx}.jpg`（Authorization 签名头，body 为文件 ArrayBuffer）。
 - 下载：`GET` 同路径 + 签名参数（或返回**临时签名 URL** 交给 Image 组件加载）。
 - 签名算法：COS 签名（SecretId/SecretKey + 时间戳 + keyTime/signKey），纯字符串计算，可单测。
+- **访问域名（已补充）**：`CosConfig.customDomain?`（可选）——中国大陆 bucket 默认域名（`{bucket}.cos.{region}.myqcloud.com`）访问易受限，建议在 COS 控制台「域名管理」配置自定义域名/CDN 域名后在设置页填写；**签名 host 与实际请求域名统一走 `CosService.getHost`**（自定义域名优先），否则签名校验失败。
 - **密钥方案（已确认）**：MVP 采用**设置页用户自填**（App 不内置任何密钥）；进阶方案自建服务签发 STS 临时密钥（客户端只存临时凭证 + 定期换），列入后续迭代。
+
+**连接失败排查清单**（测试连接返回失败时逐项核对）：
+1. **域名**：中国大陆 bucket 默认域名受限 → 控制台配置自定义域名后填入「自定义访问域名」。
+2. **Bucket 名称**：必须含 APPID 后缀（`name-1250000000` 格式，控制台「存储桶」页可复制）。
+3. **Region**：与 bucket 所在地域一致（如 `ap-guangzhou`，控制台可查）。
+4. **密钥权限**：SecretId/SecretKey 对应账号需有该 bucket 的 `PutObject/GetObject/HeadBucket` 权限（CAM 策略或子账号授权）。
+5. **私有读写**：请求必须带签名（本实现已带）；403 表示连通但权限不足（测试连接按连通处理）。
+6. **设备时间**：签名基于设备当前时间（±1h 有效窗口），设备时间偏差过大（>5 分钟）会导致签名校验失败——先校正系统时间。
+7. **HTTPS**：默认 https；若自定义域名仅支持 http，可后续扩展 `useHttps: false`。
 
 ### 4.4 上传流程（含失败重试）
 

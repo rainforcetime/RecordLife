@@ -19,6 +19,7 @@ export struct CosConfigDialog {
   @State bucket: string = ''
   @State secretId: string = ''
   @State secretKey: string = ''
+  @State customDomain: string = ''
   @State testing: boolean = false
   private promptAction: PromptAction | null = null
 
@@ -27,6 +28,7 @@ export struct CosConfigDialog {
     this.bucket = this.config.bucket
     this.secretId = this.config.secretId
     this.secretKey = this.config.secretKey
+    this.customDomain = this.config.customDomain ? this.config.customDomain : ''
     this.promptAction = this.getUIContext().getPromptAction()
   }
 
@@ -50,7 +52,8 @@ export struct CosConfigDialog {
       region: this.region,
       bucket: this.bucket,
       secretId: this.secretId,
-      secretKey: this.secretKey
+      secretKey: this.secretKey,
+      customDomain: this.customDomain.length > 0 ? this.customDomain : undefined
     })
     this.testing = false
     try {
@@ -72,7 +75,8 @@ export struct CosConfigDialog {
       region: this.region,
       bucket: this.bucket,
       secretId: this.secretId,
-      secretKey: this.secretKey
+      secretKey: this.secretKey,
+      customDomain: this.customDomain.length > 0 ? this.customDomain : undefined
     })
     this.controller.close()
   }
@@ -128,6 +132,15 @@ export struct CosConfigDialog {
       this.Field($r('app.string.cos_secret_key'), this.secretKey, true, (v: string) => {
         this.secretKey = v
       })
+      this.Field($r('app.string.cos_custom_domain'), this.customDomain, false, (v: string) => {
+        this.customDomain = v
+      })
+
+      Text($r('app.string.cos_domain_hint'))
+        .fontSize(11)
+        .fontColor(this.themeColors.textSecondary)
+        .width('100%')
+        .margin({ top: 4 })
 
       // 测试连接 + 保存
       Row() {

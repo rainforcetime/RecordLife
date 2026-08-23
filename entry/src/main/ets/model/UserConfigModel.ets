@@ -17,9 +17,10 @@ export interface RecordTemplate {
 // 云存储配置（图片存储优化 M2：腾讯云 COS；App 不内置任何密钥，用户设置页自填防泄露）
 export interface CosConfig {
   region: string;       // 地域，如 'ap-guangzhou'
-  bucket: string;       // Bucket 名称，如 'xxx-1250000000'
+  bucket: string;       // Bucket 名称，如 'xxx-1250000000'（必须含 APPID 后缀）
   secretId: string;     // SecretId（用户自填）
   secretKey: string;    // SecretKey（用户自填；本地存储 + 首次配置风险提示）
+  customDomain?: string; // 自定义访问域名（可选，如 'images.example.com'；中国大陆 bucket 建议配置，签名 host 与之对齐；缺省用 {bucket}.cos.{region}.myqcloud.com）
   useHttps?: boolean;   // 是否 HTTPS，默认 true
 }
 

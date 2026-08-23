@@ -12,10 +12,19 @@ import { CosConfig } from '../model/UserConfigModel'
 import { Logger } from '../common/utils/Logger'
 
 export class CosService {
-  // 构建对象 URL（https://{bucket}.cos.{region}.myqcloud.com/{key}）
+  // 获取访问域名（自定义域名优先，缺省 {bucket}.cos.{region}.myqcloud.com）
+  // 签名 host 必须与实际请求域名一致——自定义域名场景下两者都用 getHost
+  static getHost(config: CosConfig): string {
+    if (config.customDomain && config.customDomain.length > 0) {
+      return config.customDomain
+    }
+    return `${config.bucket}.cos.${config.region}.myqcloud.com`
+  }
+
+  // 构建对象 URL（https://{host}/{key}）
   static buildUrl(config: CosConfig, key: string): string {
     const scheme = config.useHttps === false ? 'http' : 'https'
-    return `${scheme}://${config.bucket}.cos.${config.region}.myqcloud.com/${key}`
+    return `${scheme}://${CosService.getHost(config)}/${key}`
   }
 
   // 上传原图（PUT Object），返回是否成功
@@ -117,7 +126,7 @@ export class CosService {
   // 测试连接（HEAD bucket 根）：200（通）/403（连上但权限不足，也算通）/其他失败
   static async testConnection(config: CosConfig): Promise<boolean> {
     try {
-      const host = `${config.bucket}.cos.${config.region}.myqcloud.com`
+      const host = CosService.getHost(config)
       const auth = await CosService.buildAuthWithHost(config, 'head', '/', host)
       const client = http.createHttp()
       try {
@@ -140,9 +149,9 @@ export class CosService {
 
   // ==================== COS V5 签名 ====================
 
-  // 构建 Authorization（对象操作，host 固定由 bucket/region 推导）
+  // 构建 Authorization（对象操作，host 由 getHost 推导：自定义域名优先）
   private static async buildAuth(config: CosConfig, method: string, path: string): Promise<string> {
-    const host = `${config.bucket}.cos.${config.region}.myqcloud.com`
+    const host = CosService.getHost(config)
     return CosService.buildAuthWithHost(config, method, path, host)
   }
 

@@ -1751,6 +1751,14 @@
     {
       "name": "view_original",
       "value": "查看原图"
+    },
+    {
+      "name": "cos_custom_domain",
+      "value": "自定义访问域名（可选）"
+    },
+    {
+      "name": "cos_domain_hint",
+      "value": "留空使用默认域名；中国大陆 bucket 建议在 COS 控制台配置自定义域名后填写"
     }
   ]
 }

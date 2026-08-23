@@ -1751,6 +1751,14 @@
     {
       "name": "view_original",
       "value": "View original"
+    },
+    {
+      "name": "cos_custom_domain",
+      "value": "Custom domain (optional)"
+    },
+    {
+      "name": "cos_domain_hint",
+      "value": "Leave empty for default; for mainland China buckets configure a custom domain in the COS console first"
     }
   ]
 }
