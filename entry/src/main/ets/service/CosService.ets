@@ -37,7 +37,7 @@ export class CosService {
       fileIo.readSync(file.fd, buffer)
       fileIo.closeSync(file)
       file = null
-      const auth = await CosService.buildAuth(config, 'put', '/' + key)
+      const auth = await CosService.buildAuth(config, 'put', '/' + key, 'image/jpeg')
       const client = http.createHttp()
       try {
         const resp = await client.request(CosService.buildUrl(config, key), {
@@ -150,25 +150,36 @@ export class CosService {
   // ==================== COS V5 签名 ====================
 
   // 构建 Authorization（对象操作，host 由 getHost 推导：自定义域名优先）
-  private static async buildAuth(config: CosConfig, method: string, path: string): Promise<string> {
+  // contentType 可选：请求头含 content-type 时必须纳入签名（腾讯白名单头校验），否则 403
+  private static async buildAuth(config: CosConfig, method: string, path: string, contentType?: string): Promise<string> {
     const host = CosService.getHost(config)
-    return CosService.buildAuthWithHost(config, method, path, host)
+    return CosService.buildAuthWithHost(config, method, path, host, contentType)
   }
 
   // 构建 Authorization（指定 host，供 testConnection 等场景）
-  private static async buildAuthWithHost(config: CosConfig, method: string, path: string, host: string): Promise<string> {
+  private static async buildAuthWithHost(config: CosConfig, method: string, path: string, host: string, contentType?: string): Promise<string> {
     const now = Math.floor(Date.now() / 1000)
     const signTime = `${now - 60};${now + 3600}`
     const keyTime = signTime
     // SignKey = HMAC-SHA1(SecretKey, KeyTime)
     const signKey = await CosService.hmacSha1Hex(config.secretKey, keyTime)
-    // HttpString = method\npath\n\nhost=xxx\n（无 query、仅 host 头）
-    const httpString = `${method}\n${path}\n\nhost=${host}\n`
+    // HttpString = method\npath\n\n{headers}\n；headers 按字典序 & 连接，值需 URL 编码
+    // 请求头含 content-type（白名单）时必须参与签名
+    let headersStr: string
+    let headersList: string
+    if (contentType && contentType.length > 0) {
+      headersStr = `host=${host}&content-type=${encodeURIComponent(contentType)}`
+      headersList = 'host;content-type'
+    } else {
+      headersStr = `host=${host}`
+      headersList = 'host'
+    }
+    const httpString = `${method}\n${path}\n\n${headersStr}\n`
     const httpStringSha1 = await CosService.sha1Hex(httpString)
     // StringToSign = sha1\nKeyTime\nSHA1(HttpString)\n
     const stringToSign = `sha1\n${keyTime}\n${httpStringSha1}\n`
     const signature = await CosService.hmacSha1Hex(signKey, stringToSign)
-    return `q-sign-algorithm=sha1&q-ak=${config.secretId}&q-sign-time=${signTime}&q-key-time=${keyTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`
+    return `q-sign-algorithm=sha1&q-ak=${config.secretId}&q-sign-time=${signTime}&q-key-time=${keyTime}&q-header-list=${headersList}&q-url-param-list=&q-signature=${signature}`
   }
 
   // HMAC-SHA1 十六进制

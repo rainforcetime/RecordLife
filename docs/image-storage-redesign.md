@@ -91,6 +91,11 @@ cosConfig?: {
 6. **设备时间**：签名基于设备当前时间（±1h 有效窗口），设备时间偏差过大（>5 分钟）会导致签名校验失败——先校正系统时间。
 7. **HTTPS**：默认 https；若自定义域名仅支持 http，可后续扩展 `useHttps: false`。
 
+**联网核实结论（2026-08-23，腾讯官方 SDK 源码 + qcloud-cos-harmonyos-samples）**：
+- **APPID**：COS V5 签名**不需要单独传 AppID**（Authorization 仅 `q-ak=SecretId`）；APPID 体现在 **bucket 名称的 `name-appid` 后缀**（设置页 bucket 输入即含）。官方 SDK 均按 `bucket = name-appid` 使用。
+- **content-type 必须参与签名**：腾讯签名白名单头（host/content-type/x-cos-* 等）一旦出现在请求头就必须计入 `q-header-list` 与 HttpString，否则服务端签名校验失败（403）。**已修复**：PUT 上传（带 `Content-Type: image/jpeg`）签名现含 `host;content-type`。
+- **HarmonyOS 接入方式**：腾讯官方无 COS 的 ArkTS SDK——官方示例（qcloud-cos-harmonyos-samples）与本案一致，用 `@ohos.net.http` REST + 签名直传；官方生产实践为**服务端签发直传签名/STS**（客户端仅持临时凭证 `x-cos-security-token`），本实现 MVP 为用户自填密钥（等价于官方 SDK 的永久密钥模式），后续可升级官方直传签名模式。
+
 ### 4.4 上传流程（含失败重试）
 
 ```
