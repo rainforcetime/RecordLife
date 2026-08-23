@@ -109,14 +109,11 @@ export struct ImageViewer {
   
   build() {
     Stack() {
-      // 1. 底层：半透明黑色背景（点击关闭）
+      // 1. 底层：半透明黑色背景（仅遮罩，不响应点击——避免误关闭）
       Column()
         .width('100%')
         .height('100%')
         .backgroundColor('#CC000000')
-        .onClick(() => {
-          this.closeViewer()
-        })
       
       // 2. 中层：图片展示区域（Swiper 滑动切换 + 外层捏合/双击缩放）
       if (this.imageUris.length > 0) {
@@ -162,15 +159,17 @@ export struct ImageViewer {
       Column() {
         // 顶部工具栏（添加安全区域顶部避让）
         Row() {
-          // 关闭按钮（增大点击区域）
+          // 关闭按钮（圆形半透明深色底，与底部工具条呼应；系统返回键同样可关闭）
           Column() {
             Image($r('sys.media.ohos_ic_public_arrow_left'))
-              .width(28)
-              .height(28)
+              .width(20)
+              .height(20)
               .fillColor('#FFFFFF')
           }
-          .width(48)
-          .height(48)
+          .width(40)
+          .height(40)
+          .borderRadius(20)
+          .backgroundColor('rgba(0, 0, 0, 0.35)')
           .justifyContent(FlexAlign.Center)
           .onClick(() => {
             this.closeViewer()
