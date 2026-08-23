@@ -32,6 +32,9 @@ struct StorageImagePage {
   
   // 加载状态
   @State isLoading: boolean = true
+
+  // 防重入标志（aboutToAppear 与 onPageShow 并发时只加载一次，避免图片列表重复）
+  private loading: boolean = false
   
   // 图片总大小（字节）
   @State totalImageSize: number = 0
@@ -84,6 +87,12 @@ struct StorageImagePage {
   
   // 加载沙箱目录中的图片
   private async loadSandboxImages() {
+    // 防重入：aboutToAppear 与 onPageShow 可能并发触发，跳过第二次避免列表重复
+    if (this.loading) {
+      Logger.info('[StorageImagePage] 加载中，跳过重复加载')
+      return
+    }
+    this.loading = true
     try {
       this.isLoading = true
       this.imageList = []
@@ -92,6 +101,7 @@ struct StorageImagePage {
       if (!this.context) {
         Logger.error('[StorageImagePage] context为空')
         this.isLoading = false
+        this.loading = false
         return
       }
       
@@ -122,6 +132,7 @@ struct StorageImagePage {
       if (!fs.accessSync(recordsPath)) {
         Logger.info('[StorageImagePage] 记录图片目录不存在')
         this.isLoading = false
+        this.loading = false
         // 仍然获取设备可用存储空间
         await this.loadFreeStorageSize()
         return
@@ -131,14 +142,17 @@ struct StorageImagePage {
       const filenames = fs.listFileSync(recordsPath)
       Logger.info('[StorageImagePage] 找到文件数量: ' + filenames.length)
       
-      // 过滤出图片文件（支持常见图片格式）
+      // 过滤出图片文件（支持常见图片格式；排除 pending 原图副本 record_*_orig.jpg，防重复显示）
       const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg']
       const imageFiles = filenames.filter(filename => {
         const lowerName = filename.toLowerCase()
+        if (lowerName.endsWith('_orig.jpg')) {
+          return false
+        }
         return imageExtensions.some(ext => lowerName.endsWith(ext))
       })
       
-      Logger.info('[StorageImagePage] 图片文件数量: ' + imageFiles.length)
+      Logger.info('[StorageImagePage] 图片文件数量: ' + imageFiles.length + ' 列表: ' + JSON.stringify(imageFiles))
       
       // 处理每个图片文件
       for (const filename of imageFiles) {
@@ -178,9 +192,11 @@ struct StorageImagePage {
       await this.loadFreeStorageSize()
       
       this.isLoading = false
+      this.loading = false
     } catch (error) {
       Logger.error('[StorageImagePage] 加载图片失败: ' + JSON.stringify(error))
       this.isLoading = false
+      this.loading = false
     }
   }
   

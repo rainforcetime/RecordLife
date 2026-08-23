@@ -9,12 +9,20 @@ import { RecordRepository } from '../repository/RecordRepository'
 import { ImageFileService } from '../service/ImageFileService'
 import { CosService } from '../service/CosService'
 import { ConfigManager } from '../config/ConfigManager'
+import { ImagePathUtils } from '../common/utils/ImagePathUtils'
 import { Logger } from '../common/utils/Logger'
 
 // 待上传原图项（图片存储优化 M3）
 interface PendingUpload {
   uri: string          // 压缩图 URI（用于匹配记录 imagePaths）
   pendingPath: string  // 原图待上传缓存路径
+}
+
+// 上传全部图片结果（图片存储优化）
+interface UploadAllResult {
+  uploaded: number     // 成功张数
+  failed: number       // 失败张数
+  skipped: number      // 去重跳过张数（云端已有）
 }
 
 // 生活记录数据管理类
@@ -272,23 +280,65 @@ export class NowViewModel {
     
     // 处理图片路径更新
     if (imagePaths !== undefined) {
-      // 删除不再使用的图片文件
-      if (this.context && record.imagePaths) {
-        const pathsToDelete: string[] = record.imagePaths.filter(oldPath => !imagePaths.includes(oldPath))
-        if (pathsToDelete.length > 0) {
-          ImageFileService.deleteImageFiles(this.context, pathsToDelete)
+      // 收集被移除图片的云端 key（供删除云端旧图，图片存储优化）
+      const oldPaths = record.imagePaths ? record.imagePaths : []
+      const oldKeys = record.imageCloudKeys ? record.imageCloudKeys : []
+      const removedCloudKeys: string[] = []
+      for (let i = 0; i < oldPaths.length; i++) {
+        if (!imagePaths.includes(oldPaths[i]) && i < oldKeys.length && oldKeys[i]) {
+          removedCloudKeys.push(oldKeys[i])
+        }
+      }
+
+      // 删除不再使用的本地图片文件
+      const pathsToDelete: string[] = oldPaths.filter(oldPath => !imagePaths.includes(oldPath))
+      if (pathsToDelete.length > 0) {
+        const ctx = this.context
+        if (ctx) {
+          ImageFileService.deleteImageFiles(ctx, pathsToDelete)
+        }
+      }
+      
+      // 同步云端 key：旧图沿用原 key，新图留空待上传
+      const newKeys: string[] = []
+      for (const newPath of imagePaths) {
+        const oldIdx = oldPaths.indexOf(newPath)
+        if (oldIdx >= 0 && oldIdx < oldKeys.length && oldKeys[oldIdx]) {
+          newKeys.push(oldKeys[oldIdx])
+        } else {
+          newKeys.push('')
         }
       }
       
       // 更新图片路径列表
       if (imagePaths.length === 0) {
         record.imagePaths = undefined
+        record.imageCloudKeys = undefined
       } else {
         record.imagePaths = imagePaths
+        record.imageCloudKeys = newKeys
       }
+      
+      // 保存成功后删除云端旧图
+      const success = await this.saveRecords()
+      if (success) {
+        await this.uploadPendingImages()
+        if (removedCloudKeys.length > 0) {
+          const ctx = this.context
+          if (ctx) {
+            await NowViewModel.deleteCloudImages(ctx, removedCloudKeys)
+          }
+        }
+      }
+      return success
     }
     
-    return await this.saveRecords()
+    const success = await this.saveRecords()
+    if (success) {
+      // 图片存储优化：修改记录后上传新图（原图入待上传队列）
+      await this.uploadPendingImages()
+    }
+    return success
   }
   
   // 切换收藏/置顶状态
@@ -377,12 +427,24 @@ export class NowViewModel {
       }
       const records = this.pendingDeletedRecords
       this.pendingDeletedRecords = []
-      // 撤销窗口结束，真正清理图片文件
-      if (this.context) {
+      // 撤销窗口结束，真正清理图片文件 + 云端原图（图片存储优化）
+      const ctx = this.context
+      if (ctx) {
+        const cloudKeys: string[] = []
         for (const r of records) {
           if (r.imagePaths && r.imagePaths.length > 0) {
-            ImageFileService.deleteImageFiles(this.context, r.imagePaths)
+            ImageFileService.deleteImageFiles(ctx, r.imagePaths)
           }
+          if (r.imageCloudKeys) {
+            for (const k of r.imageCloudKeys) {
+              if (k) {
+                cloudKeys.push(k)
+              }
+            }
+          }
+        }
+        if (cloudKeys.length > 0) {
+          NowViewModel.deleteCloudImages(ctx, cloudKeys)
         }
       }
       Logger.info('[NowViewModel] 撤销窗口结束，已清理 ' + records.length + ' 条记录的图片文件')
@@ -401,14 +463,50 @@ export class NowViewModel {
       Logger.error('[NowViewModel] context 未初始化')
       return null
     }
-    const uri = await ImageFileService.saveRecordImage(this.context, sourceUri)
+    // 同一 timestamp 生成压缩图与原图，保证文件名对应（record_{ts}.jpg ↔ record_{ts}_orig.jpg）
+    const ts = Date.now()
+    // 压缩档位（云存储配置，未配置用默认均衡）
+    const configManager = await ConfigManager.getInstance(this.context)
+    const cos = configManager.getCosConfig()
+    const compressMode = cos && cos.compressMode ? cos.compressMode : ImageFileService.COMPRESS_BALANCED
+    const uri = await ImageFileService.saveRecordImage(this.context, sourceUri, ts, compressMode)
     if (uri) {
-      const pendingPath = await ImageFileService.saveOriginalPending(this.context, sourceUri)
+      const pendingPath = await ImageFileService.saveOriginalPending(this.context, sourceUri, ts)
       if (pendingPath) {
         this.pendingUploads.push({ uri: uri, pendingPath: pendingPath })
       }
     }
     return uri
+  }
+
+  // 删除云端对象（图片存储优化：修改记录/删除记录后清理云端旧图；未配置 COS 时跳过）
+  private static async deleteCloudImages(context: common.UIAbilityContext, keys: string[]): Promise<void> {
+    try {
+      const configManager = await ConfigManager.getInstance(context)
+      const cos = configManager.getCosConfig()
+      // 未配置或总开关关闭：跳过云端删除
+      if (!cos || cos.enabled === false) {
+        return
+      }
+      for (const key of keys) {
+        await CosService.deleteObject(cos, key)
+      }
+    } catch (error) {
+      Logger.error('[NowViewModel] 删除云端图片失败: ' + JSON.stringify(error))
+    }
+  }
+
+  // 生成可读云端 key：records/{YYYY-MM-DD}/{原名}_{idx}.jpg（原名如 record_1724420000000）
+  private static buildCloudKey(record: LifeRecord, index: number): string {
+    const date = TimeUtils.formatDate(new Date(record.timestamp))
+    let base = `record_${record.timestamp}`
+    if (record.imagePaths && record.imagePaths[index]) {
+      const name = record.imagePaths[index].split('/').pop()
+      if (name) {
+        base = name.replace(/\.(jpg|jpeg|png)$/i, '')
+      }
+    }
+    return `records/${date}/${base}_${index}.jpg`
   }
 
   // 上传待传原图（图片存储优化 M3；未配置 COS 时清理 pending，本地仅压缩图）
@@ -421,7 +519,8 @@ export class NowViewModel {
     const cos = configManager.getCosConfig()
     const items = this.pendingUploads
     this.pendingUploads = []
-    if (!cos) {
+    // 未配置或总开关关闭：清理 pending 原图，本地仅压缩图
+    if (!cos || cos.enabled === false) {
       // 未配置云存储：清理 pending 原图
       for (const item of items) {
         NowViewModel.deletePendingFile(item.pendingPath)
@@ -430,6 +529,7 @@ export class NowViewModel {
     }
     let changed = false
     for (const item of items) {
+      let matched = false
       for (const record of this.records) {
         if (!record.imagePaths) {
           continue
@@ -438,11 +538,14 @@ export class NowViewModel {
         if (idx < 0) {
           continue
         }
-        const key = `records/${record.id}/${idx}.jpg`
+        matched = true
+        const key = NowViewModel.buildCloudKey(record, idx)
         const ok = await CosService.uploadFile(cos, key, item.pendingPath)
         if (ok) {
-          // 上传成功：删除 pending 并记录云端 key
-          NowViewModel.deletePendingFile(item.pendingPath)
+          // 上传成功：开关开启才删除 pending 原图（与「上传全部」一致；关闭则本地保留双保险）
+          if (cos.deleteOriginalAfterUpload !== false) {
+            NowViewModel.deletePendingFile(item.pendingPath)
+          }
           if (!record.imageCloudKeys) {
             record.imageCloudKeys = []
           }
@@ -455,6 +558,10 @@ export class NowViewModel {
         // 上传失败：保留 pending 文件，供「上传全部图片」重试
         break
       }
+      if (!matched) {
+        // 记录已不存在（如删除后）：清理 pending 文件防堆积
+        NowViewModel.deletePendingFile(item.pendingPath)
+      }
     }
     if (changed) {
       await this.saveRecords()
@@ -463,38 +570,97 @@ export class NowViewModel {
 
   /**
    * 上传全部本地图片到云端（图片存储优化：历史图片补传 / 失败重试）
-   * 逻辑：遍历记录，无 imageCloudKeys 的图片，按文件名匹配 cacheDir/pending 下的原图上传
-   * @returns 本次上传成功的张数
+   * 逻辑：遍历所有记录图片（无论本地是否有云端 key）：
+   *   1) 去重开启：一律 HEAD 检查云端——已存在则跳过（省流量）；不存在则上传（补回被删的云端对象）
+   *   2) 去重关闭：本地已有云端 key 的直接跳过，无 key 的上传
+   *   上传源：优先 cacheDir/pending 原图，无则兜底本地记录图片
+   * @param onProgress 进度回调（已处理数 / 总数）
+   * @returns 上传结果（成功数 / 失败数 / 跳过数）
    */
-  static async uploadAllImages(context: common.UIAbilityContext): Promise<number> {
+  static async uploadAllImages(context: common.UIAbilityContext,
+    onProgress?: (current: number, total: number) => void): Promise<UploadAllResult> {
     const configManager = await ConfigManager.getInstance(context)
     const cos = configManager.getCosConfig()
-    if (!cos) {
-      return 0
+    const result: UploadAllResult = { uploaded: 0, failed: 0, skipped: 0 }
+    // 未配置或总开关关闭：不执行上传
+    if (!cos || cos.enabled === false) {
+      return result
     }
+    // 去重开关（默认开：云端已有对象则不重复上传，省流量；云端被删时会补传）
+    const dedupe = cos.dedupeUpload !== false
     const records = await RecordRepository.getRecords(context)
-    let uploaded = 0
+    // 预统计待处理总数（本地有文件源的图片，无论是否有云端 key）
+    let total = 0
     for (const record of records) {
       if (!record.imagePaths) {
         continue
       }
       for (let i = 0; i < record.imagePaths.length; i++) {
-        // 已有云端原图则跳过
-        if (record.imageCloudKeys && record.imageCloudKeys[i]) {
-          continue
-        }
         const name = record.imagePaths[i].split('/').pop()
         if (!name) {
           continue
         }
-        // pending 原图文件名：record_{ts}_orig.jpg（压缩图为 record_{ts}.jpg，共享时间戳）
+        const origPath = `${context.cacheDir}/pending/${name.replace(/\.(jpg|jpeg|png)$/i, '_orig.jpg')}`
+        if (!fileIo.accessSync(origPath)) {
+          const recordPath = ImagePathUtils.uriToSandboxPath(record.imagePaths[i])
+          if (!fileIo.accessSync(recordPath)) {
+            continue
+          }
+        }
+        total++
+      }
+    }
+    let current = 0
+    for (const record of records) {
+      if (!record.imagePaths) {
+        continue
+      }
+      for (let i = 0; i < record.imagePaths.length; i++) {
+        const name = record.imagePaths[i].split('/').pop()
+        if (!name) {
+          continue
+        }
+        // 本地已有云端 key（有则用原 key 检查/补传，保证云端被删也能恢复）
+        const localKey = record.imageCloudKeys && record.imageCloudKeys[i] ? record.imageCloudKeys[i] : ''
+        // 上传源：优先 pending 原图（record_{ts}_orig.jpg 与压缩图 record_{ts}.jpg 同 ts）
         const origName = name.replace(/\.(jpg|jpeg|png)$/i, '_orig.jpg')
         const origPath = `${context.cacheDir}/pending/${origName}`
+        let uploadPath = origPath
+        let isPendingFile = true
         if (!fileIo.accessSync(origPath)) {
-          continue  // 无原图（旧数据或已清理）
+          // 无 pending：兜底用本地记录图片
+          const recordPath = ImagePathUtils.uriToSandboxPath(record.imagePaths[i])
+          if (!fileIo.accessSync(recordPath)) {
+            continue
+          }
+          uploadPath = recordPath
+          isPendingFile = false
         }
-        const key = `records/${record.id}/${i}.jpg`
-        const ok = await CosService.uploadFile(cos, key, origPath)
+        current++
+        if (onProgress) {
+          onProgress(current, total)
+        }
+        // key：本地已有则用原 key（云端被删时以同 key 覆盖补回），否则生成新 key
+        const key = localKey.length > 0 ? localKey : NowViewModel.buildCloudKey(record, i)
+        if (dedupe) {
+          // 去重：一律查云端——已存在跳过；不存在（含云端被删）继续上传
+          const already = await CosService.exists(cos, key)
+          if (already) {
+            if (!record.imageCloudKeys) {
+              record.imageCloudKeys = []
+            }
+            while (record.imageCloudKeys.length <= i) {
+              record.imageCloudKeys.push('')
+            }
+            record.imageCloudKeys[i] = key
+            result.skipped++
+            continue
+          }
+        } else if (localKey.length > 0) {
+          // 去重关闭：信任本地 key，直接跳过
+          continue
+        }
+        const ok = await CosService.uploadFile(cos, key, uploadPath)
         if (ok) {
           if (!record.imageCloudKeys) {
             record.imageCloudKeys = []
@@ -503,19 +669,54 @@ export class NowViewModel {
             record.imageCloudKeys.push('')
           }
           record.imageCloudKeys[i] = key
-          uploaded++
-          try {
-            fileIo.unlinkSync(origPath)
-          } catch (e) {
-            Logger.error('[NowViewModel] 删除已上传原图失败: ' + JSON.stringify(e))
+          result.uploaded++
+          // 老图迁移（M1 前原样大图兜底上传）：上传成功后本地压缩并替换记录引用，删除本地大图
+          // 仅当「上传后删除原图」开启时执行；压缩失败则保留原引用不删
+          if (!isPendingFile && cos.deleteOriginalAfterUpload !== false) {
+            const mode = cos.compressMode ? cos.compressMode : ImageFileService.COMPRESS_BALANCED
+            const compressedUri = await ImageFileService.saveRecordImage(context, uploadPath, undefined, mode)
+            if (compressedUri) {
+              record.imagePaths[i] = compressedUri
+              try {
+                fileIo.unlinkSync(uploadPath)
+              } catch (e) {
+                Logger.error('[NowViewModel] 删除老图大图失败: ' + JSON.stringify(e))
+              }
+            }
           }
+          // 上传后删除本地原图副本（开关默认开；关闭则本地保留 pending 原图，双保险）
+          if (isPendingFile && cos.deleteOriginalAfterUpload !== false) {
+            try {
+              fileIo.unlinkSync(uploadPath)
+            } catch (e) {
+              Logger.error('[NowViewModel] 删除已上传原图失败: ' + JSON.stringify(e))
+            }
+          }
+        } else {
+          result.failed++
         }
       }
     }
-    if (uploaded > 0) {
+    if (result.uploaded > 0 || result.skipped > 0) {
       await RecordRepository.saveRecords(context, records)
+      // 刷新单例内存：uploadAllImages 是静态方法，改的是独立数组；
+      // 不刷新的话 NowPage/记录卡片仍读旧内存（指向已删除的大图），图片会显示为空
+      const vm = await NowViewModel.getInstance(context)
+      await vm.reloadRecords()
     }
-    return uploaded
+    return result
+  }
+
+  // 从持久化存储重载记录到内存（上传全部等外部修改后调用，保持单例内存与存储一致）
+  async reloadRecords(): Promise<void> {
+    if (!this.context) {
+      return
+    }
+    try {
+      this.records = await RecordRepository.getRecords(this.context)
+    } catch (error) {
+      Logger.error('[NowViewModel] 重载记录失败: ' + JSON.stringify(error))
+    }
   }
 
   // 删除 pending 文件

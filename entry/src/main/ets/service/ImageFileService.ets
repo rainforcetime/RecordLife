@@ -9,6 +9,12 @@ import { image } from '@kit.ImageKit'
 import { ImagePathUtils } from '../common/utils/ImagePathUtils'
 import { Logger } from '../common/utils/Logger'
 
+// 压缩档位参数
+interface CompressParams {
+  quality: number
+  maxEdge: number
+}
+
 export class ImageFileService {
   /**
    * 保存图片到沙箱目录（返回 URI 格式）
@@ -18,15 +24,16 @@ export class ImageFileService {
    * @param sourceUri 源图片 URI
    * @returns file:// URI；失败返回 null
    */
-  static async saveRecordImage(context: common.UIAbilityContext, sourceUri: string): Promise<string | null> {
+  static async saveRecordImage(context: common.UIAbilityContext, sourceUri: string, timestamp?: number,
+    compressMode?: string): Promise<string | null> {
     let sourceFile: fileIo.File | null = null
     try {
       // 打开源图片
       sourceFile = fileIo.openSync(sourceUri, fileIo.OpenMode.READ_ONLY)
 
-      // 生成文件名
-      const timestamp = Date.now()
-      const fileName = `record_${timestamp}.jpg`
+      // 生成文件名（timestamp 由调用方传入，与 saveOriginalPending 保持一致，供「上传全部图片」按名匹配）
+      const ts = timestamp ? timestamp : Date.now()
+      const fileName = `record_${ts}.jpg`
       const sandboxPath = `${context.filesDir}/records/${fileName}`
 
       // 确保目录存在
@@ -35,8 +42,9 @@ export class ImageFileService {
         fileIo.mkdirSync(dirPath)
       }
 
-      // 优先压缩保存；失败兜底原样复制
-      const compressed = await ImageFileService.compressToFile(sourceFile.fd, sandboxPath)
+      // 优先按档位压缩保存；失败兜底原样复制
+      const mode = compressMode ? compressMode : ImageFileService.COMPRESS_BALANCED
+      const compressed = await ImageFileService.compressToFile(sourceFile.fd, sandboxPath, mode)
       if (!compressed) {
         fileIo.copyFileSync(sourceFile.fd, sandboxPath)
       }
@@ -57,23 +65,62 @@ export class ImageFileService {
     }
   }
 
+  // 压缩画质档位（图片存储优化：可选压缩比例）
+  static readonly COMPRESS_HIGH = 'high'        // 高：原尺寸 + q92（视觉近似无损）
+  static readonly COMPRESS_BALANCED = 'balanced' // 均衡：最长边 2560 + q85（默认）
+  static readonly COMPRESS_COMPACT = 'compact'   // 省空间：最长边 1280 + q72
+
+  // 压缩档位参数映射
+  private static getCompressParams(mode: string): CompressParams {
+    if (mode === ImageFileService.COMPRESS_HIGH) {
+      return { quality: 92, maxEdge: 0 }
+    }
+    if (mode === ImageFileService.COMPRESS_COMPACT) {
+      return { quality: 72, maxEdge: 1280 }
+    }
+    return { quality: 85, maxEdge: 2560 }  // balanced 默认
+  }
+
   /**
-   * 压缩图片到目标路径（保留原分辨率，JPEG quality 0.92）
+   * 压缩图片到目标路径（按档位缩放最长边 + 调整质量）
    * @param sourceFd 源图片文件描述符
    * @param destPath 目标沙箱路径
+   * @param mode 压缩档位（high/balanced/compact）
    * @returns 是否成功（失败时调用方兜底原样复制）
    */
-  private static async compressToFile(sourceFd: number, destPath: string): Promise<boolean> {
+  private static async compressToFile(sourceFd: number, destPath: string, mode: string): Promise<boolean> {
     let imageSource: image.ImageSource | null = null
+    let pixelMap: image.PixelMap | null = null
     let packer: image.ImagePacker | null = null
     try {
       imageSource = image.createImageSource(sourceFd)
       packer = image.createImagePacker()
+      const params = ImageFileService.getCompressParams(mode)
       const option: image.PackingOption = {
         format: 'image/jpeg',
-        quality: 92
+        quality: params.quality
       }
-      const data: ArrayBuffer = await packer.packToData(imageSource, option)
+      // 等比缩放：按最长边上限缩放（PixelMap.scale，desiredSize 当前 SDK 不支持）
+      let scaled: boolean = false
+      if (params.maxEdge > 0) {
+        const info = await imageSource.getImageInfo()
+        const srcWidth = info.size.width
+        const srcHeight = info.size.height
+        const maxSide = srcWidth > srcHeight ? srcWidth : srcHeight
+        if (maxSide > params.maxEdge) {
+          const ratio = params.maxEdge / maxSide
+          pixelMap = await imageSource.createPixelMap()
+          await pixelMap.scale(ratio, ratio)
+          scaled = true
+        }
+      }
+      // packToData 重载不兼容联合类型，需分支调用（ImageSource / PixelMap）
+      let data: ArrayBuffer
+      if (scaled && pixelMap) {
+        data = await packer.packToData(pixelMap, option)
+      } else {
+        data = await packer.packToData(imageSource, option)
+      }
       const destFile = fileIo.openSync(destPath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC)
       fileIo.writeSync(destFile.fd, data)
       fileIo.closeSync(destFile)
@@ -87,6 +134,13 @@ export class ImageFileService {
           packer.release()
         } catch (e) {
           Logger.error('[ImageFileService] 释放 packer 失败: ' + JSON.stringify(e))
+        }
+      }
+      if (pixelMap) {
+        try {
+          pixelMap.release()
+        } catch (e) {
+          Logger.error('[ImageFileService] 释放 pixelMap 失败: ' + JSON.stringify(e))
         }
       }
       if (imageSource) {
@@ -105,16 +159,17 @@ export class ImageFileService {
    * @param sourceUri 源图片 URI
    * @returns pending 文件路径；失败返回 null
    */
-  static async saveOriginalPending(context: common.UIAbilityContext, sourceUri: string): Promise<string | null> {
+  static async saveOriginalPending(context: common.UIAbilityContext, sourceUri: string, timestamp?: number): Promise<string | null> {
     let sourceFile: fileIo.File | null = null
     try {
       sourceFile = fileIo.openSync(sourceUri, fileIo.OpenMode.READ_ONLY)
-      const timestamp = Date.now()
+      // timestamp 由调用方传入，与压缩图 saveRecordImage 保持同一值（文件名对应，供「上传全部图片」匹配）
+      const ts = timestamp ? timestamp : Date.now()
       const pendingDir = `${context.cacheDir}/pending`
       if (!fileIo.accessSync(pendingDir)) {
         fileIo.mkdirSync(pendingDir)
       }
-      const pendingPath = `${pendingDir}/record_${timestamp}_orig.jpg`
+      const pendingPath = `${pendingDir}/record_${ts}_orig.jpg`
       fileIo.copyFileSync(sourceFile.fd, pendingPath)
       return pendingPath
     } catch (error) {
