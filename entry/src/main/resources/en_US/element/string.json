@@ -609,6 +609,42 @@
       "value": "Theme Settings"
     },
     {
+      "name": "theme_color",
+      "value": "Theme color"
+    },
+    {
+      "name": "theme_color_default",
+      "value": "Default blue"
+    },
+    {
+      "name": "theme_color_green",
+      "value": "Emerald green"
+    },
+    {
+      "name": "theme_color_purple",
+      "value": "Purple"
+    },
+    {
+      "name": "theme_color_red",
+      "value": "Coral red"
+    },
+    {
+      "name": "theme_color_orange",
+      "value": "Orange"
+    },
+    {
+      "name": "theme_color_pink",
+      "value": "Sakura pink"
+    },
+    {
+      "name": "theme_color_teal",
+      "value": "Teal"
+    },
+    {
+      "name": "theme_color_indigo",
+      "value": "Indigo"
+    },
+    {
       "name": "storage_space",
       "value": "Storage"
     },

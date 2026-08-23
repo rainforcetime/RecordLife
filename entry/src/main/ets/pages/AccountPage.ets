@@ -5,6 +5,8 @@ import { promptAction, PromptAction } from '@kit.ArkUI'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
 import { SettingItem } from '../components/setting/SettingItem'
 import { SettingItemWithSelector } from '../components/setting/SettingItemWithSelector'
+import { ThemeManager } from '../config/ThemeManager'
+import { DEFAULT_THEME_COLOR } from '../config/ThemeConfig'
 import { SettingItemWithInfo } from '../components/setting/SettingItemWithInfo'
 import { SettingItemWithSwitch } from '../components/setting/SettingItemWithSwitch'
 import { SettingsGroupCard } from '../components/setting/SettingsGroupCard'
@@ -16,6 +18,23 @@ import { AccountUtils } from '../common/utils/AccountUtils'
 import { AppInfo } from '../config/UserConfig'
 import { RefreshManager } from '../common/managers/RefreshManager'
 import { Logger } from '../common/utils/Logger'
+
+// 主题配色预设（主题配色功能：主色 → 名称资源 key）
+interface ThemeColorPreset {
+  color: string
+  nameKey: string
+}
+
+const THEME_COLOR_PRESETS: ThemeColorPreset[] = [
+  { color: '#007DFF', nameKey: 'theme_color_default' },
+  { color: '#07C160', nameKey: 'theme_color_green' },
+  { color: '#8E44AD', nameKey: 'theme_color_purple' },
+  { color: '#FF6B6B', nameKey: 'theme_color_red' },
+  { color: '#FF8C00', nameKey: 'theme_color_orange' },
+  { color: '#FF4D88', nameKey: 'theme_color_pink' },
+  { color: '#00B8A9', nameKey: 'theme_color_teal' },
+  { color: '#4A4DE0', nameKey: 'theme_color_indigo' }
+]
 
 @Component
 export struct AccountPage {
@@ -36,6 +55,8 @@ export struct AccountPage {
   @State currentTheme: string = ''
   @State currentFontSize: string = 'medium'  // 字体大小（更新计划一期）
   @State privacyMode: boolean = false  // 隐私模式（更新计划三期）
+  @State themeColor: string = DEFAULT_THEME_COLOR  // 主题主色（主题配色功能）
+  @State showThemeColorPicker: boolean = false  // 主题配色色板展开
   
   // 数据统计
   @State statisticsInfo: AccountDataStatistics = {
@@ -59,6 +80,7 @@ export struct AccountPage {
   private viewModel: AccountViewModel = new AccountViewModel()
   private context: common.UIAbilityContext | null = null
   private promptAction: PromptAction = this.getUIContext().getPromptAction()
+  private themeManager: ThemeManager | null = null  // 主题管理器（主题配色）
   
   // 标记是否首次显示（避免 aboutToAppear 和 onPageShow 双重加载）
   private isFirstShow: boolean = true
@@ -103,6 +125,10 @@ export struct AccountPage {
       
       // 初始化业务逻辑
       await this.viewModel.initialize(this.context)
+      
+      // 初始化主题管理器（主题配色）
+      this.themeManager = await ThemeManager.getInstance(this.context)
+      this.themeColor = this.themeManager ? this.themeManager.getThemeColor() : DEFAULT_THEME_COLOR
       
       // 加载用户资料
       await this.loadUserProfile()
@@ -276,6 +302,39 @@ export struct AccountPage {
     }
   }
 
+  // 主题配色选择（保存 + 全局广播，主题配色功能）
+  private async onThemeColorSelect(color: string) {
+    if (this.themeColor === color) {
+      // 重复选择收起色板
+      this.showThemeColorPicker = false
+      return
+    }
+    this.themeColor = color
+    if (this.themeManager) {
+      await this.themeManager.updateThemeColor(color)
+      AccountUtils.showToastSafely(this.promptAction, $r('app.string.theme_settings_saved'))
+    }
+    this.showThemeColorPicker = false
+  }
+
+  // 获取主色对应的名称资源 key（默认蓝）
+  private getThemeColorNameKey(color: string): string {
+    for (const item of THEME_COLOR_PRESETS) {
+      if (item.color === color) {
+        return item.nameKey
+      }
+    }
+    return 'theme_color_default'
+  }
+
+  // 将十六进制颜色转换为 rgba 格式
+  private hexToRgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  }
+
   // 编辑资料处理
   private onEditProfile() {
     Logger.info('编辑资料')
@@ -443,7 +502,7 @@ export struct AccountPage {
       SettingsGroupCard() {
         // 主题设置（选择器）
         SettingItemWithSelector({
-          label: $r('app.string.theme_settings'),
+          label: $r('app.string.dark_mode'),
           currentValue: this.currentTheme,
           options: this.getThemeOptions(),
           icon: '🎭',
@@ -527,11 +586,58 @@ export struct AccountPage {
       // ===== 个性化组 =====
       this.GroupTitle($r('app.string.settings_group_personal'))
       SettingsGroupCard() {
+        // 主题配色（主题配色功能：全局主色）
+        SettingItem({
+          label: $r('app.string.theme_color'),
+          summary: $r('app.string.' + this.getThemeColorNameKey(this.themeColor)),
+          icon: '🎨',
+          iconBg: '#F3E5F5'
+        })
+        .onClick(() => {
+          this.showThemeColorPicker = !this.showThemeColorPicker
+        })
+
+        // 主题配色色板（展开选择）
+        if (this.showThemeColorPicker) {
+          Divider()
+            .color(this.themeColors.divider)
+            .margin({ left: 15, top: 4 })
+            .height(0.5)
+
+          Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
+            ForEach(THEME_COLOR_PRESETS, (item: ThemeColorPreset) => {
+              Column() {
+                Circle({ width: 28, height: 28 })
+                  .fill(item.color)
+                  .stroke(this.themeColor === item.color ? '#FFFFFF' : 'transparent')
+                  .strokeWidth(2)
+              }
+              .width(36)
+              .height(36)
+              .borderRadius(18)
+              .backgroundColor(this.themeColor === item.color ? item.color : this.hexToRgba(item.color, 0.15))
+              .justifyContent(FlexAlign.Center)
+              .alignItems(HorizontalAlign.Center)
+              .margin({ right: 8, top: 10 })
+              .onClick(() => {
+                this.onThemeColorSelect(item.color)
+              })
+            }, (item: ThemeColorPreset) => item.color)
+          }
+          .width('100%')
+          .padding({ bottom: 6 })
+        }
+
+        Divider()
+          .color(this.themeColors.divider)
+          .margin({ left: 15 })
+          .height(0.5)
+
         // 个性化管理（标签/心情/模板）
         SettingItem({
           label: $r('app.string.personalization_management'),
           summary: $r('app.string.personalization_summary'),
-          icon: '🎨',
+          icon: '🧩',
           iconBg: '#FCE4EC'
         })
         .onClick(() => {

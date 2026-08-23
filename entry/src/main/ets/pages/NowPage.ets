@@ -372,7 +372,7 @@ struct NowPage {
 
               Text($r('app.string.undo_delete'))
                 .fontSize(14)
-                .fontColor('#4DA3FF')
+                .fontColor(this.themeColors.primary)
                 .fontWeight(FontWeight.Bold)
                 .onClick(() => {
                   this.onUndoDelete()
@@ -385,7 +385,7 @@ struct NowPage {
             Progress({ value: this.undoProgress, total: 100, type: ProgressType.Linear })
               .width('100%')
               .height(3)
-              .color('#4DA3FF')
+              .color(this.themeColors.primary)
               .backgroundColor('#40FFFFFF')
               .margin({ bottom: 8 })
           }

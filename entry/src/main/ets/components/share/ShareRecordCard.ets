@@ -129,7 +129,7 @@ export struct ShareRecordCard {
           
           Text('RecordLife')
             .fontSize(10)
-            .fontColor('#007DFF')
+            .fontColor(this.themeColors.primary)
             .fontWeight(FontWeight.Medium)
         }
       }

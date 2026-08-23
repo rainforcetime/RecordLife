@@ -135,6 +135,11 @@ export class ThemeManager {
   getThemeColors(): ThemeColors {
     return AppStorage.get('themeColors') as ThemeColors || LightTheme
   }
+
+  // 获取当前主题主色（代理 ConfigManager；缺省默认蓝）
+  getThemeColor(): string {
+    return this.configManager ? this.configManager.getThemeColor() : DEFAULT_THEME_COLOR
+  }
   
   // 监听系统主题变化（用于 auto 模式）
   onSystemColorModeChange(systemColorMode?: ConfigurationConstant.ColorMode): void {

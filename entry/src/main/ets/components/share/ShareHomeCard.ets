@@ -5,6 +5,7 @@ import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 
 @Component
 export struct ShareHomeCard {
+  @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
   @Prop birthDate: Date = new Date('1990-01-01T00:00:00Z')
   @Prop targetAge: number = 80
   @Prop timeData: TimeData = {
@@ -155,7 +156,7 @@ export struct ShareHomeCard {
           
           Text('RecordLife')
             .fontSize(10)
-            .fontColor('#007DFF')
+            .fontColor(this.themeColors.primary)
             .fontWeight(FontWeight.Medium)
         }
       }

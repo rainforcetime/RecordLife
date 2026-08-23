@@ -609,6 +609,42 @@
       "value": "主题设置"
     },
     {
+      "name": "theme_color",
+      "value": "主题配色"
+    },
+    {
+      "name": "theme_color_default",
+      "value": "默认蓝"
+    },
+    {
+      "name": "theme_color_green",
+      "value": "翡翠绿"
+    },
+    {
+      "name": "theme_color_purple",
+      "value": "紫色"
+    },
+    {
+      "name": "theme_color_red",
+      "value": "珊瑚红"
+    },
+    {
+      "name": "theme_color_orange",
+      "value": "橙色"
+    },
+    {
+      "name": "theme_color_pink",
+      "value": "樱粉"
+    },
+    {
+      "name": "theme_color_teal",
+      "value": "青色"
+    },
+    {
+      "name": "theme_color_indigo",
+      "value": "靛蓝"
+    },
+    {
       "name": "storage_space",
       "value": "存储空间"
     },
