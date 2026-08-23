@@ -415,7 +415,7 @@ RecordLife_all_<ts>.zip（zlib 压缩，compressFile(tempDir, zipPath)）
 | --- | --- | --- | --- |
 | AnimatedNumber.ets | AnimatedNumber | `@Prop number @Watch`、`fontSize`、`fontColor`、`fontWeight`、`animationDuration` | AppStorage |
 | AnimatedNumber.ets | AnimatedTimeValue | `@Prop value`、`label`、`description`、`cardColor`、`valueColor`、`valueFontSize` | AppStorage |
-| ImageViewer.ets | ImageViewer | `@Prop imageUris: string[]`、`@Prop currentIndex`；`onClose?()` | AppStorage；用 photoAccessHelper/fs 保存图片 |
+| ImageViewer.ets | ImageViewer | `@Prop imageUris: string[]`、`@Prop currentIndex`；`onClose?()`；**手势：Swiper 滑动翻页 + 捏合缩放 1~5x + 双击 1x↔2.5x + 放大后单指平移**（Pinch/Tap 挂外层 Stack，PanGesture parallel 防覆盖；Swiper enabled(!isZoomed) 放大锁定翻页）；SaveButton 保存到图库 | AppStorage；photoAccessHelper/fs；使用方：RecordCard（记录图片）、StorageImagePage（存储空间图片，bindContentCover 承载） |
 | SearchBar.ets | SearchBar | `@Link searchText`、`@Link isSearching`、`@Prop placeholder` | AppStorage |
 | TagSelector.ets | TagSelector | `@Link selectedTagIds: string[]`、`@Prop isCompact` | **TagService**、AppStorage |
 | TagSelector.ets | TagDisplay | `@Prop tagIds: string[]` | **TagService**、AppStorage |

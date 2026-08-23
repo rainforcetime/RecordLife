@@ -448,6 +448,25 @@
 
 **下一轮计划**：六期 — 批量删除（长按多选，复用撤销删除）、时间线快速跳转（侧边索引）、多倒计时
 
+### 轮次 11 — 2026-08-23（3.0.x UI 重构 + 主题配色 + 图片预览演进）
+
+> 里程碑四期后的 UI/体验优化批次（git 3.0.1~3.0.29），非功能期次，做连续性记录。
+
+**涉及内容**：
+- **我的页 UI 重构**：分组重排（通用/数据/个性化/关于）、SettingItem 图标容器化（emoji+彩色圆角）、用户信息卡左对齐式（头像/性别符号/签名/统计行/横贯编辑按钮/顶部主题色细条）、隐私模式移入关于组、清理缓存移至存储空间页、深色模式改名与 🌙 图标
+- **更多页统一**：分组化（数据管理/危险操作）+ 图标 + 导入导出选项弹窗卡片化
+- **主题配色**：`AppSettings.themeColor?`（C1~C6 兼容）+ `ThemeConfig.getColors(isDark, primary)` + `ThemeManager.updateThemeColor` 广播 + 8 色色板（个性化组）+ 分享水印/撤销条硬编码清理 + ThemeConfig.test 7 用例
+- **图片预览演进**（ImageViewer 共用组件，记录页/存储页）：
+  - 单图 → Swiper 滑动翻页 + 计数同步
+  - 捏合缩放 1~5x + 双击 1x↔2.5x + 放大后单指平移（clampOffset 边界）
+  - **手势分层经验**：Pinch/Tap 挂 Swiper 外层 Stack（避免 enabled 禁用连带失效）；PanGesture 用 parallelGesture（防 .gesture() 互相覆盖）；Swiper enabled(!isZoomed) 放大锁定翻页；event.offset 为起点累计值（平移用基准+赋值，勿 +=）
+  - 保存按钮：半透明深色工具条 + SaveButton（该 SDK 无 SaveIcon 枚举，纯文字）
+  - 退出交互：去点击背景关闭（防误触），保留返回按钮（圆形深色底）+ 系统返回键
+
+**遗留问题**：
+- 手势分层经历多轮调试（3.0.18~3.0.29），最终方案为 Stack 层 gesture(Pinch/Tap) + parallel(Pan) + Swiper enabled 联动；后续改动手势需回归三端（滑动/缩放/平移）
+- 六期功能未开工
+
 ---
 
 ## 8. 验证记录
