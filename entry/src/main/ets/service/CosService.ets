@@ -10,6 +10,12 @@ import { CosConfig } from '../model/UserConfigModel'
 import { HmacSha1 } from '../common/utils/HmacSha1'
 import { Logger } from '../common/utils/Logger'
 
+// 参与签名的请求头项（name 小写）
+interface SignedHeader {
+  name: string
+  value: string
+}
+
 export class CosService {
   // 获取访问域名（自定义域名优先，缺省 {bucket}.cos.{region}.myqcloud.com）
   // 签名 host 必须与实际请求域名一致——自定义域名场景下两者都用 getHost
@@ -36,20 +42,24 @@ export class CosService {
       fileIo.readSync(file.fd, buffer)
       fileIo.closeSync(file)
       file = null
-      const auth = await CosService.buildAuth(config, 'put', '/' + key, 'image/jpeg')
+      // COS 白名单头（content-type/content-length）必须纳入签名，否则签名校验失败
+      const auth = await CosService.buildAuth(config, 'put', '/' + key,
+        ['content-type:image/jpeg', 'content-length:' + buffer.byteLength])
       const client = http.createHttp()
       try {
         const resp = await client.request(CosService.buildUrl(config, key), {
           method: http.RequestMethod.PUT,
           header: {
             'Authorization': auth,
-            'Content-Type': 'image/jpeg'
+            'Content-Type': 'image/jpeg',
+            'Content-Length': buffer.byteLength
           },
           extraData: buffer
         })
         const ok = resp.responseCode === 200
         if (!ok) {
-          Logger.error('[CosService] 上传失败 code=' + resp.responseCode + ' body=' + JSON.stringify(resp.result))
+          Logger.error('[CosService] 上传失败 code=' + resp.responseCode +
+            ' body=' + CosService.extractErrorBody(resp.result))
         }
         return ok
       } finally {
@@ -96,6 +106,28 @@ export class CosService {
       }
     } catch (error) {
       Logger.error('[CosService] 下载异常: ' + JSON.stringify(error))
+      return false
+    }
+  }
+
+  // 检查对象是否存在（HEAD Object），返回是否已存在
+  static async exists(config: CosConfig, key: string): Promise<boolean> {
+    try {
+      const auth = await CosService.buildAuth(config, 'head', '/' + key)
+      const client = http.createHttp()
+      try {
+        const resp = await client.request(CosService.buildUrl(config, key), {
+          method: http.RequestMethod.HEAD,
+          header: {
+            'Authorization': auth
+          }
+        })
+        return resp.responseCode === 200
+      } finally {
+        client.destroy()
+      }
+    } catch (error) {
+      Logger.error('[CosService] 检查对象异常: ' + JSON.stringify(error))
       return false
     }
   }
@@ -149,35 +181,78 @@ export class CosService {
   // ==================== COS V5 签名 ====================
 
   // 构建 Authorization（对象操作，host 由 getHost 推导：自定义域名优先）
-  // contentType 可选：请求头含 content-type 时必须纳入签名（腾讯白名单头校验），否则 403
-  private static async buildAuth(config: CosConfig, method: string, path: string, contentType?: string): Promise<string> {
+  // headers 可选：'name:value' 列表（如 content-type/content-length），请求头含 COS 白名单头时必须纳入签名
+  private static async buildAuth(config: CosConfig, method: string, path: string, headers?: string[]): Promise<string> {
     const host = CosService.getHost(config)
-    return CosService.buildAuthWithHost(config, method, path, host, contentType)
+    return CosService.buildAuthWithHeaders(config, method, path, host, headers)
   }
 
   // 构建 Authorization（指定 host，供 testConnection 等场景）
-  private static async buildAuthWithHost(config: CosConfig, method: string, path: string, host: string, contentType?: string): Promise<string> {
+  private static async buildAuthWithHost(config: CosConfig, method: string, path: string, host: string): Promise<string> {
+    return CosService.buildAuthWithHeaders(config, method, path, host)
+  }
+
+  // 构建 Authorization（核心）：headers 按 name 字典序排序、值 URL 编码，参与 HttpString 与 q-header-list
+  private static async buildAuthWithHeaders(config: CosConfig, method: string, path: string, host: string, headers?: string[]): Promise<string> {
     const now = Math.floor(Date.now() / 1000)
     const signTime = `${now - 60};${now + 3600}`
     const keyTime = signTime
-    // SignKey = HMAC-SHA1(SecretKey, KeyTime)
-    const signKey = HmacSha1.hex(config.secretKey, keyTime)
-    // HttpString = method\npath\n\n{headers}\n；headers 按字典序 & 连接，值需 URL 编码
-    // 请求头含 content-type（白名单）时必须参与签名
-    let headersStr: string
-    let headersList: string
-    if (contentType && contentType.length > 0) {
-      headersStr = `host=${host}&content-type=${encodeURIComponent(contentType)}`
-      headersList = 'host;content-type'
-    } else {
-      headersStr = `host=${host}`
-      headersList = 'host'
+    // 组装 header 列表（含 host），name 转小写
+    const headerList: SignedHeader[] = []
+    headerList.push({ name: 'host', value: host })
+    if (headers) {
+      for (const h of headers) {
+        const idx = h.indexOf(':')
+        if (idx > 0) {
+          headerList.push({ name: h.substring(0, idx).toLowerCase(), value: h.substring(idx + 1) })
+        }
+      }
+    }
+    // 按 name 字典序排序
+    headerList.sort((a: SignedHeader, b: SignedHeader) => {
+      return a.name < b.name ? -1 : (a.name > b.name ? 1 : 0)
+    })
+    // HttpString = method\npath\n\n{headers}\n；headers 为 name=value 用 & 连接，值 URL 编码
+    let headersStr = ''
+    let namesList = ''
+    for (let i = 0; i < headerList.length; i++) {
+      const h = headerList[i]
+      const encName = encodeURIComponent(h.name)
+      const encValue = encodeURIComponent(h.value)
+      if (i > 0) {
+        headersStr += '&'
+      }
+      headersStr += `${encName}=${encValue}`
+      if (i > 0) {
+        namesList += ';'
+      }
+      namesList += encName
     }
     const httpString = `${method}\n${path}\n\n${headersStr}\n`
+    // SignKey = HMAC-SHA1(SecretKey, KeyTime)
+    const signKey = HmacSha1.hex(config.secretKey, keyTime)
     const httpStringSha1 = HmacSha1.sha1Hex(httpString)
     // StringToSign = sha1\nKeyTime\nSHA1(HttpString)\n
     const stringToSign = `sha1\n${keyTime}\n${httpStringSha1}\n`
     const signature = HmacSha1.hex(signKey, stringToSign)
-    return `q-sign-algorithm=sha1&q-ak=${config.secretId}&q-sign-time=${signTime}&q-key-time=${keyTime}&q-header-list=${headersList}&q-url-param-list=&q-signature=${signature}`
+    return `q-sign-algorithm=sha1&q-ak=${config.secretId}&q-sign-time=${signTime}&q-key-time=${keyTime}&q-header-list=${namesList}&q-url-param-list=&q-signature=${signature}`
+  }
+
+  // 提取 COS 错误响应中的错误码/信息（body 为 XML，如 <Code>SignatureDoesNotMatch</Code> <Message>...）
+  private static extractErrorBody(result: Object): string {
+    try {
+      const str = typeof result === 'string' ? result : JSON.stringify(result)
+      if (!str) {
+        return ''
+      }
+      const codeMatch = str.match(/<Code>([^<]+)<\/Code>/)
+      const msgMatch = str.match(/<Message>([^<]+)<\/Message>/)
+      if (codeMatch || msgMatch) {
+        return `Code=${codeMatch ? codeMatch[1] : ''} Message=${msgMatch ? msgMatch[1] : ''}`
+      }
+      return str.length > 300 ? str.substring(0, 300) : str
+    } catch (error) {
+      return ''
+    }
   }
 }
