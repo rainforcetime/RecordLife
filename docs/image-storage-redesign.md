@@ -1,6 +1,6 @@
 # 「图片存储优化」设计方案（Image Storage Redesign）
 
-> **状态**：方案评审中（2026-08-23），确认后实施
+> **状态**：✅ **已落地实施**（2026-08-23，git 3.0.33~3.0.47）；本文件为最终设计与迭代记录
 > **背景**：当前记录图片在 `filesDir/records/` **原样复制**（`ImageFileService.saveRecordImage` 直接 copyFileSync，无压缩），原图动辄数 MB，本地占用大；用户有腾讯云 COS，倾向**云端存原图 + 本地存压缩图 + 查看原图**。
 > **配套**：`docs/technical-reference.md`（存储/备份机制）、`docs/refactoring-plan.md`（数据模型改动遵循 C1~C6：只加可选字段 + 默认值）
 > **提交**：自动本地提交（3.0.x 递增），推送需明确要求
@@ -169,3 +169,17 @@ cosConfig?: {
 3. **压缩参数**：✅ **尽量不损画质**——保留原分辨率，JPEG quality 0.92（视觉近似无损，体积降 60~70%）。
 4. **查看原图形态**：✅ **一体化**——点击「查看原图」下载成功后在当前预览页显示原图，并出现「保存原图到本地」按钮；无云端原图不显示。
 5. **M1 立即开工**：✅ 压缩图改造先行（不依赖云配置）。
+
+## 10. 落地迭代补充（实施中新增，覆盖原设计的演进）
+
+- **压缩档位**（取代固定 q0.92）：`compressMode` 三档——高清（原尺寸 q92）/ 均衡（最长边 2560 q85，默认）/ 省空间（最长边 1280 q72）；PixelMap 等比缩放（该 SDK PackingOption 无 desiredSize）。
+- **云存储总开关**：`CosConfig.enabled`——关闭暂停全部上传/下载/删除，配置保留。
+- **上传前去重**：`dedupeUpload`（默认开）——本地有 key 也 HEAD 查云端；**云端被删则以同 key 补传**；关闭时信任本地 key。
+- **上传后删除原图**：`deleteOriginalAfterUpload`（默认开）——上传成功清理 pending 原图；关闭本地保留双保险。
+- **上传进度条**：`uploadAllImages` 进度回调（已处理/总数），页面内 Progress 显示。
+- **老图迁移**：M1 前原样大图上传成功后本地压缩、`imagePaths` 改指压缩图、删大图；`reloadRecords` 刷新单例内存防显示空。
+- **修改/删除同步**：updateRecord 删云端旧图（removedCloudKeys）、deleteRecord 撤销窗口结束后删云端原图。
+- **配置页面化**：弹窗 → `CloudStoragePage`（独立可滚动页，MorePage 云存储行保留总开关）。
+- **可读 key**：`records/{YYYY-MM-DD}/{文件名}_{idx}.jpg`（原 `records/{recordId}/{idx}.jpg` 抽象）。
+- **自定义访问域名**：`CosConfig.customDomain`——中国大陆 bucket 默认域名受限，签名 host 与实际域名一致。
+- **content-type 签名**（腾讯白名单头校验，修复 PUT 403）；HmacSha1 纯 ArkTS（设备不支持 HMAC|SHA1）。
