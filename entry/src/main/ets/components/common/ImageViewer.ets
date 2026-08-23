@@ -28,6 +28,8 @@ export struct ImageViewer {
   @State private offsetX: number = 0
   @State private offsetY: number = 0
   @State private panActive: boolean = false
+  @State private panStartX: number = 0
+  @State private panStartY: number = 0
   
   // 关闭回调
   onClose?: () => void
@@ -190,13 +192,15 @@ export struct ImageViewer {
         .parallelGesture(
           PanGesture({ fingers: 1 })
             .onActionStart(() => {
-              // 仅放大状态下启用平移
+              // 仅放大状态下启用平移；记录起点基准（event.offset 为相对起点累计值，不能 +=）
               this.panActive = this.isZoomed
+              this.panStartX = this.offsetX
+              this.panStartY = this.offsetY
             })
             .onActionUpdate((event: GestureEvent) => {
               if (this.panActive) {
-                this.offsetX += event.offsetX
-                this.offsetY += event.offsetY
+                this.offsetX = this.panStartX + event.offsetX
+                this.offsetY = this.panStartY + event.offsetY
                 this.clampOffset()
               }
             })
