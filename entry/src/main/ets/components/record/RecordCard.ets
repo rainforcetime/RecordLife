@@ -1,12 +1,10 @@
 // 记录卡片组件：components/RecordCard.ets
 import { LifeRecord } from '../../common/types'
-import { ResourceUtils } from '../../common/utils/ResourceUtils'
 import { ThemeColors, ThemeConfig } from '../../config/ThemeConfig'
 import { NowViewModel } from '../../viewmodel/NowViewModel'
 import { ImageViewer } from '../common/ImageViewer'
 import { TagDisplay } from '../common/TagSelector'
-import { ShareRecordCard } from '../share/ShareRecordCard'
-import { ShareUtils } from '../../common/utils/ShareUtils'
+import { ShareRecordDialog } from '../dialog/ShareRecordDialog'
 import { MoodUtils } from '../../common/utils/MoodUtils'
 import { MoodService } from '../../service/MoodService'
 import { Mood } from '../../model/RecordModel'
@@ -56,17 +54,17 @@ export struct RecordCard {
   @State private viewerImageUris: string[] = []
   @State private viewerCurrentIndex: number = 0
   
-  // 分享相关状态
-  @State private showShareDialog: boolean = false
-  @State private isSharing: boolean = false
-  
-  // 分享卡片组件ID（使用记录ID确保唯一性）
-  private shareCardId: string = ''
+  // 分享弹窗控制器（更新计划五期：统一 CustomDialog，居中缩放淡入动画）
+  shareDialogController: CustomDialogController = new CustomDialogController({
+    builder: ShareRecordDialog({ record: this.record }),
+    autoCancel: true,
+    customStyle: true,
+    alignment: DialogAlignment.Center,
+    maskColor: 'rgba(0, 0, 0, 0.5)'
+  })
   
   async aboutToAppear() {
     this.viewModel = await NowViewModel.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
-    // 初始化分享卡片ID
-    this.shareCardId = `share_card_${this.record.id}`
     // 加载自定义心情（更新计划二期）
     try {
       const moodService = await MoodService.getInstance(this.getUIContext().getHostContext() as common.UIAbilityContext)
@@ -180,9 +178,6 @@ export struct RecordCard {
       offsetY: 2
     })
     .width('100%')
-    .bindContentCover($$this.showShareDialog, this.ShareDialogBuilder(), {
-      modalTransition: ModalTransition.DEFAULT
-    })
   }
   
   // 高亮文本构建器
@@ -312,7 +307,7 @@ export struct RecordCard {
         .height(20)
         .fillColor(this.themeColors.iconColor)
         .onClick(() => {
-          this.showShareDialog = true
+          this.shareDialogController.open()
         })
       
       // 编辑按钮
@@ -339,117 +334,7 @@ export struct RecordCard {
     }
   }
   
-  // 分享弹窗构建器
-  @Builder
-  ShareDialogBuilder() {
-    Column() {
-      // 遮罩层（点击关闭）
-      Column()
-        .width('100%')
-        .height('100%')
-        .position({ x: 0, y: 0 })
-        .backgroundColor('rgba(0, 0, 0, 0.5)')
-        .onClick(() => {
-          this.showShareDialog = false
-        })
-        .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
-
-      // 弹窗内容（居中显示）
-      Column() {
-        // 分享卡片预览区域（可滚动）
-        Scroll() {
-          Column() {
-            ShareRecordCard({ record: this.record })
-              .id(this.shareCardId)
-          }
-          .width('100%')
-          .alignItems(HorizontalAlign.Center)
-          .padding({ top: 16, bottom: 16 })
-        }
-        .width('100%')
-        .scrollBar(BarState.Off)
-        .constraintSize({ maxHeight: '60%' })
-
-        // 操作按钮
-        Row({ space: 12 }) {
-          Button($r('app.string.cancel'))
-            .layoutWeight(1)
-            .height(44)
-            .fontSize(16)
-            .fontColor(this.themeColors.textSecondary)
-            .backgroundColor(this.themeColors.cardBackground)
-            .borderRadius(22)
-            .enabled(!this.isSharing)
-            .onClick(() => {
-              this.showShareDialog = false
-            })
-
-          Button(this.isSharing ? $r('app.string.sharing_in_progress') : $r('app.string.share'))
-            .layoutWeight(1)
-            .height(44)
-            .fontSize(16)
-            .fontColor('#FFFFFF')
-            .backgroundColor(this.isSharing ? this.themeColors.textTertiary : this.themeColors.primary)
-            .borderRadius(22)
-            .enabled(!this.isSharing)
-            .onClick(() => {
-              this.doShare()
-            })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, bottom: 16 })
-      }
-      .width(360)
-      .backgroundColor(this.themeColors.background)
-      .borderRadius(4)
-      .transition(
-        TransitionEffect.OPACITY
-          .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
-          .animation({ duration: 300, curve: Curve.EaseOut })
-      )
-    }
-    .width('100%')
-    .height('100%')
-    .justifyContent(FlexAlign.Center)
-    .alignItems(HorizontalAlign.Center)
-  }
   
-  // 执行分享
-  private async doShare() {
-    if (this.isSharing) {
-      return
-    }
-    
-    this.isSharing = true
-    Logger.info('[RecordCard] 开始分享，记录ID: ' + this.record.id)
-    
-    try {
-      const context = this.getUIContext().getHostContext() as common.UIAbilityContext
-      const success = await ShareUtils.shareComponent(
-        this.getUIContext(),
-        this.shareCardId,
-        context,
-        ResourceUtils.getString(context.resourceManager, 'share_record_title'),
-        ResourceUtils.getString(context.resourceManager, 'share_description_default')
-      )
-      
-      if (success) {
-        Logger.info('[RecordCard] 分享成功')
-        // 延迟关闭弹窗，让用户看到分享成功
-        setTimeout(() => {
-          this.showShareDialog = false
-          this.isSharing = false
-        }, 500)
-      } else {
-        Logger.error('[RecordCard] 分享失败')
-        this.isSharing = false
-        // 可以在这里显示错误提示
-      }
-    } catch (error) {
-      Logger.error('[RecordCard] 分享异常: ' + JSON.stringify(error))
-      this.isSharing = false
-    }
-  }
   
   // 格式化时间（只显示时分）
   private formatTime(timestamp: number): string {

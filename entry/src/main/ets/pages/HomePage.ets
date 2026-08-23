@@ -1,15 +1,13 @@
 // 首页：展示用户存活时间
 import { ConfigManager } from '../config/ConfigManager';
-import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { UserConfig } from '../config/UserConfig';
 import { TimeUtils } from '../common/utils/TimeUtils';
 import { TimeData, DateDifference } from '../common/types';
 import { TimeCard } from '../components/record/TimeCard';
 import { BirthDateSelector } from '../components/user/BirthDateSelector';
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig';
-import { ShareHomeCard } from '../components/share/ShareHomeCard';
+import { ShareHomeDialog } from '../components/dialog/ShareHomeDialog';
 import { AccumulatedModeToggle } from '../components/home/AccumulatedModeToggle';
-import { ShareUtils } from '../common/utils/ShareUtils';
 import { StatisticsUtils } from '../model/StatisticsModel';
 import { common } from '@kit.AbilityKit';
 import { RefreshManager } from '../common/managers/RefreshManager';
@@ -43,8 +41,20 @@ export struct HomePage {
   @State userConfig: UserConfig | null = null;
   @State isAccumulatedMode: boolean = true; // true: 累计模式, false: 非累计模式
   @State isRemainingMode: boolean = false; // true: 剩余模式, false: 已存活模式
-  @State showShareDialog: boolean = false; // 控制分享对话框显示
-  @State isSharing: boolean = false; // 分享进行中标志
+  // 分享弹窗控制器（更新计划五期：统一 CustomDialog，居中缩放淡入动画）
+  shareDialogController: CustomDialogController = new CustomDialogController({
+    builder: ShareHomeDialog({
+      birthDate: this.birthDate,
+      targetAge: this.targetAge,
+      timeData: this.timeData,
+      isRemainingMode: this.isRemainingMode,
+      isAccumulatedMode: this.isAccumulatedMode
+    }),
+    autoCancel: true,
+    customStyle: true,
+    alignment: DialogAlignment.Center,
+    maskColor: 'rgba(0, 0, 0, 0.5)'
+  })
   
   private configManager: ConfigManager | null = null;
   private intervalId: number = -1;
@@ -192,7 +202,7 @@ export struct HomePage {
   // 处理分享操作
   private handleShare() {
     Logger.info('[HomePage] 分享按钮被点击');
-    this.showShareDialog = true;
+    this.shareDialogController.open();
   }
 
   // 出生日期变更时立即重新计算时间
@@ -634,88 +644,6 @@ export struct HomePage {
       .scrollBar(BarState.Off)
       .edgeEffect(EdgeEffect.Spring)
     
-    // 分享弹窗
-    if (this.showShareDialog) {
-      // 遮罩层
-      Column()
-        .width('100%')
-        .height('100%')
-        .backgroundColor('rgba(0, 0, 0, 0.5)')
-        .onClick(() => {
-          if (!this.isSharing) {
-            this.showShareDialog = false;
-          }
-        })
-        .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
-      
-      // 弹窗内容
-      Column() {
-        // 分享卡片预览区域
-        Scroll() {
-          Column() {
-            ShareHomeCard({
-              birthDate: this.birthDate,
-              targetAge: this.targetAge,
-              timeData: this.timeData,
-              isRemainingMode: this.isRemainingMode,
-              isAccumulatedMode: this.isAccumulatedMode
-            })
-              .id('share-home-card')
-          }
-          .width('100%')
-          .alignItems(HorizontalAlign.Center)
-          .padding({ top: 16, bottom: 16 })
-        }
-        .width('100%')
-        .scrollBar(BarState.Off)
-        .constraintSize({ maxHeight: '60%' })
-        
-        // 操作按钮
-        Row({ space: 12 }) {
-          Button($r('app.string.cancel'))
-            .layoutWeight(1)
-            .height(44)
-            .fontSize(16)
-            .fontColor(this.themeColors.textSecondary)
-            .backgroundColor(this.themeColors.cardBackground)
-            .borderRadius(22)
-            .enabled(!this.isSharing)
-            .onClick(() => {
-              this.showShareDialog = false;
-            })
-          
-          Button(this.isSharing ? $r('app.string.sharing_in_progress') : $r('app.string.share'))
-            .layoutWeight(1)
-            .height(44)
-            .fontSize(16)
-            .fontColor('#FFFFFF')
-            .backgroundColor(this.isSharing ? this.themeColors.textSecondary : this.getPassedColor())
-            .borderRadius(22)
-            .enabled(!this.isSharing)
-            .onClick(() => {
-              this.doShare();
-            })
-        }
-        .width('100%')
-        .padding({ left: 20, right: 20, top: 16, bottom: 20 })
-      }
-      .width('90%')
-      .backgroundColor(this.themeColors.cardBackground)
-      .borderRadius(4)
-      .shadow({
-        radius: 20,
-        color: 'rgba(0, 0, 0, 0.3)',
-        offsetX: 0,
-        offsetY: 10
-      })
-      .position({ x: '5%', y: '50%' })
-      .translate({ y: '-50%' })
-      .transition(
-        TransitionEffect.OPACITY
-          .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
-          .animation({ duration: 300, curve: Curve.EaseOut })
-      )
-    }
   }
   .width('100%')
   .height('100%')
@@ -729,41 +657,4 @@ export struct HomePage {
     }
   }
 
-  // 执行分享
-  private async doShare() {
-    if (this.isSharing) {
-      return;
-    }
-    
-    this.isSharing = true;
-    Logger.info('[HomePage] 开始分享');
-    
-    try {
-      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-      
-      // 执行分享
-      const rm = context.resourceManager;
-      const success = await ShareUtils.shareComponent(
-        this.getUIContext(),
-        'share-home-card',
-        context,
-        ResourceUtils.getString(rm, 'share_title'),
-        ResourceUtils.getString(rm, 'share_description')
-      );
-      
-      if (success) {
-        Logger.info('[HomePage] 分享成功');
-        setTimeout(() => {
-          this.showShareDialog = false;
-          this.isSharing = false;
-        }, 500);
-      } else {
-        Logger.error('[HomePage] 分享失败');
-        this.isSharing = false;
-      }
-    } catch (error) {
-      Logger.error('[HomePage] 分享异常: ' + JSON.stringify(error));
-      this.isSharing = false;
-    }
-  }
 }
