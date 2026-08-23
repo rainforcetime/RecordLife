@@ -5,12 +5,15 @@
  */
 import { common } from '@kit.AbilityKit'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
+import { image } from '@kit.ImageKit'
 import { ImagePathUtils } from '../common/utils/ImagePathUtils'
 import { Logger } from '../common/utils/Logger'
 
 export class ImageFileService {
   /**
    * 保存图片到沙箱目录（返回 URI 格式）
+   * 图片存储优化 M1：优先压缩保存（保留原分辨率，JPEG quality 0.92，尽量不损画质）；
+   * 压缩失败（非解码格式等）兜底原样复制
    * @param context 应用上下文
    * @param sourceUri 源图片 URI
    * @returns file:// URI；失败返回 null
@@ -32,8 +35,11 @@ export class ImageFileService {
         fileIo.mkdirSync(dirPath)
       }
 
-      // 复制文件
-      fileIo.copyFileSync(sourceFile.fd, sandboxPath)
+      // 优先压缩保存；失败兜底原样复制
+      const compressed = await ImageFileService.compressToFile(sourceFile.fd, sandboxPath)
+      if (!compressed) {
+        fileIo.copyFileSync(sourceFile.fd, sandboxPath)
+      }
 
       // 返回 URI 格式（统一路径格式）
       return fileUri.getUriFromPath(sandboxPath)
@@ -46,6 +52,48 @@ export class ImageFileService {
           fileIo.closeSync(sourceFile)
         } catch (error) {
           Logger.error('[ImageFileService] 关闭文件失败: ' + JSON.stringify(error))
+        }
+      }
+    }
+  }
+
+  /**
+   * 压缩图片到目标路径（保留原分辨率，JPEG quality 0.92）
+   * @param sourceFd 源图片文件描述符
+   * @param destPath 目标沙箱路径
+   * @returns 是否成功（失败时调用方兜底原样复制）
+   */
+  private static async compressToFile(sourceFd: number, destPath: string): Promise<boolean> {
+    let imageSource: image.ImageSource | null = null
+    let packer: image.ImagePacker | null = null
+    try {
+      imageSource = image.createImageSource(sourceFd)
+      packer = image.createImagePacker()
+      const option: image.PackingOption = {
+        format: 'image/jpeg',
+        quality: 92
+      }
+      const data: ArrayBuffer = await packer.packToData(imageSource, option)
+      const destFile = fileIo.openSync(destPath, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC)
+      fileIo.writeSync(destFile.fd, data)
+      fileIo.closeSync(destFile)
+      return true
+    } catch (error) {
+      Logger.error('[ImageFileService] 压缩图片失败: ' + JSON.stringify(error))
+      return false
+    } finally {
+      if (packer) {
+        try {
+          packer.release()
+        } catch (e) {
+          Logger.error('[ImageFileService] 释放 packer 失败: ' + JSON.stringify(e))
+        }
+      }
+      if (imageSource) {
+        try {
+          imageSource.release()
+        } catch (e) {
+          Logger.error('[ImageFileService] 释放 imageSource 失败: ' + JSON.stringify(e))
         }
       }
     }
