@@ -132,7 +132,7 @@ export struct ImageViewer {
         .loop(false)
         // 不通过 enabled 禁用 Swiper（禁用后触摸穿透会导致误关闭预览）；双指捏合与单指滑动天然不冲突
         .gesture(
-          PinchGesture()
+          PinchGesture({ fingers: 2 })
             .onActionStart(() => {
               this.baseScale = this.scaleValue
             })
