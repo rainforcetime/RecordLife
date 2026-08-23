@@ -262,6 +262,9 @@ struct MorePage {
     customStyle: true
   })
 
+  // 当前云存储配置（初始化时读取；声明在弹窗控制器之前，避免字段初始化顺序问题）
+  @State cosConfig: CosConfig | null = null
+
   // 云存储配置弹窗控制器（图片存储优化 M2）
   private cloudDialogController: CustomDialogController = new CustomDialogController({
     builder: CosConfigDialog({
@@ -273,9 +276,6 @@ struct MorePage {
     autoCancel: true,
     customStyle: true
   })
-
-  // 当前云存储配置（初始化时读取）
-  @State cosConfig: CosConfig | null = null
 
   // 导出进度弹窗控制器（导出全部时展示打包进度）
   private exportProgressDialogController: CustomDialogController = new CustomDialogController({

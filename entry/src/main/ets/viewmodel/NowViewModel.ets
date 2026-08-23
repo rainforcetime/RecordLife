@@ -11,6 +11,12 @@ import { CosService } from '../service/CosService'
 import { ConfigManager } from '../config/ConfigManager'
 import { Logger } from '../common/utils/Logger'
 
+// 待上传原图项（图片存储优化 M3）
+interface PendingUpload {
+  uri: string          // 压缩图 URI（用于匹配记录 imagePaths）
+  pendingPath: string  // 原图待上传缓存路径
+}
+
 // 生活记录数据管理类
 export class NowViewModel {
   private static instance: NowViewModel | null = null
@@ -20,7 +26,7 @@ export class NowViewModel {
   private records: LifeRecord[] = []
 
   // 待上传原图队列（图片存储优化 M3：本地压缩 + 云端原图）
-  private pendingUploads: Array<{ uri: string; pendingPath: string }> = []
+  private pendingUploads: PendingUpload[] = []
   
   private constructor() {}
   

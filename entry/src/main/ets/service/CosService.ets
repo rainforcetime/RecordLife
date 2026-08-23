@@ -167,7 +167,10 @@ export class CosService {
     const mac = cryptoFramework.createMac('HMAC|SHA1')
     const encoder = util.TextEncoder.create()
     const keyBlob: cryptoFramework.DataBlob = { data: encoder.encodeInto(key) }
-    await mac.init(keyBlob)
+    // DataBlob → SymKey（createMac.init 需要 SymKey）
+    const keyGenerator = cryptoFramework.createSymKeyGenerator('HMAC')
+    const symKey = await keyGenerator.convertKey(keyBlob)
+    await mac.init(symKey)
     const dataBlob: cryptoFramework.DataBlob = { data: encoder.encodeInto(data) }
     await mac.update(dataBlob)
     const out: cryptoFramework.DataBlob = await mac.doFinal()
