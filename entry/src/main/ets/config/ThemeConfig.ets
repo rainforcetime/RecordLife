@@ -122,12 +122,28 @@ export class ThemeConfig {
       return base
     }
     const effectivePrimary = isDark ? ColorUtils.lighten(primaryColor, 0.2) : primaryColor
-    return {
-      ...base,
+    // ArkTS 不支持对象展开（arkts-no-spread），显式构造
+    const colors: ThemeColors = {
+      background: base.background,
+      cardBackground: base.cardBackground,
+      divider: base.divider,
+      textPrimary: base.textPrimary,
+      textSecondary: base.textSecondary,
+      textTertiary: base.textTertiary,
       primary: effectivePrimary,
       primaryLight: ColorUtils.lighten(effectivePrimary, 0.25),
-      primaryDark: ColorUtils.darken(effectivePrimary, 0.25)
+      primaryDark: ColorUtils.darken(effectivePrimary, 0.25),
+      success: base.success,
+      warning: base.warning,
+      error: base.error,
+      info: base.info,
+      border: base.border,
+      shadow: base.shadow,
+      avatarBorder: base.avatarBorder,
+      iconColor: base.iconColor,
+      overlay: base.overlay
     }
+    return colors
   }
   
   // 判断是否为深色模式
