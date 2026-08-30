@@ -67,6 +67,16 @@ jobs:
           hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
 
+      # 重命名产物为 RecordLife_V<versionName>.hap（版本号从 AppScope/app.json5 自动读取）
+      - name: Rename HAP with version
+        run: |
+          VER=$(sed -n 's/.*"versionName": *"\([^"]*\)".*/\1/p' AppScope/app.json5 | head -1)
+          echo "HAP 版本号: $VER"
+          HAP_DIR=entry/build/default/outputs/default
+          HAP=$(ls "$HAP_DIR"/*.hap | head -1)
+          mv "$HAP" "$HAP_DIR/RecordLife_V${VER}.hap"
+          ls -la "$HAP_DIR"
+
       - name: Upload HAP artifact
         uses: actions/upload-artifact@v4
         with:

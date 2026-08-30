@@ -3,7 +3,7 @@
 
 一款基于 HarmonyOS 开发的生活记录应用，帮助用户记录生活中的重要时刻和日常点滴。
 
-> **当前版本**：3.0.65（versionCode 30065，更新说明见 [`docs/CHANGELOG.md`](docs/CHANGELOG.md)）
+> **当前版本**：3.0.66（versionCode 30066，更新说明见 [`docs/CHANGELOG.md`](docs/CHANGELOG.md)）
 
 ## 功能特点
 
