@@ -84,8 +84,8 @@ struct QuickRecordCard {
     }
     .width('100%')
     .height('100%')
-    .borderRadius(28)
-    // 渐变背景直接铺在 Stack 自身：圆角内始终是渐变底色，不会透出宿主白色
+    // 渐变背景铺满整个矩形，不设内容圆角——由卡片宿主统一裁切圆角，
+    // 避免内容圆角与宿主圆角不匹配导致四角露出宿主白底
     .linearGradient({
       angle: 135,
       colors: [
@@ -94,7 +94,6 @@ struct QuickRecordCard {
         ['#FF3A5BD9', 1.0]
       ]
     })
-    .clip(true)
     .onClick(() => {
       postCardAction(this, {
         action: this.ACTION_TYPE,
