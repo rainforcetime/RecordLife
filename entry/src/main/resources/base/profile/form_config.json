@@ -1,0 +1,24 @@
+{
+  "forms": [
+    {
+      "name": "QuickRecordCard",
+      "displayName": "$string:quick_record_card_name",
+      "description": "$string:quick_record_card_desc",
+      "src": "./ets/widget/pages/QuickRecordCard.ets",
+      "uiSyntax": "arkts",
+      "isDefault": true,
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "supportDimensions": [
+        "2*2"
+      ],
+      "defaultDimension": "2*2",
+      "updateEnabled": false,
+      "scheduledUpdateTime": "10:30",
+      "updateDuration": 0
+    }
+  ]
+}

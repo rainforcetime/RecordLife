@@ -18,6 +18,7 @@ name: Build HAP
 on:
   push:
     branches: [ master ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -67,9 +68,41 @@ jobs:
           hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
 
+      # 重命名产物为 RecordLife_V<versionName>.hap（版本号从 AppScope/app.json5 自动读取）
+      - name: Rename HAP with version
+        run: |
+          VER=$(sed -n 's/.*"versionName": *"\([^"]*\)".*/\1/p' AppScope/app.json5 | head -1)
+          echo "HAP 版本号: $VER"
+          HAP_DIR=entry/build/default/outputs/default
+          HAP=$(ls "$HAP_DIR"/*.hap | head -1)
+          mv "$HAP" "$HAP_DIR/RecordLife_V${VER}.hap"
+          ls -la "$HAP_DIR"
+
       - name: Upload HAP artifact
         uses: actions/upload-artifact@v4
         with:
           name: hap-unsigned
           path: entry/build/default/outputs/default/*.hap
           if-no-files-found: error
+
+  # 打 tag（v*，如 v3.0.66）时：将构建产物发布到 GitHub Release
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download HAP artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hap-unsigned
+          path: hap
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: RecordLife ${{ github.ref_name }}
+          files: hap/*.hap
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

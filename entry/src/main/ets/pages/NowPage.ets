@@ -95,6 +95,9 @@ struct NowPage {
   
   // 记录此刻弹窗
   @State private showAddRecordDialog: boolean = false
+
+  // 桌面卡片「快速记录」标记（AppStorage 同步；@Watch 覆盖已构建场景，aboutToAppear 覆盖首次构建场景）
+  @StorageLink('cardQuickRecord') @Watch('onCardQuickRecord') cardQuickRecord: boolean = false
   
   // ViewModel（普通成员变量，不需要 @State）
   private viewModel: NowViewModel | null = null
@@ -106,8 +109,23 @@ struct NowPage {
   // PromptAction（用于显示 Toast）
   private promptAction: PromptAction | null = null
   
+  // AppStorage 标记变化时消费（NowPage 已构建的场景）
+  onCardQuickRecord() {
+    this.consumeCardQuickRecord()
+  }
+
+  // 消费桌面卡片「快速记录」标记：打开新建记录弹窗
+  private consumeCardQuickRecord(): void {
+    if (this.cardQuickRecord === true) {
+      AppStorage.setOrCreate('cardQuickRecord', false)
+      this.showAddRecordDialog = true
+    }
+  }
+
   async aboutToAppear() {
     Logger.info('[NowPage] aboutToAppear')
+    // 首次构建时消费卡片标记（@StorageLink 初始化值）
+    this.consumeCardQuickRecord()
     
     // 获取 PromptAction
     this.promptAction = this.getUIContext().getPromptAction()
