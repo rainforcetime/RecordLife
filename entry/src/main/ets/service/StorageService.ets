@@ -2,7 +2,7 @@
  * 存储统计服务（service 层）
  * 应用存储空间统计与使用天数计算，拆自 AccountViewModel（P4 重构，A3 IO/统计职责下沉）
  */
-import { storageStatistics, fileIo } from '@kit.CoreFileKit'
+import { fileIo } from '@kit.CoreFileKit'
 import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { common } from '@kit.AbilityKit'
 import { TimeUtils } from '../common/utils/TimeUtils'
@@ -11,19 +11,44 @@ import { LifeRecord } from '../model/RecordModel'
 
 export class StorageService {
   /**
-   * 获取应用存储空间大小（appSize + cacheSize + dataSize，已格式化）
+   * 获取应用存储空间大小（应用沙箱实际占用：filesDir + cacheDir 递归统计）
    * @returns 格式化后的字符串（如 "123.4MB"）；失败返回「计算失败」
    */
   static async getAppStorageSize(context: common.UIAbilityContext): Promise<string> {
     try {
-      const bundleStats = await storageStatistics.getCurrentBundleStats()
-      // 计算总大小：appSize + cacheSize + dataSize
-      const totalSize = bundleStats.appSize + bundleStats.cacheSize + bundleStats.dataSize
+      // 计算总大小：应用沙箱实际文件占用（bundleStats 口径偏小且与页内不一致）
+      let totalSize = 0
+      const dirs: string[] = [context.filesDir, context.cacheDir]
+      for (const dir of dirs) {
+        if (dir) {
+          totalSize += StorageService.getDirSizeSync(dir)
+        }
+      }
       return StorageService.formatStorageSize(totalSize)
     } catch (error) {
       Logger.error('[StorageService] 获取应用存储空间失败: ' + JSON.stringify(error))
       return ResourceUtils.getString(context.resourceManager, 'calc_failed')
     }
+  }
+
+  // 递归统计目录下所有文件大小（与存储空间页同口径，范围更全）
+  private static getDirSizeSync(dir: string): number {
+    let sum = 0
+    try {
+      const filenames = fileIo.listFileSync(dir)
+      for (const name of filenames) {
+        const fullPath = dir + '/' + name
+        const stat = fileIo.statSync(fullPath)
+        if (stat.isDirectory()) {
+          sum += StorageService.getDirSizeSync(fullPath)
+        } else {
+          sum += stat.size
+        }
+      }
+    } catch (error) {
+      Logger.error('[StorageService] 统计目录失败: ' + dir + ', ' + JSON.stringify(error))
+    }
+    return sum
   }
 
   /**

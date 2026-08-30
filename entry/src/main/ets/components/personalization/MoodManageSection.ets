@@ -77,24 +77,36 @@ export struct MoodManageSection {
 
   build() {
     Column() {
-      // 添加心情按钮
+      // 标题行：页签名 + 右侧添加按钮（与标签/模板页签统一）
       Row() {
-        SymbolGlyph($r('sys.symbol.plus'))
-          .fontSize(18)
-          .fontColor([this.themeColors.primary])
+        Text($r('app.string.mood_tab'))
+          .fontSize(16)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(this.themeColors.textPrimary)
+          .layoutWeight(1)
 
-        Text($r('app.string.mood_custom_hint'))
-          .fontSize(13)
-          .fontColor(this.themeColors.primary)
-          .margin({ left: 8 })
+        // 添加心情按钮（44×44 点击区，展开 emoji 选择面板）
+        Column() {
+          SymbolGlyph($r('sys.symbol.plus'))
+            .fontSize(20)
+            .fontColor([this.themeColors.primary])
+        }
+        .width(44)
+        .height(44)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+        .onClick(() => {
+          this.showMoodPicker = !this.showMoodPicker
+        })
       }
       .width('100%')
-      .height(44)
-      .alignItems(VerticalAlign.Center)
-      .margin({ bottom: 12 })
-      .onClick(() => {
-        this.showMoodPicker = !this.showMoodPicker
-      })
+
+      // 说明文字
+      Text($r('app.string.mood_custom_hint'))
+        .fontSize(12)
+        .fontColor(this.themeColors.textSecondary)
+        .width('100%')
+        .margin({ top: 4, bottom: 12 })
 
       // 心情列表（预置 + 自定义）
       Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {

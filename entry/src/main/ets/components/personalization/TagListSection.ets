@@ -186,12 +186,36 @@ export struct TagListSection {
   @Builder
   TagListView() {
     Column() {
+      // 标题行：页签名 + 右侧添加按钮（与心情/模板页签统一）
+      Row() {
+        Text($r('app.string.tag_tab'))
+          .fontSize(16)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(this.themeColors.textPrimary)
+          .layoutWeight(1)
+
+        // 添加标签按钮（44×44 点击区）
+        Column() {
+          SymbolGlyph($r('sys.symbol.plus'))
+            .fontSize(20)
+            .fontColor([this.themeColors.primary])
+        }
+        .width(44)
+        .height(44)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+        .onClick(() => {
+          this.startAddTag()
+        })
+      }
+      .width('100%')
+
       // 说明文字
       Text($r('app.string.preset_tags_hint'))
-        .fontSize(13)
+        .fontSize(12)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
-        .margin({ bottom: 16 })
+        .margin({ top: 4, bottom: 12 })
 
       // 自定义标签列表
       if (this.customTags.length > 0) {
@@ -239,26 +263,6 @@ export struct TagListSection {
               .alignItems(VerticalAlign.Center)
             }
           }, (tag: Tag) => tag.id)
-
-          ListItem() {
-            // 添加按钮
-            Row() {
-              SymbolGlyph($r('sys.symbol.plus'))
-                .fontSize(18)
-                .fontColor([this.themeColors.primary])
-
-              Text($r('app.string.add_custom_tag'))
-                .fontSize(15)
-                .fontColor(this.themeColors.primary)
-                .margin({ left: 8 })
-            }
-            .width('100%')
-            .height(48)
-            .alignItems(VerticalAlign.Center)
-            .onClick(() => {
-              this.startAddTag()
-            })
-          }
         }
         .width('100%')
         .scrollBar(BarState.Off)

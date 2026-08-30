@@ -1831,6 +1831,10 @@
     {
       "name": "confirm_delete_message",
       "value": "删除后不可恢复，确定删除？"
+    },
+    {
+      "name": "add_first_template",
+      "value": "添加第一个模板"
     }
   ]
 }

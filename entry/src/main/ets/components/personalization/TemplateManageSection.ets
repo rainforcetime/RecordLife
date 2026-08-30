@@ -129,30 +129,35 @@ export struct TemplateManageSection {
 
   build() {
     Column() {
-      // 标题行：记录模板 + 添加按钮（拆分时丢失，已补回）
+      // 标题行：页签名 + 右侧添加按钮（与标签/心情页签统一）
       Row() {
         Text($r('app.string.template_tab'))
-          .fontSize(18)
+          .fontSize(16)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.themeColors.textPrimary)
           .layoutWeight(1)
 
-        // 添加模板按钮
-        SymbolGlyph($r('sys.symbol.plus'))
-          .fontSize(20)
-          .fontColor([this.themeColors.primary])
-          .onClick(() => {
-            this.startAddTemplate()
-          })
+        // 添加模板按钮（44×44 点击区）
+        Column() {
+          SymbolGlyph($r('sys.symbol.plus'))
+            .fontSize(20)
+            .fontColor([this.themeColors.primary])
+        }
+        .width(44)
+        .height(44)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+        .onClick(() => {
+          this.startAddTemplate()
+        })
       }
       .width('100%')
-      .margin({ bottom: 12 })
 
       Text($r('app.string.template_hint'))
         .fontSize(12)
         .fontColor(this.themeColors.textSecondary)
         .width('100%')
-        .margin({ bottom: 12 })
+        .margin({ top: 4, bottom: 12 })
 
       // 模板编辑表单（添加/编辑）
       if (this.showTemplateForm) {
@@ -267,7 +272,7 @@ export struct TemplateManageSection {
             .fontSize(13)
             .fontColor(this.themeColors.textSecondary)
 
-          Button($r('app.string.add_first_tag'))
+          Button($r('app.string.add_first_template'))
             .fontSize(14)
             .fontColor(this.themeColors.primary)
             .backgroundColor(this.hexToRgba(this.themeColors.primary, 0.1))

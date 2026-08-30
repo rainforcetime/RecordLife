@@ -1831,6 +1831,10 @@
     {
       "name": "confirm_delete_message",
       "value": "This cannot be undone. Delete?"
+    },
+    {
+      "name": "add_first_template",
+      "value": "Add your first template"
     }
   ]
 }

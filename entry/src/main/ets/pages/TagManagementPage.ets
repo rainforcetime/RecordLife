@@ -11,6 +11,7 @@ struct TagManagementPage {
 
   // 管理分页（0=标签 1=心情 2=模板）
   @State private currentTab: number = 0
+  private swiperController: SwiperController = new SwiperController()
 
   // 将十六进制颜色转换为 rgba 格式
   private hexToRgba(hex: string, alpha: number): string {
@@ -48,7 +49,7 @@ struct TagManagementPage {
       .padding({ left: 16, right: 16 })
       .alignItems(VerticalAlign.Center)
 
-      // Tab 分段控件（iOS 分段控件风格）
+      // Tab 分段控件（iOS 分段控件风格；点击切换并联动 Swiper）
       Row() {
         this.TabItem($r('app.string.tag_tab'), 0)
         this.TabItem($r('app.string.mood_tab'), 1)
@@ -60,24 +61,51 @@ struct TagManagementPage {
       .borderRadius(12)
       .margin({ left: 20, right: 20, top: 8, bottom: 14 })
 
-      // 内容区
-      Scroll() {
-        Column() {
-          if (this.currentTab === 0) {
+      // 内容区（左右滑动切换页签，与分段控件联动）
+      Swiper(this.swiperController) {
+        Scroll() {
+          Column() {
             TagListSection()
-          } else if (this.currentTab === 1) {
+          }
+          .width('100%')
+          .padding({ left: 20, right: 20 })
+        }
+        .scrollBar(BarState.Off)
+        .width('100%')
+        .height('100%')
+        .align(Alignment.Top)
+
+        Scroll() {
+          Column() {
             MoodManageSection()
-          } else {
+          }
+          .width('100%')
+          .padding({ left: 20, right: 20 })
+        }
+        .scrollBar(BarState.Off)
+        .width('100%')
+        .height('100%')
+        .align(Alignment.Top)
+
+        Scroll() {
+          Column() {
             TemplateManageSection()
           }
+          .width('100%')
+          .padding({ left: 20, right: 20 })
         }
+        .scrollBar(BarState.Off)
         .width('100%')
-        .padding({ left: 20, right: 20 })
+        .height('100%')
+        .align(Alignment.Top)
       }
-      .scrollBar(BarState.Off)
-      .width('100%')
+      .index(this.currentTab)
+      .loop(false)
+      .indicator(false)
+      .onChange((index: number) => {
+        this.currentTab = index
+      })
       .layoutWeight(1)
-      .align(Alignment.Top)
     }
     .width('100%')
     .height('100%')
@@ -97,6 +125,7 @@ struct TagManagementPage {
       .backgroundColor(this.currentTab === tabIndex ? this.hexToRgba(this.themeColors.primary, 0.12) : 'transparent')
       .onClick(() => {
         this.currentTab = tabIndex
+        this.swiperController.changeIndex(tabIndex)  // 点击分段同步 Swiper
       })
   }
 }
