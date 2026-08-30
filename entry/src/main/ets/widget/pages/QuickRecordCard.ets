@@ -1,5 +1,5 @@
 // 桌面卡片：点击后跳转应用并打开「新建记录」弹窗
-// 样式：渐变背景 + 半透明装饰圆 + 白色圆底加号 + 日期 + 操作提示
+// 样式：渐变背景（铺满 Stack 自身，圆角平滑）+ 内部装饰圆 + 白色圆底加号 + 日期 + 操作提示
 let storage = new LocalStorage();
 
 @Entry
@@ -17,34 +17,21 @@ struct QuickRecordCard {
 
   build() {
     Stack() {
-      // 渐变背景
+      // 右上装饰圆（完全在卡片内部，不越界）
       Column()
-        .width('100%')
-        .height('100%')
-        .linearGradient({
-          angle: 135,
-          colors: [
-            ['#FF8FB2F5', 0.0],
-            ['#FF4E7CFF', 0.55],
-            ['#FF3A5BD9', 1.0]
-          ]
-        })
-
-      // 右上装饰圆（半透明）
-      Column()
-        .width(140)
-        .height(140)
-        .borderRadius(70)
+        .width(80)
+        .height(80)
+        .borderRadius(40)
         .backgroundColor('#26FFFFFF')
-        .position({ x: '62%', y: '-24%' })
+        .position({ x: '70%', y: '8%' })
 
-      // 左下装饰圆（更淡）
+      // 左下装饰圆（完全在卡片内部）
       Column()
-        .width(96)
-        .height(96)
-        .borderRadius(48)
+        .width(56)
+        .height(56)
+        .borderRadius(28)
         .backgroundColor('#14FFFFFF')
-        .position({ x: '-14%', y: '70%' })
+        .position({ x: '8%', y: '76%' })
 
       // 内容区
       Column() {
@@ -98,6 +85,15 @@ struct QuickRecordCard {
     .width('100%')
     .height('100%')
     .borderRadius(28)
+    // 渐变背景直接铺在 Stack 自身：圆角内始终是渐变底色，不会透出宿主白色
+    .linearGradient({
+      angle: 135,
+      colors: [
+        ['#FF8FB2F5', 0.0],
+        ['#FF4E7CFF', 0.55],
+        ['#FF3A5BD9', 1.0]
+      ]
+    })
     .clip(true)
     .onClick(() => {
       postCardAction(this, {
