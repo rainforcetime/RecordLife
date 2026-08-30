@@ -18,6 +18,7 @@ name: Build HAP
 on:
   push:
     branches: [ master ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -83,3 +84,25 @@ jobs:
           name: hap-unsigned
           path: entry/build/default/outputs/default/*.hap
           if-no-files-found: error
+
+  # 打 tag（v*，如 v3.0.66）时：将构建产物发布到 GitHub Release
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download HAP artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hap-unsigned
+          path: hap
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: RecordLife ${{ github.ref_name }}
+          files: hap/*.hap
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
