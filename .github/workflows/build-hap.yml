@@ -54,6 +54,14 @@ jobs:
       - name: Install dependencies
         run: ohpm install --all
 
+      # CI 上没有本机 debug 签名证书（build-profile.json5 指向 Windows 绝对路径，
+      # 文件不在仓库内），构建 unsigned 包前临时移除签名配置，否则 SignHap 报错。
+      # 仅修改 runner 上的拷贝，不影响本地文件。
+      - name: Strip signing config (unsigned build)
+        run: |
+          sed -i '/"signingConfigs": \[/,/^[[:space:]]*\],/d; /"signingConfig": "default",/d' build-profile.json5
+          grep -n 'signingConfig' build-profile.json5 || echo "OK: signing config removed"
+
       - name: Build unsigned HAP
         run: |
           hvigorw clean --no-daemon
