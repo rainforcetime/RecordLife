@@ -1843,6 +1843,10 @@
     {
       "name": "quick_record_card_desc",
       "value": "Tap to create a record quickly"
+    },
+    {
+      "name": "quick_record_card_hint",
+      "value": "Tap to record"
     }
   ]
 }

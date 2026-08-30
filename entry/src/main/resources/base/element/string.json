@@ -1843,6 +1843,10 @@
     {
       "name": "quick_record_card_desc",
       "value": "点击快速新建一条记录"
+    },
+    {
+      "name": "quick_record_card_hint",
+      "value": "轻触快速记录"
     }
   ]
 }

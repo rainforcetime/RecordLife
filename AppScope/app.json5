@@ -2,8 +2,8 @@
   "app": {
     "bundleName": "com.rainforcetime.recordlife",
     "vendor": "rainforcetime",
-    "versionCode": 30062,
-    "versionName": "3.0.62",
+    "versionCode": 30063,
+    "versionName": "3.0.63",
     "icon": "$media:layered_image",
     "label": "$string:app_name",
     "description": "$string:app_description"
