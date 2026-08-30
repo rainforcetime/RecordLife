@@ -1,5 +1,31 @@
 # RecordLife 更新日志（Changelog）
 
+## 3.0.50~3.0.67（versionCode 30067）— 2026-08-30
+
+> 3.0.50~3.0.67 系列（桌面卡片 + CI 自动打包/发布 + 版本号同步机制）
+
+### ✨ 新功能
+- **桌面卡片「快速记录」**：桌面长按应用图标 → 服务卡片 → 添加「快速记录」卡片（2×2 ArkTS 卡片）；点击卡片直接拉起应用，自动切到「此刻」页并弹出新建记录弹窗
+- **GitHub Actions 自动打包**：push master 自动构建 unsigned HAP（容器镜像 HarmonyOS Command Line Tools 6.0.2.650）；产物命名 `RecordLife_V<versionName>.hap`（版本号自动读取）
+- **自动发布 GitHub Release**：推送 `v*` tag 时自动构建并发布 Release（名 `RecordLife v<tag>`，资产即上述 HAP）
+- **版本号同步机制**：应用版本号（AppScope/app.json5）与 git 提交前缀统一为 3.0.x，每次提交对应唯一可追溯版本
+
+### 🎨 体验优化
+- 个性化页排版统一（左右滑动 + 顶部对齐 + 存储口径修复）
+- 存储空间页补齐返回按钮（与其他子页一致的 44×44 点击区）
+- 桌面卡片样式打磨：渐变背景 + 装饰圆 + 白底加号 + 日期 + 操作提示
+
+### 🐛 修复
+- CI 构建 SignHap 报错（signingConfigs 指向本机 Windows 路径证书，Linux runner 不存在）→ 构建前临时移除签名配置
+- 桌面卡片四角露白/白边（内容圆角与宿主圆角不匹配）→ 渐变铺满 Stack + 宿主统一裁切圆角
+
+### 🛠 技术演进
+- 本地命令行构建链路：`DEVECO_SDK_HOME` + hvigorw.bat 验证编译
+- notify skill（Reasonix 任务完成右下角弹窗，Windows）
+- CI 流水线：容器镜像 + ohpm install + hvigorw assembleHap + sed 版本提取 + artifact/Release 上传
+
+---
+
 ## 3.0.x（versionCode 30049）— 2026-08-23
 
 > 3.0.1~3.0.49 系列（重构 P0~P8 + 更新计划 + UI/云存储迭代）
