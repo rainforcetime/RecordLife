@@ -13,7 +13,10 @@ export default class EntryAbility extends UIAbility {
     // 将 context 存储到 AppStorage，供 ConfigManager 使用
     // 必须在 initTheme 之前设置，确保 ConfigManager 能获取到 context
     AppStorage.setOrCreate('uiContext', this.context);
-    
+
+    // 桌面卡片快速记录：卡片点击跳转携带 message=addRecord
+    this.handleCardQuickRecord(want);
+
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
     
     try {
@@ -21,6 +24,24 @@ export default class EntryAbility extends UIAbility {
       this.initTheme();
     } catch (err) {
       hilog.error(DOMAIN, 'testTag', 'Failed to set colorMode. Cause: %{public}s', JSON.stringify(err));
+    }
+  }
+
+  // 热启动：应用已存在时从卡片再次进入
+  onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    this.handleCardQuickRecord(want);
+  }
+
+  // 识别桌面卡片「快速记录」跳转，写入全局标记供 MainPage/NowPage 消费
+  private handleCardQuickRecord(want: Want): void {
+    try {
+      const msg = want.parameters?.['message'] as string | undefined;
+      if (msg === 'addRecord') {
+        AppStorage.setOrCreate('cardQuickRecord', true);
+        hilog.info(DOMAIN, 'testTag', 'Card quick record triggered');
+      }
+    } catch (err) {
+      hilog.error(DOMAIN, 'testTag', 'handleCardQuickRecord failed. Cause: %{public}s', JSON.stringify(err));
     }
   }
 

@@ -1835,6 +1835,14 @@
     {
       "name": "add_first_template",
       "value": "Add your first template"
+    },
+    {
+      "name": "quick_record_card_name",
+      "value": "Quick Record"
+    },
+    {
+      "name": "quick_record_card_desc",
+      "value": "Tap to create a record quickly"
     }
   ]
 }

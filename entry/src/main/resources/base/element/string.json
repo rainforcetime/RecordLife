@@ -1835,6 +1835,14 @@
     {
       "name": "add_first_template",
       "value": "添加第一个模板"
+    },
+    {
+      "name": "quick_record_card_name",
+      "value": "快速记录"
+    },
+    {
+      "name": "quick_record_card_desc",
+      "value": "点击快速新建一条记录"
     }
   ]
 }

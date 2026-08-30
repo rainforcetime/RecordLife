@@ -28,6 +28,14 @@ struct MainPage {
     .justifyContent(FlexAlign.Center)
   }
 
+  // 页面显示时：消费桌面卡片「快速记录」标记，切到「此刻」页由 NowPage 打开新建弹窗
+  onPageShow() {
+    const cardQuickRecord = AppStorage.get('cardQuickRecord') as boolean | undefined
+    if (cardQuickRecord === true) {
+      this.currentIndex = 1
+    }
+  }
+
   build() {
     Tabs({
       barPosition: BarPosition.End,
