@@ -42,6 +42,13 @@
 3. 连接真机或使用模拟器运行调试
 4. 签名产物：`entry/build/default/outputs/default/entry-default-signed.hap`
 
+## 自动化构建（GitHub Actions）
+
+- 仓库内 `.github/workflows/build-hap.yml` 定义了自动打包流程：ubuntu runner + HarmonyOS Command Line Tools 6.0.2.650 容器镜像（与工程 modelVersion 6.0.2 匹配）。
+- **触发方式**：push / PR 到 `master` 分支，或在仓库 Actions 页面手动点 "Run workflow"。
+- **产物**：unsigned HAP（`entry/build/default/outputs/default/*.hap`），构建成功后在该次 workflow 运行的页面底部 Artifacts 处下载。
+- **说明**：unsigned 包未签名，不可直接安装到真机（仅存档/测试用）。后续如需 debug/release 签名包，再配置签名证书 Secrets 并扩展 workflow。
+
 ## 项目结构
 
 ```

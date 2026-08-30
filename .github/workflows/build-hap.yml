@@ -1,0 +1,67 @@
+# GitHub Actions 自动打包：构建 unsigned HAP
+#
+# 触发方式：
+#   - push 到 master 分支
+#   - PR 到 master 分支
+#   - 仓库 Actions 页面手动点击 "Run workflow"
+#
+# 说明：
+#   - 构建环境：ubuntu-latest + Docker 容器镜像（内置 HarmonyOS Command Line Tools 6.0.2.650，
+#     与工程 hvigor modelVersion 6.0.2 / SDK 6.0.2(22) 匹配）。
+#   - 镜像 zbwhandsome1937/harmonyos-command-line-tools 为非官方个人维护镜像（Docker Hub 公开拉取），
+#     如后续要替换为官方 command-line-tools 直链方案，改本文件 container 段即可。
+#   - 产物为 unsigned HAP（未签名，不可直接安装到真机，仅用于存档/测试/后续签名）。
+#     之后如需 debug/release 签名包，再按需加 Secrets + hap-sign-tool 签名步骤。
+
+name: Build HAP
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: zbwhandsome1937/harmonyos-command-line-tools:6.0.2.650-linux-x64-v1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 工具链自检：镜像内部结构以实际为准，先打印工具可用性，便于首次失败时定位
+      - name: Show toolchain info
+        run: |
+          echo "node: $(node -v 2>/dev/null || echo MISSING)"
+          echo "java: $(java -version 2>&1 | head -n 1)"
+          echo "hvigorw: $(command -v hvigorw || echo MISSING)"
+          echo "ohpm: $(command -v ohpm || echo MISSING)"
+
+      # 定位 SDK 并设置 DEVECO_SDK_HOME（hvigor 依赖此变量找 SDK；找不到则不覆盖）
+      - name: Locate SDK
+        run: |
+          for d in /harmonyos-tools/command-line-tools/sdk "$HOME/command-line-tools/sdk" /opt/command-line-tools/sdk /usr/local/command-line-tools/sdk; do
+            if [ -d "$d/default/openharmony" ]; then
+              echo "DEVECO_SDK_HOME=$d" >> "$GITHUB_ENV"
+              echo "Found SDK at: $d"
+              break
+            fi
+          done
+
+      - name: Install dependencies
+        run: ohpm install --all
+
+      - name: Build unsigned HAP
+        run: |
+          hvigorw clean --no-daemon
+          hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
+
+      - name: Upload HAP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hap-unsigned
+          path: entry/build/default/outputs/default/*.hap
+          if-no-files-found: error
