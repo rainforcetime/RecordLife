@@ -5,6 +5,7 @@
 import { bundleManager, common } from '@kit.AbilityKit';
 import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { Logger } from '../common/utils/Logger'
+import { BUILD_DATE } from './BuildInfo'
 
 // 应用信息接口
 export interface AppInfoConfig {
@@ -90,14 +91,11 @@ export class AppInfoManager {
 
   /**
    * 生成构建号
-   * 基于当前日期生成，格式：YYYYMMDD
+   * 取 hvigor 构建时写入的 BUILD_DATE（真实构建日期，YYYYMMDD），
+   * 不再运行时取当前时间（否则显示查看日期而非构建日期）
    */
   private generateBuildNumber(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    return `${year}${month}${day}`;
+    return BUILD_DATE;
   }
 
   /**
