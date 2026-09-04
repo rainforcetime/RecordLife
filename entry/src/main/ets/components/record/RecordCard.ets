@@ -329,16 +329,18 @@ export struct RecordCard {
           this.shareDialogController.open()
         })
 
-      // 追加想法（评论）按钮：💬 + 条数
+      // 追加想法（评论）按钮：消息图标 + 条数（与操作条图标风格统一）
       Row({ space: 3 }) {
-        Text('💬')
-          .fontSize(17)
+        SymbolGlyph($r('sys.symbol.message'))
+          .fontSize(19)
+          .fontColor([this.themeColors.iconColor])
         if (this.commentCount() > 0) {
           Text(`${this.commentCount()}`)
             .fontSize(12)
             .fontColor(this.themeColors.textSecondary)
         }
       }
+      .padding(4)
       .onClick(() => {
         if (this.onComment) {
           this.onComment(this.record)

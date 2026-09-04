@@ -1867,6 +1867,10 @@
     {
       "name": "comment_add",
       "value": "添加"
+    },
+    {
+      "name": "confirm_delete_comment",
+      "value": "确定删除这条追加想法？"
     }
   ]
 }

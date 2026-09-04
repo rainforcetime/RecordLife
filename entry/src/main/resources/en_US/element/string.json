@@ -1867,6 +1867,10 @@
     {
       "name": "comment_add",
       "value": "Add"
+    },
+    {
+      "name": "confirm_delete_comment",
+      "value": "Delete this thought?"
     }
   ]
 }

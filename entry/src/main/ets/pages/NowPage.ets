@@ -371,6 +371,7 @@ struct NowPage {
         }
         .width('100%')
         .height('100%')
+        .justifyContent(FlexAlign.Center)
         .backgroundColor(this.isDarkMode ? '#B31A1A1A' : '#B3F5F5F5')
         .backdropBlur(24)
       }
@@ -462,9 +463,9 @@ struct NowPage {
       backgroundColor: this.themeColors.cardBackground,
       dragBar: true
     })
-    // 追加想法（评论）面板（需求3）
+    // 追加想法（评论）面板（需求3；高度取 58% 减少键盘弹起时标题被顶出可视区）
     .bindSheet($$this.showCommentSheet, this.CommentSheetBuilder(), {
-      height: '72%',
+      height: '58%',
       backgroundColor: this.themeColors.cardBackground,
       dragBar: true,
       showClose: false
@@ -530,11 +531,13 @@ struct NowPage {
                 .layoutWeight(1)
                 .alignItems(HorizontalAlign.Start)
 
-                Text('🗑')
-                  .fontSize(16)
-                  .opacity(0.85)
+                Image($r('sys.media.ohos_ic_public_remove'))
+                  .width(18)
+                  .height(18)
+                  .fillColor(this.themeColors.textTertiary)
+                  .margin({ left: 12 })
                   .onClick(() => {
-                    this.onDeleteComment(item.id)
+                    this.confirmDeleteComment(item)
                   })
               }
               .width('100%')
@@ -603,6 +606,26 @@ struct NowPage {
     await this.viewModel.addComment(target.id, text)
     this.commentText = ''
     this.syncCommentTarget()
+  }
+
+  // 删除追加想法前二次确认（复查 UI）
+  private confirmDeleteComment(item: CommentItem): void {
+    this.getUIContext().showAlertDialog({
+      title: $r('app.string.confirm_delete'),
+      message: $r('app.string.confirm_delete_comment'),
+      primaryButton: {
+        value: $r('app.string.cancel'),
+        action: () => {
+        }
+      },
+      secondaryButton: {
+        value: $r('app.string.delete'),
+        fontColor: Color.Red,
+        action: () => {
+          this.onDeleteComment(item.id)
+        }
+      }
+    })
   }
 
   // 删除追加想法
