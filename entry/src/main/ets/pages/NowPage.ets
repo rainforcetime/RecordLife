@@ -20,6 +20,9 @@ import { Logger } from '../common/utils/Logger'
 @Component
 struct NowPage {
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
+  // 隐私模式（ConfigManager 同步）：开启时记录页内容亚克力模糊
+  @StorageLink('privacyMode') privacyMode: boolean = false
+  @StorageLink('isDarkMode') isDarkMode: boolean = false
   
   // 时间线数据
   @State private timelineData: TimelineData = { years: [] }
@@ -342,6 +345,28 @@ struct NowPage {
       .edgeEffect(EdgeEffect.Spring)
       .align(Alignment.Top)
       
+      // 隐私模式：记录内容亚克力模糊遮罩（盖住 Scroll 记录区；FAB 在上层保持可用）
+      if (this.privacyMode) {
+        Column() {
+          Column({ space: 12 }) {
+            Text('🔒')
+              .fontSize(42)
+            Text($r('app.string.privacy_mode_on'))
+              .fontSize(15)
+              .fontColor(this.isDarkMode ? '#CCFFFFFF' : '#66000000')
+              .textAlign(TextAlign.Center)
+              .lineHeight(22)
+              .padding({ left: 32, right: 32 })
+          }
+          .justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.Center)
+        }
+        .width('100%')
+        .height('100%')
+        .backgroundColor(this.isDarkMode ? '#B31A1A1A' : '#B3F5F5F5')
+        .backdropBlur(24)
+      }
+
       // 右下角浮动按钮
       Button() {
         Column() {
