@@ -562,15 +562,12 @@ struct NowPage {
 
       // 底部输入区
       Row({ space: 10 }) {
-        TextArea({ placeholder: $r('app.string.comment_input_placeholder'), text: this.commentText })
+        TextArea({ placeholder: $r('app.string.comment_input_placeholder'), text: $$this.commentText })
           .layoutWeight(1)
           .height(46)
           .fontSize(15)
           .backgroundColor(this.themeColors.background)
           .borderRadius(10)
-          .onChange((value: string) => {
-            this.commentText = value
-          })
         Button($r('app.string.comment_add'))
           .height(46)
           .fontSize(15)
@@ -624,7 +621,20 @@ struct NowPage {
     if (id && this.viewModel) {
       const fresh = this.viewModel.getRecordById(id)
       if (fresh) {
-        this.commentTarget = fresh
+        // 显式拷贝为新对象 + 新 comments 数组（ArkTS 不支持对象展开），
+        // 确保 @State 感知变化刷新面板（复查 P1）
+        this.commentTarget = {
+          id: fresh.id,
+          timestamp: fresh.timestamp,
+          content: fresh.content,
+          updatedAt: fresh.updatedAt,
+          imagePaths: fresh.imagePaths,
+          imageCloudKeys: fresh.imageCloudKeys,
+          tags: fresh.tags,
+          isPinned: fresh.isPinned,
+          mood: fresh.mood,
+          comments: fresh.comments ? [...fresh.comments] : undefined
+        }
       }
     }
     this.refreshTimeline()

@@ -264,11 +264,21 @@ export class NowViewModel {
     }
     
     const record = this.records[index]
-    
+
+    // 计算各字段是否有实际变化（复查 P2-2：避免无改动保存误标「已编辑」）
+    const contentChanged = record.content !== content
+    const moodChanged = mood !== undefined &&
+      (mood.length > 0 ? mood : undefined) !== record.mood
+    const tagsChanged = tags !== undefined && !this.sameStringArray(record.tags, tags)
+    const imagesChanged = imagePaths !== undefined && !this.sameStringArray(record.imagePaths, imagePaths)
+
+    // 记录最后修改时间：仅实际有修改时更新（需求2）
+    if (contentChanged || moodChanged || tagsChanged || imagesChanged) {
+      record.updatedAt = Date.now()
+    }
+
     // 更新文字内容
     record.content = content
-    // 记录最后修改时间（编辑保存即更新；旧数据无此字段 = 从未编辑）
-    record.updatedAt = Date.now()
     
     // 更新心情（可选字段，更新计划二期；'' 表示清除）
     if (mood !== undefined) {
@@ -347,6 +357,12 @@ export class NowViewModel {
   getRecordById(id: string): LifeRecord | null {
     const found = this.records.find(r => r.id === id)
     return found ? found : null
+  }
+
+  // 字符串数组是否相同（undefined 视为空数组；复查 P2-2 用）
+  private sameStringArray(a: string[] | undefined, b: string[]): boolean {
+    const x = a ? a : []
+    return x.length === b.length && x.every((v, i) => v === b[i])
   }
 
   // 添加追加想法（评论，需求3）
