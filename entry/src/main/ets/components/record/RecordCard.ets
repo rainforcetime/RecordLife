@@ -45,6 +45,7 @@ export struct RecordCard {
   onEdit?: (record: LifeRecord) => void
   onDelete?: (record: LifeRecord) => void
   onTogglePin?: (record: LifeRecord) => void
+  onComment?: (record: LifeRecord) => void
   
   // ViewModel
   private viewModel: NowViewModel | null = null
@@ -327,6 +328,22 @@ export struct RecordCard {
         .onClick(() => {
           this.shareDialogController.open()
         })
+
+      // 追加想法（评论）按钮：💬 + 条数
+      Row({ space: 3 }) {
+        Text('💬')
+          .fontSize(17)
+        if (this.commentCount() > 0) {
+          Text(`${this.commentCount()}`)
+            .fontSize(12)
+            .fontColor(this.themeColors.textSecondary)
+        }
+      }
+      .onClick(() => {
+        if (this.onComment) {
+          this.onComment(this.record)
+        }
+      })
       
       // 编辑按钮
       Image($r('sys.media.ohos_ic_public_edit'))
@@ -387,5 +404,10 @@ export struct RecordCard {
     const sameDay = d.getFullYear() === c.getFullYear() &&
       d.getMonth() === c.getMonth() && d.getDate() === c.getDate()
     return sameDay ? `${hh}:${mm}` : `${d.getMonth() + 1}/${d.getDate()} ${hh}:${mm}`
+  }
+
+  // 追加想法条数（需求3）
+  private commentCount(): number {
+    return this.record.comments ? this.record.comments.length : 0
   }
 }

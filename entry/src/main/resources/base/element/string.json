@@ -1851,6 +1851,22 @@
     {
       "name": "edited_at",
       "value": "编辑于 %s"
+    },
+    {
+      "name": "comments_title",
+      "value": "追加想法"
+    },
+    {
+      "name": "comments_empty",
+      "value": "还没有追加想法，写一条吧"
+    },
+    {
+      "name": "comment_input_placeholder",
+      "value": "写下你的想法..."
+    },
+    {
+      "name": "comment_add",
+      "value": "添加"
     }
   ]
 }

@@ -12,6 +12,14 @@ export interface LifeRecord {
   tags?: string[];          // 标签ID数组（可选）
   isPinned?: boolean;       // 是否置顶（可选）
   mood?: string;            // 心情（可选，更新计划二期：心情 id，预置或自定义）
+  comments?: CommentItem[]; // 追加想法/备注列表（可选，需求3：每条记录可追加多条）
+}
+
+// 追加想法（评论）条目
+export interface CommentItem {
+  id: string;               // 唯一标识
+  content: string;          // 内容
+  timestamp: number;        // 追加时间（毫秒）
 }
 
 // 心情（更新计划二期：自定义心情）

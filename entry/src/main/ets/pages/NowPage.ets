@@ -2,7 +2,7 @@
 import { common } from '@kit.AbilityKit'
 import { ResourceUtils } from '../common/utils/ResourceUtils'
 import { ThemeColors, ThemeConfig } from '../config/ThemeConfig'
-import { TimelineData, LifeRecord, Tag } from '../common/types'
+import { TimelineData, LifeRecord, CommentItem, Tag } from '../common/types'
 import { getDisplayTagName } from '../common/utils/TagDisplayUtils'
 import { NowViewModel } from '../viewmodel/NowViewModel'
 import { TimelineSection } from '../components/record/TimelineSection'
@@ -98,6 +98,11 @@ struct NowPage {
   
   // 记录此刻弹窗
   @State private showAddRecordDialog: boolean = false
+
+  // 追加想法（评论）面板状态（需求3）
+  @State private showCommentSheet: boolean = false
+  @State private commentTarget: LifeRecord | null = null
+  @State private commentText: string = ''
 
   // 桌面卡片「快速记录」标记（AppStorage 同步；@Watch 覆盖已构建场景，aboutToAppear 覆盖首次构建场景）
   @StorageLink('cardQuickRecord') @Watch('onCardQuickRecord') cardQuickRecord: boolean = false
@@ -295,6 +300,9 @@ struct NowPage {
               },
               onTogglePin: (record: LifeRecord) => {
                 this.onTogglePin(record)
+              },
+              onComment: (record: LifeRecord) => {
+                this.openCommentSheet(record)
               }
             })
           } else {
@@ -454,6 +462,13 @@ struct NowPage {
       backgroundColor: this.themeColors.cardBackground,
       dragBar: true
     })
+    // 追加想法（评论）面板（需求3）
+    .bindSheet($$this.showCommentSheet, this.CommentSheetBuilder(), {
+      height: '72%',
+      backgroundColor: this.themeColors.cardBackground,
+      dragBar: true,
+      showClose: false
+    })
   }
   
   // 记录此刻弹窗
@@ -472,6 +487,155 @@ struct NowPage {
     .height('100%')
     .backgroundColor(this.themeColors.cardBackground)
     .borderRadius({ topLeft: 16, topRight: 16 })
+  }
+
+  // 追加想法（评论）面板（需求3）
+  @Builder
+  CommentSheetBuilder() {
+    Column() {
+      // 标题行
+      Row() {
+        Text($r('app.string.comments_title'))
+          .fontSize(18)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(this.themeColors.textPrimary)
+        Blank()
+        Text('✕')
+          .fontSize(20)
+          .fontColor(this.themeColors.textSecondary)
+          .onClick(() => {
+            this.showCommentSheet = false
+          })
+      }
+      .width('100%')
+      .padding({ left: 20, right: 20, top: 18, bottom: 10 })
+
+      // 评论列表 / 空态
+      if (this.commentTarget && this.commentTarget.comments && this.commentTarget.comments.length > 0) {
+        List({ space: 8 }) {
+          ForEach(this.commentTarget.comments, (item: CommentItem) => {
+            ListItem() {
+              Row() {
+                Column() {
+                  Text(item.content)
+                    .fontSize(15)
+                    .fontColor(this.themeColors.textPrimary)
+                    .textAlign(TextAlign.Start)
+                    .width('100%')
+                  Text(this.formatCommentTime(item.timestamp))
+                    .fontSize(11)
+                    .fontColor(this.themeColors.textTertiary)
+                    .margin({ top: 4 })
+                }
+                .layoutWeight(1)
+                .alignItems(HorizontalAlign.Start)
+
+                Text('🗑')
+                  .fontSize(16)
+                  .opacity(0.85)
+                  .onClick(() => {
+                    this.onDeleteComment(item.id)
+                  })
+              }
+              .width('100%')
+              .padding(12)
+              .backgroundColor(this.themeColors.background)
+              .borderRadius(10)
+            }
+          }, (item: CommentItem) => item.id)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .scrollBar(BarState.Off)
+        .padding({ left: 16, right: 16 })
+      } else {
+        Column() {
+          Text($r('app.string.comments_empty'))
+            .fontSize(14)
+            .fontColor(this.themeColors.textSecondary)
+            .textAlign(TextAlign.Center)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .justifyContent(FlexAlign.Center)
+      }
+
+      // 底部输入区
+      Row({ space: 10 }) {
+        TextArea({ placeholder: $r('app.string.comment_input_placeholder'), text: this.commentText })
+          .layoutWeight(1)
+          .height(46)
+          .fontSize(15)
+          .backgroundColor(this.themeColors.background)
+          .borderRadius(10)
+          .onChange((value: string) => {
+            this.commentText = value
+          })
+        Button($r('app.string.comment_add'))
+          .height(46)
+          .fontSize(15)
+          .backgroundColor(this.themeColors.primary)
+          .fontColor(Color.White)
+          .borderRadius(10)
+          .onClick(() => {
+            this.onAddComment()
+          })
+      }
+      .width('100%')
+      .padding({ left: 16, right: 16, top: 10, bottom: 20 })
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(this.themeColors.cardBackground)
+  }
+
+  // 打开追加想法面板
+  private openCommentSheet(record: LifeRecord): void {
+    this.commentTarget = record
+    this.commentText = ''
+    this.showCommentSheet = true
+  }
+
+  // 添加追加想法
+  private async onAddComment(): Promise<void> {
+    const target = this.commentTarget
+    const text = this.commentText.trim()
+    if (!target || text.length === 0 || !this.viewModel) {
+      return
+    }
+    await this.viewModel.addComment(target.id, text)
+    this.commentText = ''
+    this.syncCommentTarget()
+  }
+
+  // 删除追加想法
+  private async onDeleteComment(commentId: string): Promise<void> {
+    const target = this.commentTarget
+    if (!target || !this.viewModel) {
+      return
+    }
+    await this.viewModel.deleteComment(target.id, commentId)
+    this.syncCommentTarget()
+  }
+
+  // 评论变更后：同步 commentTarget 最新数据并刷新时间线（卡片 💬 角标）
+  private syncCommentTarget(): void {
+    const id = this.commentTarget?.id
+    if (id && this.viewModel) {
+      const fresh = this.viewModel.getRecordById(id)
+      if (fresh) {
+        this.commentTarget = fresh
+      }
+    }
+    this.refreshTimeline()
+  }
+
+  // 评论时间显示（M/D HH:mm）
+  private formatCommentTime(ts: number): string {
+    const d = new Date(ts)
+    const hh = d.getHours().toString().padStart(2, '0')
+    const mm = d.getMinutes().toString().padStart(2, '0')
+    return `${d.getMonth() + 1}/${d.getDate()} ${hh}:${mm}`
   }
   
   // 编辑对话框

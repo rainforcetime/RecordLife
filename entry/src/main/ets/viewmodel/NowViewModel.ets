@@ -342,6 +342,57 @@ export class NowViewModel {
     }
     return success
   }
+
+  // 按 id 获取记录（供评论面板等同步最新数据）
+  getRecordById(id: string): LifeRecord | null {
+    const found = this.records.find(r => r.id === id)
+    return found ? found : null
+  }
+
+  // 添加追加想法（评论，需求3）
+  async addComment(recordId: string, content: string): Promise<boolean> {
+    const index = this.records.findIndex(r => r.id === recordId)
+    if (index === -1) {
+      Logger.error('[NowViewModel] addComment: 未找到记录: ' + recordId)
+      return false
+    }
+    const record = this.records[index]
+    if (!record.comments) {
+      record.comments = []
+    }
+    record.comments.push({
+      id: this.generateId(),
+      content: content,
+      timestamp: Date.now()
+    })
+    const success = await this.saveRecords()
+    if (success) {
+      Logger.info('[NowViewModel] 追加想法成功，记录: ' + recordId)
+    }
+    return success
+  }
+
+  // 删除追加想法（评论，需求3）
+  async deleteComment(recordId: string, commentId: string): Promise<boolean> {
+    const index = this.records.findIndex(r => r.id === recordId)
+    if (index === -1) {
+      Logger.error('[NowViewModel] deleteComment: 未找到记录: ' + recordId)
+      return false
+    }
+    const record = this.records[index]
+    if (!record.comments) {
+      return false
+    }
+    const cIdx = record.comments.findIndex(c => c.id === commentId)
+    if (cIdx === -1) {
+      return false
+    }
+    record.comments.splice(cIdx, 1)
+    if (record.comments.length === 0) {
+      record.comments = undefined
+    }
+    return await this.saveRecords()
+  }
   
   // 切换收藏/置顶状态
   async togglePin(id: string): Promise<boolean> {
