@@ -155,6 +155,14 @@ export struct RecordCard {
             .fontSize(13)
             .fontColor(this.themeColors.textSecondary)
 
+          // 最后修改时间（编辑过才显示）
+          if (this.isEdited()) {
+            Text($r('app.string.edited_at', this.formatEditedAt(this.record.updatedAt as number)))
+              .fontSize(12)
+              .fontColor(this.themeColors.textTertiary)
+              .margin({ left: 8 })
+          }
+
           Blank()
 
           // 操作按钮
@@ -362,5 +370,22 @@ export struct RecordCard {
       // 只显示时分
       return `${hours}:${minutes}`
     }
+  }
+
+  // 是否编辑过（updatedAt 存在且晚于创建时间）
+  private isEdited(): boolean {
+    const updatedAt = this.record.updatedAt
+    return updatedAt !== undefined && updatedAt > this.record.timestamp
+  }
+
+  // 最后修改时间文本：与创建同日只显时分，跨日补 M/D
+  private formatEditedAt(updatedAt: number): string {
+    const d = new Date(updatedAt)
+    const hh = d.getHours().toString().padStart(2, '0')
+    const mm = d.getMinutes().toString().padStart(2, '0')
+    const c = new Date(this.record.timestamp)
+    const sameDay = d.getFullYear() === c.getFullYear() &&
+      d.getMonth() === c.getMonth() && d.getDate() === c.getDate()
+    return sameDay ? `${hh}:${mm}` : `${d.getMonth() + 1}/${d.getDate()} ${hh}:${mm}`
   }
 }

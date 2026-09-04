@@ -1847,6 +1847,10 @@
     {
       "name": "quick_record_card_hint",
       "value": "轻触快速记录"
+    },
+    {
+      "name": "edited_at",
+      "value": "编辑于 %s"
     }
   ]
 }

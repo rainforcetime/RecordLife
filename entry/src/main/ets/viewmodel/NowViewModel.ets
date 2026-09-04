@@ -267,6 +267,8 @@ export class NowViewModel {
     
     // 更新文字内容
     record.content = content
+    // 记录最后修改时间（编辑保存即更新；旧数据无此字段 = 从未编辑）
+    record.updatedAt = Date.now()
     
     // 更新心情（可选字段，更新计划二期；'' 表示清除）
     if (mood !== undefined) {
