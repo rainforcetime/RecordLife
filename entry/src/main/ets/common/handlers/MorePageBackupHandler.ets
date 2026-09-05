@@ -363,8 +363,12 @@ export class MorePageBackupHandler {
             timestamp: record.timestamp,
             content: record.content,
             imagePaths: undefined,
+            imageCloudKeys: record.imageCloudKeys,  // 透传云端原图 key
             tags: record.tags,
-            isPinned: record.isPinned
+            isPinned: record.isPinned,
+            mood: record.mood,           // 透传心情
+            updatedAt: record.updatedAt, // 透传最后修改时间（勿丢）
+            comments: record.comments    // 透传追加想法/评论（勿丢）
           }
           
           if (record.imagePaths && record.imagePaths.length > 0) {
