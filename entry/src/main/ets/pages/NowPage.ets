@@ -564,12 +564,14 @@ struct NowPage {
         .justifyContent(FlexAlign.Center)
       }
 
-      // 底部输入区
+      // 底部输入区（TextInput 单行，placeholder 自动垂直居中）
       Row({ space: 10 }) {
-        TextArea({ placeholder: $r('app.string.comment_input_placeholder'), text: $$this.commentText })
+        TextInput({ placeholder: $r('app.string.comment_input_placeholder'), text: $$this.commentText })
           .layoutWeight(1)
           .height(46)
           .fontSize(15)
+          .fontColor(this.themeColors.textPrimary)
+          .placeholderColor(this.themeColors.textTertiary)
           .backgroundColor(this.themeColors.background)
           .borderRadius(10)
         Button($r('app.string.comment_add'))
