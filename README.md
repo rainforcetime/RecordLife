@@ -8,7 +8,7 @@
 [![构建](https://github.com/rainforcetime/RecordLife/workflows/Build%20HAP/badge.svg)](https://github.com/rainforcetime/RecordLife/actions)
 [![许可证](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-当前版本 **3.0.93**（versionCode 30093）· [更新记录](docs/CHANGELOG.md)
+当前版本 **3.0.94**（versionCode 30094）· [更新记录](docs/CHANGELOG.md)
 
 </div>
 
@@ -70,29 +70,10 @@ hvigorw.bat assembleHap --mode module -p product=default -p buildMode=debug --no
 
 > 每次构建会自动把**真实构建日期**写入 `config/BuildInfo.ets`（关于页 Build 日期即打包当天，勿提交该文件变化）。
 
-## 📦 安装与发版
+## 📦 安装
 
-- **测试包**：仓库 GitHub Actions → 最新 workflow run → Artifacts 下载（保留 90 天）
-- **正式版**：GitHub [Releases](https://github.com/rainforcetime/RecordLife/releases) 下载 `RecordLife_V<版本号>.hap`（长期保留）
-- 发版流程（维护者）：合并 PR 到 `master` → 打 tag 推送 → 自动构建并发布 Release
-- **Debug / Release 证书分工**：仓库与日常本地调试只用 **debug 自动签名**（`build-profile.json5` signingConfigs 仅 `default`）；**release 发布证书不写入工程/仓库**（仅存于签名机本地，绝不上传）。
-
-### 上架（AGC）签名流程（方案 B：unsigned 包 + 单独签名）
-
-1. 取得 unsigned HAP：CI tag 产物或本地命令行构建（去掉签名配置后 `hvigorw assembleHap -p buildMode=release`）
-2. 用 release 证书签名：
-   ```powershell
-   $env:HOS_STORE_PWD = "p12密码"; $env:HOS_KEY_PWD = "别名密码"
-   powershell -File scripts/sign-hap.ps1 `
-     -InFile "…/entry-default-release-unsigned.hap" -OutFile "RecordLife_V<版本>_release.hap" `
-     -Keystore "证书.p12" `
-     -KeyAlias "recordlife_key" `
-     -Cert "证书.cer" `
-     -Profile "profile.p7b"
-   ```
-3. 上传签名后的 HAP 到 AppGallery Connect
-
-> 日常调试永不切 release；release 密码经环境变量传入，脚本/仓库不含明文。
+- 从 GitHub [Releases](https://github.com/rainforcetime/RecordLife/releases) 下载 `RecordLife_V<版本号>.hap` 安装到真机
+- 日常测试包可在 GitHub Actions 对应 workflow run 的 Artifacts 中获取（保留 90 天）
 
 ## 🤖 CI/CD
 

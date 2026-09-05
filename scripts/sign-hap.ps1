@@ -1,28 +1,26 @@
-﻿# HAP 签名助手（方案 B：unsigned 包 + 单独签名，release/debug 通用）
-# 用途：上架前用 release 证书给 unsigned HAP 签名；也可给 debug unsigned 包签 debug 证书。
+﻿# HAP 签名助手（unsigned 包 + 单独签名，release/debug 通用）
+# 用途：上架前用 release 证书给 unsigned HAP/App 包签名。
 #
 # 用法一（命令行全参）：
 #   powershell -File scripts/sign-hap.ps1 `
-#     -InFile "…unsigned.hap" -OutFile "RecordLife_V3.0.90_release.hap" `
-#     -Keystore "证书.p12" `
-#     -KeyAlias "recordlife_key" `
+#     -InFile "…unsigned.hap" -OutFile "release/RecordLife_Vx_release.hap" `
+#     -Keystore "证书.p12" -KeyAlias "别名" `
 #     -Cert "证书.cer" -Profile "profile.p7b" `
 #     -StorePwd "p12密码" -KeyPwd "别名密码"
 #
-# 用法二（推荐，一键）：release 材料存本地配置文件（已 gitignore，含密码不提交）
-#   1) 首次：复制下面 JSON 到仓库根 release-config.local.json 并填真实值
-#   2) 之后每次上架只需：
-#        powershell -File scripts/sign-hap.ps1 -Config release-config.local.json `
-#          -InFile "…unsigned.hap" -OutFile "RecordLife_V3.0.90_release.hap"
-#   release-config.local.json 示例：
+# 用法二（推荐，一键）：证书路径/密码存于本地 release-config.local.json
+#   （已被 .gitignore，绝不入库）。首次按下方结构创建并填真实值即可：
 #   {
 #     "keystore": "<p12 路径>",
-#     "storePwd": "p12密码（或用 HOS_STORE_PWD 环境变量留空）",
-#     "keyAlias": "recordlife_key",
-#     "keyPwd": "别名密码（或用 HOS_KEY_PWD 环境变量留空）",
+#     "storePwd": "<p12 密码，或用 HOS_STORE_PWD 留空>",
+#     "keyAlias": "<别名>",
+#     "keyPwd": "<别名密码，或用 HOS_KEY_PWD 留空>",
 #     "cert": "<cer 路径>",
 #     "profile": "<p7b 路径>"
 #   }
+#   之后每次：
+#     powershell -File scripts/sign-hap.ps1 -Config release-config.local.json `
+#       -InFile "…unsigned.hap" -OutFile "release/RecordLife_Vx_release.hap"
 # 密码优先级：命令行参数 > 配置文件 > 环境变量 HOS_STORE_PWD / HOS_KEY_PWD。
 param(
   [string]$Config,          # 本地 release 配置 JSON（gitignore），可替代证书路径/密码参数
