@@ -564,16 +564,35 @@ struct NowPage {
         .justifyContent(FlexAlign.Center)
       }
 
-      // 底部输入区（TextInput 单行，placeholder 自动垂直居中）
+      // 底部输入区：TextArea 多行输入；空态用自定义叠层占位（垂直居中、点击穿透聚焦）
       Row({ space: 10 }) {
-        TextInput({ placeholder: $r('app.string.comment_input_placeholder'), text: $$this.commentText })
-          .layoutWeight(1)
-          .height(46)
-          .fontSize(15)
-          .fontColor(this.themeColors.textPrimary)
-          .placeholderColor(this.themeColors.textTertiary)
-          .backgroundColor(this.themeColors.background)
-          .borderRadius(10)
+        Stack() {
+          TextArea({ text: $$this.commentText })
+            .width('100%')
+            .height(88)
+            .fontSize(15)
+            .fontColor(this.themeColors.textPrimary)
+            .backgroundColor(this.themeColors.background)
+            .borderRadius(10)
+            .padding({ left: 12, right: 12 })
+
+          // 空态占位：与输入区同尺寸，内容垂直居中；点击穿透到 TextArea 聚焦
+          if (this.commentText.length === 0) {
+            Column() {
+              Text($r('app.string.comment_input_placeholder'))
+                .fontSize(15)
+                .fontColor(this.themeColors.textTertiary)
+            }
+            .width('100%')
+            .height(88)
+            .justifyContent(FlexAlign.Center)
+            .alignItems(HorizontalAlign.Start)
+            .padding({ left: 16 })
+            .hitTestBehavior(HitTestMode.Transparent)
+          }
+        }
+        .layoutWeight(1)
+
         Button($r('app.string.comment_add'))
           .height(46)
           .fontSize(15)
