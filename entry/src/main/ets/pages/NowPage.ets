@@ -103,6 +103,8 @@ struct NowPage {
   @State private showCommentSheet: boolean = false
   @State private commentTarget: LifeRecord | null = null
   @State private commentText: string = ''
+  // 提交中防重入（复查漏洞：连点防重复追加）
+  @State private commentSubmitting: boolean = false
 
   // 桌面卡片「快速记录」标记（AppStorage 同步；@Watch 覆盖已构建场景，aboutToAppear 覆盖首次构建场景）
   @StorageLink('cardQuickRecord') @Watch('onCardQuickRecord') cardQuickRecord: boolean = false
@@ -618,16 +620,30 @@ struct NowPage {
     this.showCommentSheet = true
   }
 
-  // 添加追加想法
+  // 添加追加想法（防重入：发起前清空输入并置位，失败恢复输入并提示）
   private async onAddComment(): Promise<void> {
+    if (this.commentSubmitting) {
+      return
+    }
     const target = this.commentTarget
     const text = this.commentText.trim()
     if (!target || text.length === 0 || !this.viewModel) {
       return
     }
-    await this.viewModel.addComment(target.id, text)
+    this.commentSubmitting = true
     this.commentText = ''
-    this.syncCommentTarget()
+    const success = await this.viewModel.addComment(target.id, text)
+    this.commentSubmitting = false
+    if (success) {
+      this.syncCommentTarget()
+    } else {
+      this.commentText = text
+      try {
+        this.promptAction?.showToast({ message: $r('app.string.comment_add_failed') })
+      } catch (error) {
+        Logger.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+      }
+    }
   }
 
   // 删除追加想法前二次确认（复查 UI）
@@ -650,14 +666,22 @@ struct NowPage {
     })
   }
 
-  // 删除追加想法
+  // 删除追加想法（失败提示）
   private async onDeleteComment(commentId: string): Promise<void> {
     const target = this.commentTarget
     if (!target || !this.viewModel) {
       return
     }
-    await this.viewModel.deleteComment(target.id, commentId)
-    this.syncCommentTarget()
+    const success = await this.viewModel.deleteComment(target.id, commentId)
+    if (success) {
+      this.syncCommentTarget()
+    } else {
+      try {
+        this.promptAction?.showToast({ message: $r('app.string.comment_delete_failed') })
+      } catch (error) {
+        Logger.error('[NowPage] showToast failed: ' + JSON.stringify(error))
+      }
+    }
   }
 
   // 评论变更后：同步 commentTarget 最新数据并刷新时间线（卡片 💬 角标）

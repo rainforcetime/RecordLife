@@ -365,8 +365,12 @@ export class NowViewModel {
     return x.length === b.length && x.every((v, i) => v === b[i])
   }
 
-  // 添加追加想法（评论，需求3）
+  // 添加追加想法（评论，需求3；内容去空校验下沉，防 UI 外绕过）
   async addComment(recordId: string, content: string): Promise<boolean> {
+    const trimmed = content.trim()
+    if (!trimmed) {
+      return false
+    }
     const index = this.records.findIndex(r => r.id === recordId)
     if (index === -1) {
       Logger.error('[NowViewModel] addComment: 未找到记录: ' + recordId)
@@ -378,7 +382,7 @@ export class NowViewModel {
     }
     record.comments.push({
       id: this.generateId(),
-      content: content,
+      content: trimmed,
       timestamp: Date.now()
     })
     const success = await this.saveRecords()

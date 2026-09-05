@@ -1871,6 +1871,14 @@
     {
       "name": "confirm_delete_comment",
       "value": "Delete this thought?"
+    },
+    {
+      "name": "comment_add_failed",
+      "value": "Failed to add, please retry"
+    },
+    {
+      "name": "comment_delete_failed",
+      "value": "Failed to delete, please retry"
     }
   ]
 }

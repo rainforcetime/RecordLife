@@ -338,7 +338,12 @@ export class ConfigManager {
   // 重置为默认配置
   async resetToDefault(): Promise<boolean> {
     this.config = await createDefaultConfig();
-    return await this.saveConfig();
+    const success = await this.saveConfig();
+    if (success) {
+      // 同步 AppStorage（重置后隐私模式等全局状态即时复位；复查 nit）
+      AppStorage.setOrCreate('privacyMode', false);
+    }
+    return success;
   }
 
   // 更新最后活跃时间（使用天数从 metadata.createdAt 实时计算，无需累加）

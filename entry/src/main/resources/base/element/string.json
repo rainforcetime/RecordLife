@@ -1871,6 +1871,14 @@
     {
       "name": "confirm_delete_comment",
       "value": "确定删除这条追加想法？"
+    },
+    {
+      "name": "comment_add_failed",
+      "value": "追加失败，请重试"
+    },
+    {
+      "name": "comment_delete_failed",
+      "value": "删除失败，请重试"
     }
   ]
 }
