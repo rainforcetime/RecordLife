@@ -149,22 +149,25 @@ export struct RecordCard {
           }
         }
 
-        // 底部信息栏：时间 + 操作按钮
+        // 底部信息栏：时间信息（弹性列） + 操作按钮（固定右侧）
         Row() {
-          // 时间戳
-          Text(this.formatTime(this.record.timestamp))
-            .fontSize(13)
-            .fontColor(this.themeColors.textSecondary)
+          // 左：创建时间 + 最后修改时间（编辑过才显示；下沉小字，超出省略，避免挤出按钮）
+          Column() {
+            Text(this.formatTime(this.record.timestamp))
+              .fontSize(13)
+              .fontColor(this.themeColors.textSecondary)
 
-          // 最后修改时间（编辑过才显示）
-          if (this.isEdited()) {
-            Text($r('app.string.edited_at', this.formatEditedAt(this.record.updatedAt as number)))
-              .fontSize(12)
-              .fontColor(this.themeColors.textTertiary)
-              .margin({ left: 8 })
+            if (this.isEdited()) {
+              Text($r('app.string.edited_at', this.formatEditedAt(this.record.updatedAt as number)))
+                .fontSize(11)
+                .fontColor(this.themeColors.textTertiary)
+                .margin({ top: 2 })
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
           }
-
-          Blank()
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
 
           // 操作按钮
           this.ActionButtons()
