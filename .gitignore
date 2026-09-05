@@ -16,3 +16,5 @@
 /docs/PR-draft.md
 # 本地 release 签名配置（含证书路径与密码，绝不提交）
 /release-config.local.json
+# 正式签名包输出目录（发布包不进仓库）
+/release/
