@@ -53,7 +53,7 @@ export const LightTheme: ThemeColors = {
   // 文本色
   textPrimary: '#000000',
   textSecondary: '#666666',
-  textTertiary: '#999999',
+  textTertiary: '#707070',   // 对比度达标：白底≈5.2:1、#F5F5F5≈4.7:1（≥4.5），仍弱于 textSecondary
   
   // 主题色
   primary: '#007DFF',
@@ -86,7 +86,7 @@ export const DarkTheme: ThemeColors = {
   // 文本色
   textPrimary: '#FFFFFF',
   textSecondary: '#B3B3B3',
-  textTertiary: '#808080',
+  textTertiary: '#9E9E9E',   // 对比度达标：cardBackground #2D2D2D≈5.1:1（≥4.5），仍弱于 textSecondary
   
   // 主题色
   primary: '#4DA3FF',

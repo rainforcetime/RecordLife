@@ -16,11 +16,11 @@ struct MainPage {
     Column() {
       SymbolGlyph(icon)
         .fontSize(24)
-        .fontColor([this.currentIndex === index ? this.themeColors.primary : this.themeColors.textTertiary])
+        .fontColor([this.currentIndex === index ? this.themeColors.primary : this.themeColors.textSecondary])
       
       Text(title)
         .fontSize(12)
-        .fontColor(this.currentIndex === index ? this.themeColors.primary : this.themeColors.textTertiary)
+        .fontColor(this.currentIndex === index ? this.themeColors.primary : this.themeColors.textSecondary)
         .margin({ top: 4 })
     }
     .width('100%')
@@ -34,6 +34,22 @@ struct MainPage {
     if (cardQuickRecord === true) {
       this.currentIndex = 1
     }
+    // 首页可见性广播：驱动 HomePage 每秒定时器启停（云测功耗：不可见时停止动效）
+    this.syncHomeVisible()
+  }
+
+  // 页面离开（退后台/切页）：首页定时器应停止
+  onPageHide() {
+    AppStorage.setOrCreate('homeVisible', false)
+  }
+
+  aboutToAppear() {
+    AppStorage.setOrCreate('homeVisible', this.currentIndex === 0)
+  }
+
+  // 首页（Tab 0）可见与否 → AppStorage，HomePage @StorageLink 响应启停定时器
+  private syncHomeVisible(): void {
+    AppStorage.setOrCreate('homeVisible', this.currentIndex === 0)
   }
 
   build() {
@@ -55,6 +71,7 @@ struct MainPage {
     }
     .onChange((index: number) => {
       this.currentIndex = index
+      this.syncHomeVisible()
     })
   }
 }

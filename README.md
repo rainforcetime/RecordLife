@@ -8,7 +8,7 @@
 [![构建](https://github.com/rainforcetime/RecordLife/workflows/Build%20HAP/badge.svg)](https://github.com/rainforcetime/RecordLife/actions)
 [![许可证](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-当前版本 **3.0.84**（versionCode 30084）· [更新记录](docs/CHANGELOG.md)
+当前版本 **3.0.96**（versionCode 30096）· [更新记录](docs/CHANGELOG.md)
 
 </div>
 
@@ -70,11 +70,10 @@ hvigorw.bat assembleHap --mode module -p product=default -p buildMode=debug --no
 
 > 每次构建会自动把**真实构建日期**写入 `config/BuildInfo.ets`（关于页 Build 日期即打包当天，勿提交该文件变化）。
 
-## 📦 安装与发版
+## 📦 安装
 
-- **测试包**：仓库 GitHub Actions → 最新 workflow run → Artifacts 下载（保留 90 天）
-- **正式版**：GitHub [Releases](https://github.com/rainforcetime/RecordLife/releases) 下载 `RecordLife_V<版本号>.hap`（长期保留）
-- 发版流程（维护者）：合并 PR 到 `master` → 打 tag 推送 → 自动构建并发布 Release
+- 从 GitHub [Releases](https://github.com/rainforcetime/RecordLife/releases) 下载 `RecordLife_V<版本号>.hap` 安装到真机
+- 日常测试包可在 GitHub Actions 对应 workflow run 的 Artifacts 中获取（保留 90 天）
 
 ## 🤖 CI/CD
 

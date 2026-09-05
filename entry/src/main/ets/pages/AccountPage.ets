@@ -12,7 +12,6 @@ import { SettingItemWithInfo } from '../components/setting/SettingItemWithInfo'
 import { SettingItemWithSwitch } from '../components/setting/SettingItemWithSwitch'
 import { SettingsGroupCard } from '../components/setting/SettingsGroupCard'
 import { EditProfileDialog } from '../components/dialog/EditProfileDialog'
-import { AboutAppDialog } from '../components/dialog/AboutAppDialog'
 import { UserInfoSection, UserInfo } from '../components/user/UserInfoSection'
 import { AccountViewModel, AccountDataStatistics } from '../viewmodel/AccountViewModel'
 import { AccountUtils } from '../common/utils/AccountUtils'
@@ -107,18 +106,6 @@ export struct AccountPage {
     customStyle: true
   })
   
-  // 关于应用弹窗控制器
-  private aboutAppDialog: CustomDialogController = new CustomDialogController({
-    builder: AboutAppDialog({
-      appInfo: this.appInfo,
-      themeColors: this.themeColors,
-      usageDays: this.statisticsInfo.usageDays
-    }),
-    autoCancel: true,
-    alignment: DialogAlignment.Center,
-    customStyle: true
-  })
-
   // 页面初始化
   async aboutToAppear() {
     try {
@@ -398,10 +385,16 @@ export struct AccountPage {
     }
   }
   
-  // 关于应用处理
+  // 关于应用处理（完整页面）
   private onAboutApp() {
     Logger.info('关于应用')
-    this.aboutAppDialog.open()
+    try {
+      this.getUIContext().getRouter().pushUrl({
+        url: 'pages/AboutPage'
+      })
+    } catch (error) {
+      Logger.error('打开关于页失败: ' + JSON.stringify(error))
+    }
   }
   
   // 个性化管理处理（页面化替代弹窗，个性化管理 UI 优化）
