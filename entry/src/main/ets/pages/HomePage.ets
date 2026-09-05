@@ -39,8 +39,9 @@ export struct HomePage {
   @State @Watch('onTargetAgeChanged') targetAge: number = 80; // 目标年龄，默认80岁
   @State privacyMode: boolean = false; // 隐私模式（更新计划三期）
   @State lifePercent: number = 0; // 生命进度百分比（更新计划五期）
-  // 秒（独立高频字段：每秒仅刷秒卡；其它时间卡/环形随 timeData 分钟级刷新——云测功耗优化）
-  @State seconds: number = 0; // 当前秒数
+  // 秒卡显示值（独立高频字段：每秒仅刷秒卡；其余时间卡/环形分钟级刷新——云测功耗优化）
+  // 语义随模式：累计=总秒大数（存活+1/剩余-1）；非累计=0-59 秒位
+  @State secondCardValue: number = 0
   private lastMinuteKey: string = ''; // 分钟级整表刷新去重 key（yyyy-M-d-h-m）
   @State userConfig: UserConfig | null = null;
   @State isAccumulatedMode: boolean = true; // true: 累计模式, false: 非累计模式
@@ -196,17 +197,42 @@ export struct HomePage {
     }, 1000);
   }
 
-  // 秒级 tick：仅当秒变化更新秒字段；跨分钟时整表（timeData/lifePercent）刷新
+  // 秒级 tick：仅当秒卡值变化时更新；跨分钟才整表（timeData/lifePercent）刷新
   private onSecondTick(): void {
     const now = TimeUtils.now();
-    const sec = now.getSeconds();
     const key = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}`;
     if (key !== this.lastMinuteKey) {
       this.lastMinuteKey = key;
       this.calculateTime();
-    } else if (sec !== this.seconds) {
-      this.seconds = sec;
+    } else {
+      const v = this.currentSecondCardValue(now);
+      if (v !== this.secondCardValue) {
+        this.secondCardValue = v;
+      }
     }
+  }
+
+  // 当前模式下秒卡应显示的值（与 calculateLived/RemainingTime 中 timeData.seconds 语义一致）：
+  // 已存活累计=已活总秒(+1/s)；剩余累计=剩余总秒(-1/s)；非累计=0-59 秒位（存活+1/剩余-1）
+  private currentSecondCardValue(now: Date): number {
+    if (this.isRemainingMode) {
+      const targetAge = (this.targetAge !== undefined && !isNaN(this.targetAge) && this.targetAge > 0)
+        ? this.targetAge : 80;
+      const targetDate = new Date(this.birthDate);
+      TimeUtils.setFullYear(targetDate, TimeUtils.getFullYear(this.birthDate) + targetAge);
+      const diff = targetDate.getTime() - now.getTime();
+      if (diff < 0) {
+        return 0;
+      }
+      const totalSeconds = Math.floor(diff / 1000);
+      return this.isAccumulatedMode ? totalSeconds : Math.floor((diff % (60 * 1000)) / 1000);
+    }
+    const diff = now.getTime() - this.birthDate.getTime();
+    if (diff < 0) {
+      return 0;
+    }
+    const totalSeconds = Math.floor(diff / 1000);
+    return this.isAccumulatedMode ? totalSeconds : TimeUtils.getSeconds(now);
   }
 
   // 停止每秒刷新
@@ -254,8 +280,8 @@ export struct HomePage {
   // 计算存活时间（使用UTC+8时区）
   private calculateTime() {
     const now = TimeUtils.now();
-    // 同步秒与分钟 key（整表刷新后记录基线；云测功耗：秒独立高频、其余分钟级）
-    this.seconds = now.getSeconds();
+    // 同步秒卡值与分钟 key（整表刷新后记录基线；秒独立高频、其余分钟级）
+    this.secondCardValue = this.currentSecondCardValue(now);
     this.lastMinuteKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}`;
 
     // 生命进度（更新计划五期）
@@ -635,7 +661,7 @@ export struct HomePage {
             Row() {
               Column() {
                 TimeCard({
-                  value: this.seconds,
+                  value: this.secondCardValue,
                   label: $r('app.string.seconds'),
                   description: this.isAccumulatedMode ? 
                     (this.isRemainingMode ? $r('app.string.remaining_total_seconds') : $r('app.string.accumulated_seconds')) : 

@@ -2,8 +2,8 @@
   "app": {
     "bundleName": "com.mumudlin.recordlife",
     "vendor": "rainforcetime",
-    "versionCode": 30094,
-    "versionName": "3.0.94",
+    "versionCode": 30095,
+    "versionName": "3.0.95",
     "icon": "$media:layered_image",
     "label": "$string:app_name",
     "description": "$string:app_description"
