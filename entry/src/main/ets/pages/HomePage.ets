@@ -39,6 +39,9 @@ export struct HomePage {
   @State @Watch('onTargetAgeChanged') targetAge: number = 80; // 目标年龄，默认80岁
   @State privacyMode: boolean = false; // 隐私模式（更新计划三期）
   @State lifePercent: number = 0; // 生命进度百分比（更新计划五期）
+  // 秒（独立高频字段：每秒仅刷秒卡；其它时间卡/环形随 timeData 分钟级刷新——云测功耗优化）
+  @State seconds: number = 0; // 当前秒数
+  private lastMinuteKey: string = ''; // 分钟级整表刷新去重 key（yyyy-M-d-h-m）
   @State userConfig: UserConfig | null = null;
   @State isAccumulatedMode: boolean = true; // true: 累计模式, false: 非累计模式
   @State isRemainingMode: boolean = false; // true: 剩余模式, false: 已存活模式
@@ -186,11 +189,24 @@ export struct HomePage {
     }
   }
 
-  // 启动每秒刷新（计算存活时间）
+  // 启动每秒刷新：秒变仅刷秒卡；跨分钟才整表重算（避免无关卡片每秒重建）
   private startTimer(): void {
     this.intervalId = setInterval(() => {
-      this.calculateTime();
+      this.onSecondTick();
     }, 1000);
+  }
+
+  // 秒级 tick：仅当秒变化更新秒字段；跨分钟时整表（timeData/lifePercent）刷新
+  private onSecondTick(): void {
+    const now = TimeUtils.now();
+    const sec = now.getSeconds();
+    const key = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}`;
+    if (key !== this.lastMinuteKey) {
+      this.lastMinuteKey = key;
+      this.calculateTime();
+    } else if (sec !== this.seconds) {
+      this.seconds = sec;
+    }
   }
 
   // 停止每秒刷新
@@ -238,7 +254,10 @@ export struct HomePage {
   // 计算存活时间（使用UTC+8时区）
   private calculateTime() {
     const now = TimeUtils.now();
-    
+    // 同步秒与分钟 key（整表刷新后记录基线；云测功耗：秒独立高频、其余分钟级）
+    this.seconds = now.getSeconds();
+    this.lastMinuteKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}`;
+
     // 生命进度（更新计划五期）
     this.lifePercent = StatisticsUtils.getLifeProgress(this.birthDate, this.targetAge, now).percent;
     
@@ -616,7 +635,7 @@ export struct HomePage {
             Row() {
               Column() {
                 TimeCard({
-                  value: this.timeData.seconds,
+                  value: this.seconds,
                   label: $r('app.string.seconds'),
                   description: this.isAccumulatedMode ? 
                     (this.isRemainingMode ? $r('app.string.remaining_total_seconds') : $r('app.string.accumulated_seconds')) : 

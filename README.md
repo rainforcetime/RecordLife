@@ -8,7 +8,7 @@
 [![构建](https://github.com/rainforcetime/RecordLife/workflows/Build%20HAP/badge.svg)](https://github.com/rainforcetime/RecordLife/actions)
 [![许可证](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-当前版本 **3.0.88**（versionCode 30088）· [更新记录](docs/CHANGELOG.md)
+当前版本 **3.0.89**（versionCode 30089）· [更新记录](docs/CHANGELOG.md)
 
 </div>
 
