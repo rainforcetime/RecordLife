@@ -33,7 +33,7 @@ export class MorePageBackupHandler {
     try {
       const applicationContext = context.getApplicationContext()
       const want: Want = {
-        bundleName: 'com.rainforcetime.recordlife',
+        bundleName: 'com.mumudlin.recordlife',
         abilityName: 'EntryAbility'
       }
       Logger.info('[MorePageBackupHandler] 准备重启应用')

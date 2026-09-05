@@ -22,7 +22,7 @@ export class MorePageConfigHandler {
     try {
       const applicationContext = context.getApplicationContext()
       const want: Want = {
-        bundleName: 'com.rainforcetime.recordlife',
+        bundleName: 'com.mumudlin.recordlife',
         abilityName: 'EntryAbility'
       }
       Logger.info('[MorePageConfigHandler] 准备重启应用')
