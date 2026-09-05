@@ -12,3 +12,5 @@
 /.appanalyzer
 /.preview
 /.reasonix
+# PR 本地草稿（永远不提交：起草 PR 描述用，避免仓库因 PR 内容产生 git diff）
+/docs/PR-draft.md
