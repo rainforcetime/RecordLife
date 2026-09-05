@@ -24,6 +24,8 @@ interface CardColors {
 export struct HomePage {
   // 主题颜色配置（响应式）
   @StorageLink('themeColors') themeColors: ThemeColors = ThemeConfig.getColors(false)
+  // 首页可见性（Index 首页 Tab + 应用前台）：不可见时停止每秒定时器（云测功耗修复）
+  @StorageLink('homeVisible') @Watch('onHomeVisibleChange') homeVisible: boolean = true
   
   @State timeData: TimeData = {
     years: 0,
@@ -153,11 +155,11 @@ export struct HomePage {
     const targetAge = this.configManager.getTargetAge();
     this.targetAge = (targetAge !== undefined && !isNaN(targetAge) && targetAge > 0) ? targetAge : 80;
     
-    // 开始计算时间
+    // 开始计算时间（仅首页可见时跑秒表；切 Tab/退后台由 onHomeVisibleChange 停止）
     this.calculateTime();
-    this.intervalId = setInterval(() => {
-      this.calculateTime();
-    }, 1000);
+    if (this.homeVisible && this.intervalId === -1) {
+      this.startTimer();
+    }
     
     // 注册全局刷新回调：当其他页面修改出生日期时同步更新
     RefreshManager.getInstance().register('HomePage', () => {
@@ -173,10 +175,34 @@ export struct HomePage {
     })
   }
 
-  aboutToDisappear() {
+  // 首页可见性变化：可见启动秒表，不可见立即停止（云测功耗：不可见动效不使用资源）
+  onHomeVisibleChange() {
+    if (this.homeVisible) {
+      if (this.intervalId === -1) {
+        this.startTimer()
+      }
+    } else {
+      this.stopTimer()
+    }
+  }
+
+  // 启动每秒刷新（计算存活时间）
+  private startTimer(): void {
+    this.intervalId = setInterval(() => {
+      this.calculateTime();
+    }, 1000);
+  }
+
+  // 停止每秒刷新
+  private stopTimer(): void {
     if (this.intervalId !== -1) {
       clearInterval(this.intervalId);
+      this.intervalId = -1;
     }
+  }
+
+  aboutToDisappear() {
+    this.stopTimer()
     // 注销刷新回调
     RefreshManager.getInstance().unregister('HomePage')
   }
