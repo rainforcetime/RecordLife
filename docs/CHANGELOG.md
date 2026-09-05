@@ -1,5 +1,32 @@
 # RecordLife 更新日志（Changelog）
 
+## 3.0.85~3.0.96（versionCode 30096）— 2026-09-05
+
+> 3.0.85~3.0.96 系列（关于页升级 + 包名变更 + 签名工程化 + 首页性能/对比度）
+
+### ✨ 新功能
+- **关于页完整页面**：应用内弹窗升级为独立页面（应用头部/版本+Build 日期、使用统计卡、更新日志·源码·反馈·隐私说明·开源许可外链、版权尾；隐私/开源站内文本弹层，外链 openLink）
+- **Debug/Release 签名解耦**：release 证书与密码彻底移出工程（此前 material 含明文密码）；新增 `scripts/sign-hap.ps1` 一键签名助手（unsigned→signed，`-Config` gitignore 本地配置或环境变量传密码）；`release/` 目录集中存放正式签名包（gitignore）
+
+### ⚠️ 破坏性变更
+- **应用包名变更**：`com.rainforcetime.recordlife` → `com.mumudlin.recordlife`（备份/配置导入校验 bundleName 同步；需按新包名重新签名安装）
+
+### 🐛 修复
+- **备份导入丢字段**：恢复备份丢失追加想法/最后修改时间（BackupManager 透传 `updatedAt/comments`）；另一导入路径补齐 `imageCloudKeys/mood/updatedAt/comments`（此前连心情与云端 key 也丢）
+- **累计模式秒卡回归 bug**：3.0.89 秒级优化把累计态秒卡误显示为 0-59 → 新增 `secondCardValue` 独立字段按当前模式计算（累计总秒 / 非累计秒位）
+- **云测功耗「空跑无效绘制」**：首页秒表随可见性启停（切 Tab/退后台立即停表）
+- sign-hap.ps1 保存为 UTF-8 BOM（Windows PowerShell 5.1 中文注释乱码，实测签名成功）
+
+### ⚡ 性能 / 体验优化
+- **首页秒级刷新最小化**：秒拆独立 @State——每秒仅刷秒卡，年/月/日/时/分卡与生命进度环形由每秒整刷降为分钟级（跨分钟/手动入口仍立即整刷）
+- **色彩对比度达标**：未激活 Tab 文字/图标 `textTertiary(#999)` → `textSecondary(#666)`（浅 5.7:1 / 深 8.5:1）；全局 `textTertiary` 浅色 `#999999→#707070`（≈5.2:1）、深色 `#808080→#9E9E9E`（≈5.1:1），保持弱于 textSecondary 的三级弱化语义
+
+### 🛠 技术演进 / 工程化
+- **公开文档清理**：README 改用户向「安装」；移除发版流程、Debug/Release 证书分工、AGC 上架签名流程与本地 release 证书路径（`git grep` 确认零残留）
+- build-profile.json5 启用 skip-worktree（本地 DevEco 重签不再产生 diff/误提交，仓库版供 CI）
+
+---
+
 ## 3.0.68~3.0.81（versionCode 30081）— 2026-09-05
 
 > 3.0.68~3.0.81 系列（隐私亚克力 + 最后修改时间 + 追加想法评论 + 文档体系规范化）
