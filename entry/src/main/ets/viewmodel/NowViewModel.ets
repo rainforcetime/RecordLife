@@ -365,6 +365,15 @@ export class NowViewModel {
     return x.length === b.length && x.every((v, i) => v === b[i])
   }
 
+  // fileIo.accessSync 安全包装（accessSync 可能抛异常，统一捕获避免中断上传统计；消除编译警告）
+  private static safeAccessSync(p: string): boolean {
+    try {
+      return fileIo.accessSync(p)
+    } catch (e) {
+      return false
+    }
+  }
+
   // 添加追加想法（评论，需求3；内容去空校验下沉，防 UI 外绕过）
   async addComment(recordId: string, content: string): Promise<boolean> {
     const trimmed = content.trim()
@@ -674,9 +683,9 @@ export class NowViewModel {
           continue
         }
         const origPath = `${context.cacheDir}/pending/${name.replace(/\.(jpg|jpeg|png)$/i, '_orig.jpg')}`
-        if (!fileIo.accessSync(origPath)) {
+        if (!NowViewModel.safeAccessSync(origPath)) {
           const recordPath = ImagePathUtils.uriToSandboxPath(record.imagePaths[i])
-          if (!fileIo.accessSync(recordPath)) {
+          if (!NowViewModel.safeAccessSync(recordPath)) {
             continue
           }
         }
@@ -700,10 +709,10 @@ export class NowViewModel {
         const origPath = `${context.cacheDir}/pending/${origName}`
         let uploadPath = origPath
         let isPendingFile = true
-        if (!fileIo.accessSync(origPath)) {
+        if (!NowViewModel.safeAccessSync(origPath)) {
           // 无 pending：兜底用本地记录图片
           const recordPath = ImagePathUtils.uriToSandboxPath(record.imagePaths[i])
-          if (!fileIo.accessSync(recordPath)) {
+          if (!NowViewModel.safeAccessSync(recordPath)) {
             continue
           }
           uploadPath = recordPath
