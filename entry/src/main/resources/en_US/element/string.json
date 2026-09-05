@@ -1879,6 +1879,50 @@
     {
       "name": "comment_delete_failed",
       "value": "Failed to delete, please retry"
+    },
+    {
+      "name": "about_update_log",
+      "value": "Changelog"
+    },
+    {
+      "name": "about_source",
+      "value": "Source Code"
+    },
+    {
+      "name": "about_feedback",
+      "value": "Feedback"
+    },
+    {
+      "name": "about_privacy",
+      "value": "Privacy"
+    },
+    {
+      "name": "about_license",
+      "value": "Open Source License"
+    },
+    {
+      "name": "about_copyright",
+      "value": "© 2026 rainforcetime · Made with HarmonyOS"
+    },
+    {
+      "name": "about_records_label",
+      "value": "Records"
+    },
+    {
+      "name": "privacy_title",
+      "value": "Privacy"
+    },
+    {
+      "name": "privacy_body",
+      "value": "Records are stored locally by default. When cloud storage is enabled, original images are uploaded to your private Tencent Cloud COS bucket as configured. Export/import of records and backups happens only on your explicit action. You may clear cache, reset, or backup data anytime from the Account page."
+    },
+    {
+      "name": "license_title",
+      "value": "Open Source License"
+    },
+    {
+      "name": "license_body",
+      "value": "This project is licensed under the MIT License.\n\nMIT License\n\nCopyright (c) 2026 rainforcetime\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT."
     }
   ]
 }

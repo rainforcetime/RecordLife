@@ -6,6 +6,7 @@
     "pages/GuidePage",
     "pages/DashboardPage",
     "pages/TagManagementPage",
-    "pages/CloudStoragePage"
+    "pages/CloudStoragePage",
+    "pages/AboutPage"
   ]
 }

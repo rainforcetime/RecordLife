@@ -1879,6 +1879,50 @@
     {
       "name": "comment_delete_failed",
       "value": "删除失败，请重试"
+    },
+    {
+      "name": "about_update_log",
+      "value": "更新日志"
+    },
+    {
+      "name": "about_source",
+      "value": "查看源码"
+    },
+    {
+      "name": "about_feedback",
+      "value": "意见反馈"
+    },
+    {
+      "name": "about_privacy",
+      "value": "隐私说明"
+    },
+    {
+      "name": "about_license",
+      "value": "开源许可"
+    },
+    {
+      "name": "about_copyright",
+      "value": "© 2026 rainforcetime · 用 HarmonyOS 记录生活"
+    },
+    {
+      "name": "about_records_label",
+      "value": "记录"
+    },
+    {
+      "name": "privacy_title",
+      "value": "隐私说明"
+    },
+    {
+      "name": "privacy_body",
+      "value": "本应用记录数据默认仅存储于本机；开启云存储后，原图会经你配置的腾讯云 COS 上传至你的私有存储桶。记录与备份仅在你主动操作时导入导出。你随时可在「我的」中清除缓存、重置或备份数据。"
+    },
+    {
+      "name": "license_title",
+      "value": "开源许可"
+    },
+    {
+      "name": "license_body",
+      "value": "本项目基于 MIT License 开源。\nMIT License\n\nCopyright (c) 2026 rainforcetime\n\n特此免费授予任何获得本软件副本及相关文档文件（以下合称“软件”）的人不受限制地处置本软件的权利，包括但不限于使用、复制、修改、合并、发布、分发、再许可和/或销售本软件副本，并允许向其提供本软件的人这样做，但须符合以下条件：\n\n上述版权声明和本许可声明应包含在本软件的所有副本或实质性部分中。\n\n本软件按“原样”提供，不作任何明示或暗示的保证，包括但不限于适销性、特定用途适用性和非侵权性的保证。"
     }
   ]
 }
