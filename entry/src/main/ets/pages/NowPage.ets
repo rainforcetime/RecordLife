@@ -569,7 +569,7 @@ struct NowPage {
         Stack() {
           TextArea({ text: $$this.commentText })
             .width('100%')
-            .height(88)
+            .height(56)
             .fontSize(15)
             .fontColor(this.themeColors.textPrimary)
             .backgroundColor(this.themeColors.background)
@@ -584,7 +584,7 @@ struct NowPage {
                 .fontColor(this.themeColors.textTertiary)
             }
             .width('100%')
-            .height(88)
+            .height(56)
             .justifyContent(FlexAlign.Center)
             .alignItems(HorizontalAlign.Start)
             .padding({ left: 16 })
