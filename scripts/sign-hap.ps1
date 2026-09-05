@@ -1,4 +1,4 @@
-# HAP 签名助手（方案 B：unsigned 包 + 单独签名，release/debug 通用）
+﻿# HAP 签名助手（方案 B：unsigned 包 + 单独签名，release/debug 通用）
 # 用途：上架前用 release 证书给 unsigned HAP 签名；也可给 debug unsigned 包签 debug 证书。
 #
 # 用法一（命令行全参）：
