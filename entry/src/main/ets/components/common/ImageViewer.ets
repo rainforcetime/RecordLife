@@ -108,10 +108,14 @@ export struct ImageViewer {
       }
     } catch (error) {
       Logger.error('[ImageViewer] 下载原图失败: ' + JSON.stringify(error))
-      this.getUIContext().getPromptAction().showToast({
-        message: $r('app.string.cloud_test_failed'),
-        duration: 2000
-      })
+      try {
+        this.getUIContext().getPromptAction().showToast({
+          message: $r('app.string.cloud_test_failed'),
+          duration: 2000
+        })
+      } catch (toastError) {
+        Logger.warn('[ImageViewer] showToast 失败: ' + JSON.stringify(toastError))
+      }
     } finally {
       this.downloadingOriginal = false
     }

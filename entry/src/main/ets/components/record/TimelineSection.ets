@@ -43,6 +43,7 @@ export struct TimelineSection {
   onEditRecord?: (record: LifeRecord) => void
   onDeleteRecord?: (record: LifeRecord) => void
   onTogglePin?: (record: LifeRecord) => void
+  onComment?: (record: LifeRecord) => void
 
   // 监听 timelineData 变化
   @Watch('onTimelineDataChange')
@@ -343,7 +344,8 @@ export struct TimelineSection {
           searchKeyword: this.searchKeyword,
           onEdit: this.onEditRecord,
           onDelete: this.onDeleteRecord,
-          onTogglePin: this.onTogglePin
+          onTogglePin: this.onTogglePin,
+          onComment: this.onComment
         })
         .margin({ top: index > 0 ? 12 : 0 })
       }, (record: LifeRecord) => `pinned-${this.timelineDataVersion}-${record.id}`)
@@ -368,7 +370,8 @@ export struct TimelineSection {
           searchKeyword: this.searchKeyword,  // 传递搜索关键词
           onEdit: this.onEditRecord,
           onDelete: this.onDeleteRecord,
-          onTogglePin: this.onTogglePin
+          onTogglePin: this.onTogglePin,
+          onComment: this.onComment
         })
         .margin({ top: recordIndex > 0 ? 12 : 8 })
       }, (record: LifeRecord) => `${this.timelineDataVersion}-${record.id}`)

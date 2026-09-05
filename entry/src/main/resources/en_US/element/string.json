@@ -1847,6 +1847,38 @@
     {
       "name": "quick_record_card_hint",
       "value": "Tap to record"
+    },
+    {
+      "name": "edited_at",
+      "value": "Edited %s"
+    },
+    {
+      "name": "comments_title",
+      "value": "Add Thoughts"
+    },
+    {
+      "name": "comments_empty",
+      "value": "No thoughts yet, write one"
+    },
+    {
+      "name": "comment_input_placeholder",
+      "value": "Write your thoughts..."
+    },
+    {
+      "name": "comment_add",
+      "value": "Add"
+    },
+    {
+      "name": "confirm_delete_comment",
+      "value": "Delete this thought?"
+    },
+    {
+      "name": "comment_add_failed",
+      "value": "Failed to add, please retry"
+    },
+    {
+      "name": "comment_delete_failed",
+      "value": "Failed to delete, please retry"
     }
   ]
 }

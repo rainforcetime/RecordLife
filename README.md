@@ -1,135 +1,127 @@
+<div align="center">
 
-# Record Life (活着)
+# Record Life · 活着
 
-一款基于 HarmonyOS 开发的生活记录应用，帮助用户记录生活中的重要时刻和日常点滴。
+**一款记录生活、珍惜此刻的 HarmonyOS 应用**
 
-> **当前版本**：3.0.68（versionCode 30068，更新说明见 [`docs/CHANGELOG.md`](docs/CHANGELOG.md)）
+[![版本](https://img.shields.io/github/v/release/rainforcetime/RecordLife)](https://github.com/rainforcetime/RecordLife/releases)
+[![构建](https://github.com/rainforcetime/RecordLife/workflows/Build%20HAP/badge.svg)](https://github.com/rainforcetime/RecordLife/actions)
+[![许可证](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## 功能特点
+当前版本 **3.0.84**（versionCode 30084）· [更新记录](docs/CHANGELOG.md)
 
-- **生存时间**：首页展示出生至今的存活时间（年/月/日/时/分/秒）与**生命进度环形**，支持已存活/剩余、累计/非累计模式
-- **主题配色**：8 色主色板一键切换，全局配色实时生效（深色模式自动调亮保对比度），重启保留
-- **云存储（腾讯云 COS）**：本地只存压缩图（高清/均衡/省空间三档），原图存云端；「查看原图 / 保存原图到本地」；上传全部（历史补传 + 去重 + 进度条）、总开关、自定义域名
-- **此刻记录**：文字 + 图片 + 标签 + **心情**记录生活瞬间，时间线/日历双视图，支持搜索与**心情/标签筛选**
-- **图片预览**：滑动翻页 + 捏合缩放（1~5x）+ 双击放大 + 放大后平移，支持查看/保存云端原图
-- **记录模板**：预设常用记录，**一键填充**；支持自定义增删改
-- **撤销删除**：删除记录后 3 秒内可一键撤销
-- **数据看板**：记录总数、活跃天数、最长连续、累计字数等统计 + **生命里程碑**（1 万天 / 18 岁 / 目标年龄等）
-- **隐私模式**：一键隐藏首页与我的页敏感信息
-- **图片分享**：将记录以图片形式分享给朋友
-- **数据备份**：支持本地数据备份和恢复、缓存清理
-- **个性化**：自定义标签 / 心情 / 模板、签名座右铭、字体大小、主题切换
-- **双语支持**：中英文界面
-
-## 页面说明
-
-| 页面 | 功能描述 |
-|------|----------|
-| 首页 | 存活时间、生命进度、里程碑、分享截图 |
-| 此刻 | 记录生活瞬间（文字/图片/标签/心情）、时间线与日历、筛选 |
-| 我的 | 个人资料、主题/字体/隐私设置、数据看板、备份恢复 |
-
-## 技术栈
-
-- 框架：HarmonyOS ArkUI
-- 开发语言：ETS (Extended TypeScript)
-- 适配设备：华为手机/平板
-
-## 安装使用
-
-1. 确保已安装 DevEco Studio 开发环境
-2. 使用 DevEco Studio 打开项目目录
-3. 连接真机或使用模拟器运行调试
-4. 签名产物：`entry/build/default/outputs/default/entry-default-signed.hap`
-
-## 自动化构建（GitHub Actions）
-
-- 仓库内 `.github/workflows/build-hap.yml` 定义了自动打包流程：ubuntu runner + HarmonyOS Command Line Tools 6.0.2.650 容器镜像（与工程 modelVersion 6.0.2 匹配）。
-- **触发方式**：push / PR 到 `master` 分支，或在仓库 Actions 页面手动点 "Run workflow"。
-- **产物**：unsigned HAP（`entry/build/default/outputs/default/*.hap`），构建成功后在该次 workflow 运行的页面底部 Artifacts 处下载。
-- **说明**：unsigned 包未签名，不可直接安装到真机（仅存档/测试用）。后续如需 debug/release 签名包，再配置签名证书 Secrets 并扩展 workflow。
-
-## 项目结构
-
-```
-entry/src/main/ets/
-├── common/           # 公共工具、管理器与事件处理器
-│   ├── handlers/    # 页面事件处理器
-│   ├── managers/    # 跨页管理器
-│   └── utils/       # 工具类（时间/图片/分享/日志/农历/资源等）
-├── components/       # 可复用 UI 组件
-│   ├── calendar/    # 日历相关组件
-│   ├── dialog/      # 对话框组件
-│   ├── home/        # 首页组件
-│   ├── record/      # 记录卡片/筛选组件
-│   ├── setting/     # 设置项组件
-│   ├── share/       # 分享组件
-│   └── user/        # 用户信息组件
-├── config/          # 应用配置管理
-├── model/           # 领域模型（记录/统计/用户配置）
-├── pages/           # 页面入口文件
-├── repository/      # 数据仓库层
-├── service/         # 服务层（图片/标签/模板/备份/导入导出/存储）
-└── viewmodel/       # 数据模型与业务逻辑
-```
-
-## 许可证
-
-MIT License
+</div>
 
 ---
 
-## 📊 功能总览
+## ✨ 功能特性
 
-| 模块 | 功能 |
-|------|----------|
-| 首页 | 存活时间（年/月/日/时/分/秒）、已存活/剩余切换、累计/非累计、**生命进度环形**、生日设置、目标年龄、签名、分享截图 |
-| 此刻 | 文字+图片+标签+**心情**记录、时间线/日历视图、搜索、**心情/标签筛选**、编辑/删除（**3 秒撤销**）、**记录模板一键填充**、**预览缩放/平移/查看原图** |
-| 我的 | 用户资料/头像、**主题配色**、主题/字体/隐私设置、**数据看板（统计+里程碑）**、缓存清理、个性化管理（标签/心情/模板）、导出/导入与备份、**云存储设置（COS）**、重置 |
+### 🕐 记录生活（此刻）
+- **此刻记录**：文字 + 图片 + 标签 + **心情**，时间线 / 日历双视图，搜索 + 心情/标签筛选
+- **最后修改时间**：编辑过的记录自动标注「编辑于 X」，可追溯每次变更
+- **追加想法**：每条记录可继续追加多条想法/备注（增删、计数角标）
+- **图片预览**：滑动翻页 + 捏合缩放（1~5x）+ 双击放大 + 平移
+- **记录模板**：预设模板一键填充，支持自定义增删改
+- **撤销删除**：删除后 3 秒内一键恢复（含图片与评论）
 
-## 🚀 更新计划
+### 🏠 首页 · 活着
+- **生存时间**：出生至今的年/月/日/时/分/秒，已存活/剩余切换，累计/非累计模式
+- **生命进度环形** + **里程碑**：11 个生命里程碑（1 万天 / 18 岁 / 目标年龄等）
+- **签名/座右铭**、图片形式分享卡片
 
-以下是按难度和重要性排序的功能规划，已实现的功能标记为 ✅。**详细分期路线（含依赖分析、数据兼容性、每期验收清单）见 [`docs/update-plan.md`](docs/update-plan.md)。**
+### 🔐 隐私与数据
+- **隐私模式**：一键开启——首页隐藏敏感信息，**记录页亚克力模糊**（内容不可读）
+- **云存储（腾讯云 COS）**：本地存压缩图、云端存原图；上传全部/去重/进度、自定义域名
+- **数据备份**：本地备份/恢复、导入导出、缓存清理；**数据模型向后兼容**（可选字段演进）
+- **数据看板**：记录总数、活跃天数、最长连续、累计字数 + 里程碑统计
 
-#### ⭐ 低难度
+### 📱 快捷与体验
+- **桌面卡片「快速记录」**：桌面一键新建记录（2×2 ArkTS 卡片）
+- **个性化**：8 色主题、自定义标签/心情/模板、字体大小、签名
+- **双语支持**：简体中文 / English
 
-- [x] ⭐ **收藏/置顶记录** — 标记重要记录置顶显示
-- [x] ⭐ **自定义标签** — 允许用户创建/编辑/删除自定义标签
-- [x] ⭐ **标签筛选** — 按标签类别筛选时间线记录
-- [x] ⭐ **心情标记** — 每条记录可选心情 emoji，支持心情筛选（含自定义心情）🔥
-- [x] ⭐ **记录模板** — 预设常用记录模板，一键使用
-- [x] ⭐ **撤销删除** — 删除后 3 秒内可撤销
-- [x] ⭐ **缓存清理** — 清理图片缓存、过期分享图片等
-- [x] ⭐ **字体大小设置** — 提供小/中/大字体选项
-- [x] ⭐ **隐私模式** — 切换后隐藏首页敏感数据（如出生日期）
-- [x] ⭐ **签名/座右铭** — 个人首页展示自定义签名
-- [ ] ⭐ **周数/总天数** — 已实现（`TimeUtils` 纯函数 + 单测），首页展示已按用户要求移除
-- [x] ⭐ **每年生日提醒** — 基于出生日期计算距下次生日的天数（已实现后展示移除）
+---
 
-#### ⭐⭐ 中等难度
+## 🔧 运行环境
 
-- [x] ⭐⭐ **生命进度可视化** — 环形进度条展示已活年份/目标年龄的比例
-- [x] ⭐⭐ **生命统计面板** — 已度过时间明细 + 里程碑事件
-- [x] ⭐⭐ **引导页** — 首次安装展示应用功能介绍和引导
-- [ ] ⭐⭐ **每日提醒通知** — ~~本地通知~~（已取消：目标 SDK 不支持系统级提醒 API）
-- [ ] ⭐⭐ **批量删除** — 长按进入多选模式，支持批量删除记录
-- [ ] ⭐⭐ **时间线快速跳转** — 侧边年份/月份索引，快速滚动到指定年月
-- [ ] ⭐⭐ **多倒计时** — 除目标年龄外，添加自定义倒计时
-- [x] ⭐⭐ **图片压缩** — 本地压缩（高清/均衡/省空间三档）🔥
-- [x] ⭐⭐ **云存储（COS）** — 原图存云端，本地只存压缩图；上传全部/去重/进度条/总开关/查看原图 🔥
-- [ ] ⭐⭐ **记录连续打卡** — 连续记录天数统计，打卡激励
-- [ ] ⭐⭐ **剪贴板识别** — 检测剪贴板内容，提示是否保存为记录
+| 项 | 要求 |
+|---|---|
+| 系统 | HarmonyOS NEXT（API 22，SDK 6.0.2+） |
+| 设备 | 华为手机 / 平板 |
+| 开发 | DevEco Studio 6.x（hvigor 6.x） |
 
-#### ⭐⭐⭐ 较高难度
+## 🚀 快速开始（开发）
 
-- [x] ⭐⭐⭐ **数据看板** — 记录总数、活跃天数、日均记录数、最长连续天数等统计 🔥
-- [ ] ⭐⭐⭐ **日记月历统计** — 日历视图显示每月记录天数热力图
-- [ ] ⭐⭐⭐ **位置标记** — 记录时获取 GPS 位置，标记记录地点
-- [ ] ⭐⭐⭐ **应用锁** — 指纹/密码解锁应用
-- [ ] ⭐⭐⭐ **导出 Markdown/PDF** — 将记录导出为可读的文档文件
-- [ ] ⭐⭐⭐ **快捷方式** — 桌面快捷方式"快速记录"直接打开记录弹窗
+```bash
+# 1. DevEco Studio 打开项目根目录（等待 Sync 完成）
+# 2. 连接真机或启动模拟器 → 运行 entry 模块
+#    自动签名：DevEco → File → Project Structure → Signing Configs → Automatically generate
+```
 
-#### ⭐⭐⭐⭐ 高难度
+命令行构建（无 IDE）：
 
-- [ ] ⭐⭐⭐⭐ **语音记录** — 使用本地语音识别录制语音转文字
-- [ ] ⭐⭐⭐⭐ **桌面小组件** — 卡片显示存活时间或今日记录
+```powershell
+# 设 SDK 路径（DevEco 自带 SDK 或独立 SDK）
+$env:DEVECO_SDK_HOME = "D:\Software\DevEco Studio\sdk"   # 按实际安装路径
+# 构建 debug（产物含 signed/unsigned HAP）
+hvigorw.bat assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
+# 产物：entry/build/default/outputs/default/*.hap
+```
+
+> 每次构建会自动把**真实构建日期**写入 `config/BuildInfo.ets`（关于页 Build 日期即打包当天，勿提交该文件变化）。
+
+## 📦 安装与发版
+
+- **测试包**：仓库 GitHub Actions → 最新 workflow run → Artifacts 下载（保留 90 天）
+- **正式版**：GitHub [Releases](https://github.com/rainforcetime/RecordLife/releases) 下载 `RecordLife_V<版本号>.hap`（长期保留）
+- 发版流程（维护者）：合并 PR 到 `master` → 打 tag 推送 → 自动构建并发布 Release
+
+## 🤖 CI/CD
+
+`.github/workflows/build-hap.yml`（GitHub Actions，ubuntu + HarmonyOS Command Line Tools 6.0.2.650）：
+
+| 触发 | 行为 |
+|---|---|
+| push / PR 到 `master` | 构建 unsigned HAP（验证编译，产物入 Artifacts） |
+| push tag `v*`（如 `v3.0.81`） | 构建并**自动发布 GitHub Release**（`RecordLife_V<versionName>.hap`） |
+
+Gitee 仅同步代码，不参与打包。
+
+## 🏗 技术栈
+
+- 框架：**HarmonyOS ArkUI**（stage 模型，ArkTS）
+- 语言：ETS（ArkTS，API 22）
+- 数据：Preferences + 本地文件；云图：腾讯云 COS（V5 自实现签名）
+- 架构：`pages → viewmodel → service/repository → model` 分层，单例显式注入，纯函数可单测
+
+## 📁 项目结构
+
+```
+entry/src/main/ets/
+├── common/        # 工具类与处理器（时间/图片/分享/日志/资源…）
+├── components/    # 可复用 UI（calendar/dialog/home/record/setting/share/user…）
+├── config/        # 配置管理（ConfigManager/主题/应用信息/BuildInfo）
+├── model/         # 领域模型（记录/统计/用户配置，数据演进兼容）
+├── pages/         # 页面入口（Index=主框架，Home/Now/Account/More…）
+├── repository/    # 数据仓库（记录/配置/引导…）
+├── service/       # 服务层（图片/标签/备份/云存储…）
+├── viewmodel/     # 页面业务逻辑与状态
+├── entryability/  # EntryAbility（含桌面卡片跳转处理）
+├── entryformability/ # 桌面卡片（FormExtensionAbility）
+└── widget/        # 卡片 UI
+```
+
+## 📚 文档
+
+| 文档 | 说明 | 维护方式 |
+|---|---|---|
+| [CHANGELOG.md](docs/CHANGELOG.md) | 版本更新记录 | **增量追加**（每次发版在顶部新增章节） |
+| [technical-reference.md](docs/technical-reference.md) | 实现细节参考 | 增量维护 |
+| docs/archive/ | 历史设计与规划文档（已归档） | 不再更新 |
+| [LICENSE](LICENSE) | MIT | — |
+
+> 文档规范：`README` 面向用户概述；变更与版本进 `CHANGELOG`；过程性结论（PR 说明、复查记录）不另建零散文档，直接并入 CHANGELOG / 提交说明，保持 `docs/` 整洁、git 历史可读。
+
+## 📄 许可证
+
+[MIT](LICENSE) © rainforcetime

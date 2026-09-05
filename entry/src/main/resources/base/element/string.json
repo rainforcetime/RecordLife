@@ -1847,6 +1847,38 @@
     {
       "name": "quick_record_card_hint",
       "value": "轻触快速记录"
+    },
+    {
+      "name": "edited_at",
+      "value": "编辑于 %s"
+    },
+    {
+      "name": "comments_title",
+      "value": "追加想法"
+    },
+    {
+      "name": "comments_empty",
+      "value": "还没有追加想法，写一条吧"
+    },
+    {
+      "name": "comment_input_placeholder",
+      "value": "写下你的想法..."
+    },
+    {
+      "name": "comment_add",
+      "value": "添加"
+    },
+    {
+      "name": "confirm_delete_comment",
+      "value": "确定删除这条追加想法？"
+    },
+    {
+      "name": "comment_add_failed",
+      "value": "追加失败，请重试"
+    },
+    {
+      "name": "comment_delete_failed",
+      "value": "删除失败，请重试"
     }
   ]
 }

@@ -45,6 +45,7 @@ export struct RecordCard {
   onEdit?: (record: LifeRecord) => void
   onDelete?: (record: LifeRecord) => void
   onTogglePin?: (record: LifeRecord) => void
+  onComment?: (record: LifeRecord) => void
   
   // ViewModel
   private viewModel: NowViewModel | null = null
@@ -148,14 +149,25 @@ export struct RecordCard {
           }
         }
 
-        // 底部信息栏：时间 + 操作按钮
+        // 底部信息栏：时间信息（弹性列） + 操作按钮（固定右侧）
         Row() {
-          // 时间戳
-          Text(this.formatTime(this.record.timestamp))
-            .fontSize(13)
-            .fontColor(this.themeColors.textSecondary)
+          // 左：创建时间 + 最后修改时间（编辑过才显示；下沉小字，超出省略，避免挤出按钮）
+          Column() {
+            Text(this.formatTime(this.record.timestamp))
+              .fontSize(13)
+              .fontColor(this.themeColors.textSecondary)
 
-          Blank()
+            if (this.isEdited()) {
+              Text($r('app.string.edited_at', this.formatEditedAt(this.record.updatedAt as number)))
+                .fontSize(11)
+                .fontColor(this.themeColors.textTertiary)
+                .margin({ top: 2 })
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
 
           // 操作按钮
           this.ActionButtons()
@@ -319,6 +331,24 @@ export struct RecordCard {
         .onClick(() => {
           this.shareDialogController.open()
         })
+
+      // 追加想法（评论）按钮：消息图标 + 条数（与操作条图标风格统一）
+      Row({ space: 3 }) {
+        SymbolGlyph($r('sys.symbol.message'))
+          .fontSize(19)
+          .fontColor([this.themeColors.iconColor])
+        if (this.commentCount() > 0) {
+          Text(`${this.commentCount()}`)
+            .fontSize(12)
+            .fontColor(this.themeColors.textSecondary)
+        }
+      }
+      .padding(4)
+      .onClick(() => {
+        if (this.onComment) {
+          this.onComment(this.record)
+        }
+      })
       
       // 编辑按钮
       Image($r('sys.media.ohos_ic_public_edit'))
@@ -362,5 +392,27 @@ export struct RecordCard {
       // 只显示时分
       return `${hours}:${minutes}`
     }
+  }
+
+  // 是否编辑过（updatedAt 存在且晚于创建时间）
+  private isEdited(): boolean {
+    const updatedAt = this.record.updatedAt
+    return updatedAt !== undefined && updatedAt > this.record.timestamp
+  }
+
+  // 最后修改时间文本：与创建同日只显时分，跨日补 M/D
+  private formatEditedAt(updatedAt: number): string {
+    const d = new Date(updatedAt)
+    const hh = d.getHours().toString().padStart(2, '0')
+    const mm = d.getMinutes().toString().padStart(2, '0')
+    const c = new Date(this.record.timestamp)
+    const sameDay = d.getFullYear() === c.getFullYear() &&
+      d.getMonth() === c.getMonth() && d.getDate() === c.getDate()
+    return sameDay ? `${hh}:${mm}` : `${d.getMonth() + 1}/${d.getDate()} ${hh}:${mm}`
+  }
+
+  // 追加想法条数（需求3）
+  private commentCount(): number {
+    return this.record.comments ? this.record.comments.length : 0
   }
 }

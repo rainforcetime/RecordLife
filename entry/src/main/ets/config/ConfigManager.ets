@@ -61,6 +61,8 @@ export class ConfigManager {
       
       // 同步字体缩放系数到 AppStorage（更新计划一期；供全局文本缩放，避免重启后丢失）
       AppStorage.setOrCreate('fontScale', this.getFontScale(this.getFontSize()));
+      // 同步隐私模式到 AppStorage（供记录页亚克力模糊遮罩等响应）
+      AppStorage.setOrCreate('privacyMode', this.getPrivacyMode());
     } catch (error) {
       Logger.error('ConfigManager init failed: ' + JSON.stringify(error));
       // 使用默认配置
@@ -325,13 +327,23 @@ export class ConfigManager {
       return false;
     }
     this.config.settings.privacyMode = enabled;
-    return await this.saveConfig();
+    const success = await this.saveConfig();
+    if (success) {
+      // 同步 AppStorage，驱动记录页隐私模糊遮罩实时生效
+      AppStorage.setOrCreate('privacyMode', enabled);
+    }
+    return success;
   }
 
   // 重置为默认配置
   async resetToDefault(): Promise<boolean> {
     this.config = await createDefaultConfig();
-    return await this.saveConfig();
+    const success = await this.saveConfig();
+    if (success) {
+      // 同步 AppStorage（重置后隐私模式等全局状态即时复位；复查 nit）
+      AppStorage.setOrCreate('privacyMode', false);
+    }
+    return success;
   }
 
   // 更新最后活跃时间（使用天数从 metadata.createdAt 实时计算，无需累加）

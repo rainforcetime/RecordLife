@@ -4,13 +4,22 @@ import { TimeUtils } from '../common/utils/TimeUtils'
 // 记录接口
 export interface LifeRecord {
   id: string;               // 记录唯一标识
-  timestamp: number;        // 记录时间戳
+  timestamp: number;        // 记录时间戳（创建时间，毫秒）
   content: string;          // 记录内容
+  updatedAt?: number;       // 最后修改时间戳（毫秒，可选；编辑保存时更新，未编辑过则无）
   imagePaths?: string[];    // 图片路径数组（可选）
   imageCloudKeys?: string[]; // 云端原图 key 数组（可选，与 imagePaths 一一对应；图片存储优化 M3）
   tags?: string[];          // 标签ID数组（可选）
   isPinned?: boolean;       // 是否置顶（可选）
   mood?: string;            // 心情（可选，更新计划二期：心情 id，预置或自定义）
+  comments?: CommentItem[]; // 追加想法/备注列表（可选，需求3：每条记录可追加多条）
+}
+
+// 追加想法（评论）条目
+export interface CommentItem {
+  id: string;               // 唯一标识
+  content: string;          // 内容
+  timestamp: number;        // 追加时间（毫秒）
 }
 
 // 心情（更新计划二期：自定义心情）

@@ -264,7 +264,19 @@ export class NowViewModel {
     }
     
     const record = this.records[index]
-    
+
+    // 计算各字段是否有实际变化（复查 P2-2：避免无改动保存误标「已编辑」）
+    const contentChanged = record.content !== content
+    const moodChanged = mood !== undefined &&
+      (mood.length > 0 ? mood : undefined) !== record.mood
+    const tagsChanged = tags !== undefined && !this.sameStringArray(record.tags, tags)
+    const imagesChanged = imagePaths !== undefined && !this.sameStringArray(record.imagePaths, imagePaths)
+
+    // 记录最后修改时间：仅实际有修改时更新（需求2）
+    if (contentChanged || moodChanged || tagsChanged || imagesChanged) {
+      record.updatedAt = Date.now()
+    }
+
     // 更新文字内容
     record.content = content
     
@@ -339,6 +351,76 @@ export class NowViewModel {
       await this.uploadPendingImages()
     }
     return success
+  }
+
+  // 按 id 获取记录（供评论面板等同步最新数据）
+  getRecordById(id: string): LifeRecord | null {
+    const found = this.records.find(r => r.id === id)
+    return found ? found : null
+  }
+
+  // 字符串数组是否相同（undefined 视为空数组；复查 P2-2 用）
+  private sameStringArray(a: string[] | undefined, b: string[]): boolean {
+    const x = a ? a : []
+    return x.length === b.length && x.every((v, i) => v === b[i])
+  }
+
+  // fileIo.accessSync 安全包装（accessSync 可能抛异常，统一捕获避免中断上传统计；消除编译警告）
+  private static safeAccessSync(p: string): boolean {
+    try {
+      return fileIo.accessSync(p)
+    } catch (e) {
+      return false
+    }
+  }
+
+  // 添加追加想法（评论，需求3；内容去空校验下沉，防 UI 外绕过）
+  async addComment(recordId: string, content: string): Promise<boolean> {
+    const trimmed = content.trim()
+    if (!trimmed) {
+      return false
+    }
+    const index = this.records.findIndex(r => r.id === recordId)
+    if (index === -1) {
+      Logger.error('[NowViewModel] addComment: 未找到记录: ' + recordId)
+      return false
+    }
+    const record = this.records[index]
+    if (!record.comments) {
+      record.comments = []
+    }
+    record.comments.push({
+      id: this.generateId(),
+      content: trimmed,
+      timestamp: Date.now()
+    })
+    const success = await this.saveRecords()
+    if (success) {
+      Logger.info('[NowViewModel] 追加想法成功，记录: ' + recordId)
+    }
+    return success
+  }
+
+  // 删除追加想法（评论，需求3）
+  async deleteComment(recordId: string, commentId: string): Promise<boolean> {
+    const index = this.records.findIndex(r => r.id === recordId)
+    if (index === -1) {
+      Logger.error('[NowViewModel] deleteComment: 未找到记录: ' + recordId)
+      return false
+    }
+    const record = this.records[index]
+    if (!record.comments) {
+      return false
+    }
+    const cIdx = record.comments.findIndex(c => c.id === commentId)
+    if (cIdx === -1) {
+      return false
+    }
+    record.comments.splice(cIdx, 1)
+    if (record.comments.length === 0) {
+      record.comments = undefined
+    }
+    return await this.saveRecords()
   }
   
   // 切换收藏/置顶状态
@@ -601,9 +683,9 @@ export class NowViewModel {
           continue
         }
         const origPath = `${context.cacheDir}/pending/${name.replace(/\.(jpg|jpeg|png)$/i, '_orig.jpg')}`
-        if (!fileIo.accessSync(origPath)) {
+        if (!NowViewModel.safeAccessSync(origPath)) {
           const recordPath = ImagePathUtils.uriToSandboxPath(record.imagePaths[i])
-          if (!fileIo.accessSync(recordPath)) {
+          if (!NowViewModel.safeAccessSync(recordPath)) {
             continue
           }
         }
@@ -627,10 +709,10 @@ export class NowViewModel {
         const origPath = `${context.cacheDir}/pending/${origName}`
         let uploadPath = origPath
         let isPendingFile = true
-        if (!fileIo.accessSync(origPath)) {
+        if (!NowViewModel.safeAccessSync(origPath)) {
           // 无 pending：兜底用本地记录图片
           const recordPath = ImagePathUtils.uriToSandboxPath(record.imagePaths[i])
-          if (!fileIo.accessSync(recordPath)) {
+          if (!NowViewModel.safeAccessSync(recordPath)) {
             continue
           }
           uploadPath = recordPath

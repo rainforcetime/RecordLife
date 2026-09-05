@@ -77,16 +77,13 @@ struct CloudStoragePage {
   // 测试连接
   private async onTest() {
     if (!this.isFormComplete()) {
-      this.promptAction.showToast({ message: $r('app.string.cloud_test_failed'), duration: 2000 })
+      this.safeToast($r('app.string.cloud_test_failed'))
       return
     }
     this.testing = true
     const ok = await CosService.testConnection(this.buildConfig())
     this.testing = false
-    this.promptAction.showToast({
-      message: ok ? $r('app.string.cloud_test_success') : $r('app.string.cloud_test_failed'),
-      duration: 2000
-    })
+    this.safeToast(ok ? $r('app.string.cloud_test_success') : $r('app.string.cloud_test_failed'))
   }
 
   // 保存配置
@@ -101,14 +98,14 @@ struct CloudStoragePage {
     const ok = await this.configManager.setCosConfig(this.buildConfig())
     this.saving = false
     if (ok) {
-      this.promptAction.showToast({ message: $r('app.string.cloud_saved'), duration: 2000 })
+      this.safeToast($r('app.string.cloud_saved'))
     }
   }
 
   // 上传全部图片（历史图片补传 + 失败重试）
   private async onUploadAll() {
     if (!this.isFormComplete() || !this.context) {
-      this.promptAction.showToast({ message: $r('app.string.cloud_test_failed'), duration: 2000 })
+      this.safeToast($r('app.string.cloud_test_failed'))
       return
     }
     // 先保存当前表单配置，确保上传使用最新配置
@@ -148,9 +145,18 @@ struct CloudStoragePage {
       }
     } catch (error) {
       Logger.error('[CloudStoragePage] 上传全部图片失败: ' + JSON.stringify(error))
-      this.promptAction.showToast({ message: $r('app.string.cloud_upload_all_failed'), duration: 2000 })
+      this.safeToast($r('app.string.cloud_upload_all_failed'))
     } finally {
       this.uploading = false
+    }
+  }
+
+  // showToast 安全包装（ArkTS：showToast 可能抛异常需 try；消除编译警告）
+  private safeToast(message: Resource): void {
+    try {
+      this.promptAction.showToast({ message: message, duration: 2000 })
+    } catch (e) {
+      Logger.warn('[CloudStoragePage] showToast 失败: ' + JSON.stringify(e))
     }
   }
 
