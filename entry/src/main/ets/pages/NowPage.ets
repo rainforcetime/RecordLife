@@ -352,7 +352,15 @@ struct NowPage {
       .scrollBar(BarState.Off)
       .edgeEffect(EdgeEffect.Spring)
       .align(Alignment.Top)
-      
+      // 追加想法（评论）面板：单独绑定在 Scroll 上，避免与 Stack 上编辑 bindSheet
+      // 相互覆盖导致编辑框无法弹出（bug 修复）
+      .bindSheet($$this.showCommentSheet, this.CommentSheetBuilder(), {
+        height: '58%',
+        backgroundColor: this.themeColors.cardBackground,
+        dragBar: true,
+        showClose: false
+      })
+
       // 隐私模式：记录内容亚克力模糊遮罩（盖住 Scroll 记录区；FAB 在上层保持可用）
       if (this.privacyMode) {
         Column() {
@@ -462,13 +470,6 @@ struct NowPage {
       height: '80%',
       backgroundColor: this.themeColors.cardBackground,
       dragBar: true
-    })
-    // 追加想法（评论）面板（需求3；高度取 58% 减少键盘弹起时标题被顶出可视区）
-    .bindSheet($$this.showCommentSheet, this.CommentSheetBuilder(), {
-      height: '58%',
-      backgroundColor: this.themeColors.cardBackground,
-      dragBar: true,
-      showClose: false
     })
   }
   
